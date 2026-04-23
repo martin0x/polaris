@@ -35,7 +35,7 @@ services:
   #   build:
   #     context: ..
   #     dockerfile: docker/Dockerfile
-  #   command: node src/platform/jobs/start-workers.ts
+  #   command: bun src/platform/jobs/start-workers.ts
   #   environment:
   #     DATABASE_URL: postgresql://polaris:polaris@postgres:5432/polaris
   #     REDIS_URL: redis://redis:6379

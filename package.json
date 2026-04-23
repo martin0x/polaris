@@ -9,7 +9,7 @@
     "lint": "eslint",
     "test": "vitest run",
     "test:watch": "vitest",
-    "workers": "tsx src/platform/jobs/start-workers.ts"
+    "workers": "bun src/platform/jobs/start-workers.ts"
   },
   "dependencies": {
     "@auth/prisma-adapter": "^2.11.2",
@@ -27,7 +27,7 @@
     "zod": "^4.3.6"
   },
   "prisma": {
-    "seed": "npx tsx prisma/seed.ts"
+    "seed": "bun prisma/seed.ts"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
@@ -43,5 +43,8 @@
     "tsx": "^4.21.0",
     "typescript": "^5",
     "vitest": "^4.1.5"
-  }
+  },
+  "trustedDependencies": [
+    "unrs-resolver"
+  ]
 }
