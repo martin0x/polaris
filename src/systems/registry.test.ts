@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { createSystemRegistry } from "./registry";
 import { SystemManifest } from "./types";
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 
 const mockHandler = async () => NextResponse.json({ ok: true });
 

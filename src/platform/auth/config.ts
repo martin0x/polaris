@@ -4,6 +4,7 @@ import { PrismaAdapter } from "@auth/prisma-adapter";
 import { prisma } from "@/platform/db/client";
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Prisma 7 type incompatibility with @auth/prisma-adapter
   adapter: PrismaAdapter(prisma as any),
   providers: [
     Google({
