@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 280 64" fill="none" aria-label="Polaris">
+  <path d="M32 8 L34.2 29.8 L56 32 L34.2 34.2 L32 56 L29.8 34.2 L8 32 L29.8 29.8 Z" fill="#a89cff"></path>
+  <circle cx="32" cy="32" r="2.2" fill="#1c1b20"></circle>
+  <text x="76" y="42" font-family="&#39;Source Serif 4&#39;, Georgia, serif" font-size="32" font-weight="500" letter-spacing="-0.5" fill="#e8e4da">Polaris</text>
+</svg>

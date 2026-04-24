@@ -1,0 +1,20 @@
+<!doctype html><html><head><meta charset="utf-8"><title>Shadows</title>
+<link rel="stylesheet" href="_card.css">
+<style>
+  body { background: #fbf9f4; }
+  .grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 14px; padding: 6px; }
+  .tile { height: 86px; background: #fbf9f4; border: 1px solid #efe9db; border-radius: 10px; display: flex; align-items: flex-end; justify-content: center; padding-bottom: 10px; font-family: var(--font-mono); font-size: 10px; color: var(--ink-3); }
+  .s-xs { box-shadow: 0 1px 0 rgba(40,32,20,0.04); }
+  .s-sm { box-shadow: 0 1px 2px rgba(40,32,20,0.06), 0 1px 0 rgba(40,32,20,0.03); }
+  .s-md { box-shadow: 0 2px 6px rgba(40,32,20,0.08), 0 1px 2px rgba(40,32,20,0.05); }
+  .s-lg { box-shadow: 0 8px 24px rgba(40,32,20,0.10), 0 2px 4px rgba(40,32,20,0.05); }
+  .s-xl { box-shadow: 0 20px 48px rgba(40,32,20,0.14), 0 4px 8px rgba(40,32,20,0.06); }
+</style></head><body><div class="card">
+  <div class="grid">
+    <div class="tile s-xs">xs</div>
+    <div class="tile s-sm">sm</div>
+    <div class="tile s-md">md</div>
+    <div class="tile s-lg">lg</div>
+    <div class="tile s-xl">xl</div>
+  </div>
+</div></body></html>

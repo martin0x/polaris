@@ -1,0 +1,25 @@
+<!doctype html><html><head><meta charset="utf-8"><title>Spacing</title>
+<link rel="stylesheet" href="_card.css">
+<style>
+  .scale { display: flex; gap: 6px; align-items: flex-end; }
+  .bar { background: #7c6cf0; border-radius: 2px; width: 22px; position: relative; display: flex; align-items: flex-end; justify-content: center; }
+  .bar .l { position:absolute; top:-16px; font-family: var(--font-mono); font-size: 9px; color: var(--ink-3); }
+  .bar .n { font-family: var(--font-mono); font-size: 9px; color: #fff; font-weight: 600; margin-bottom: 2px; }
+</style>
+</head><body><div class="card" style="gap:14px">
+  <div class="scale">
+    <div class="bar" style="height:2px"><span class="l">0.5</span></div>
+    <div class="bar" style="height:4px"><span class="l">1</span></div>
+    <div class="bar" style="height:8px"><span class="l">2</span></div>
+    <div class="bar" style="height:12px"><span class="l">3</span></div>
+    <div class="bar" style="height:16px"><span class="l">4</span></div>
+    <div class="bar" style="height:20px"><span class="l">5</span></div>
+    <div class="bar" style="height:24px"><span class="l">6</span></div>
+    <div class="bar" style="height:32px"><span class="l">8</span></div>
+    <div class="bar" style="height:40px"><span class="l">10</span></div>
+    <div class="bar" style="height:48px"><span class="l">12</span></div>
+    <div class="bar" style="height:64px"><span class="l">16</span></div>
+    <div class="bar" style="height:80px"><span class="l">20</span></div>
+  </div>
+  <div class="row" style="gap:16px"><span class="lbl">4px base grid · --sp-0 → --sp-20</span></div>
+</div></body></html>

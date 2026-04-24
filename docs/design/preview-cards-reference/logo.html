@@ -1,0 +1,35 @@
+<!doctype html><html><head><meta charset="utf-8"><title>Logo</title>
+<link rel="stylesheet" href="_card.css">
+<style>
+  body { background: #fbf9f4; }
+  .wrap { display: grid; grid-template-columns: 1.2fr 1fr 1fr; gap: 14px; align-items: stretch; }
+  .tile { border: 1px solid #e7dfcd; border-radius: 10px; padding: 14px; display: flex; align-items: center; justify-content: center; min-height: 96px; }
+  .tile.dark { background: #1c1b20; border-color: #3a3944; }
+  .tile.paper { background: #f6f2e9; }
+  .lbl-row { font-family: var(--font-mono); font-size: 10px; color: var(--ink-4); text-align: center; margin-top: -8px; }
+</style></head><body><div class="card" style="gap:6px">
+  <div class="wrap">
+    <div class="tile paper">
+      <svg width="180" height="40" viewBox="0 0 280 64">
+        <path d="M32 8 L34.2 29.8 L56 32 L34.2 34.2 L32 56 L29.8 34.2 L8 32 L29.8 29.8 Z" fill="#7c6cf0"/>
+        <circle cx="32" cy="32" r="2.2" fill="#fbf9f4"/>
+        <text x="76" y="42" font-family="'Source Serif 4', Georgia, serif" font-size="32" font-weight="500" letter-spacing="-0.5" fill="#1d1b17">Polaris</text>
+      </svg>
+    </div>
+    <div class="tile dark">
+      <svg width="140" height="32" viewBox="0 0 280 64">
+        <path d="M32 8 L34.2 29.8 L56 32 L34.2 34.2 L32 56 L29.8 34.2 L8 32 L29.8 29.8 Z" fill="#a89cff"/>
+        <circle cx="32" cy="32" r="2.2" fill="#1c1b20"/>
+        <text x="76" y="42" font-family="'Source Serif 4', Georgia, serif" font-size="32" font-weight="500" letter-spacing="-0.5" fill="#e8e4da">Polaris</text>
+      </svg>
+    </div>
+    <div class="tile paper" style="gap:12px">
+      <svg width="40" height="40" viewBox="0 0 64 64"><path d="M32 4 L34.6 29.4 L60 32 L34.6 34.6 L32 60 L29.4 34.6 L4 32 L29.4 29.4 Z" fill="#7c6cf0"/><circle cx="32" cy="32" r="2.6" fill="#fbf9f4"/></svg>
+      <svg width="24" height="24" viewBox="0 0 64 64"><path d="M32 4 L34.6 29.4 L60 32 L34.6 34.6 L32 60 L29.4 34.6 L4 32 L29.4 29.4 Z" fill="#7c6cf0"/><circle cx="32" cy="32" r="2.6" fill="#fbf9f4"/></svg>
+      <svg width="16" height="16" viewBox="0 0 64 64"><path d="M32 4 L34.6 29.4 L60 32 L34.6 34.6 L32 60 L29.4 34.6 L4 32 L29.4 29.4 Z" fill="#7c6cf0"/><circle cx="32" cy="32" r="2.6" fill="#fbf9f4"/></svg>
+    </div>
+  </div>
+  <div class="row" style="justify-content:space-between;font-family:var(--font-mono);font-size:10px;color:var(--ink-4);padding:0 8px">
+    <span>wordmark · light</span><span>wordmark · dark</span><span>glyph · 40 / 24 / 16</span>
+  </div>
+</div></body></html>

@@ -1,0 +1,17 @@
+<!doctype html><html><head><meta charset="utf-8"><title>Task rows</title>
+<link rel="stylesheet" href="_card.css">
+<style>
+  .task { display: flex; align-items: center; gap: 10px; padding: 7px 10px; border-radius: 5px; font-size: 13.5px; }
+  .task:hover { background: #efe9db; }
+  .chk { width: 14px; height: 14px; border: 1.5px solid #9a9281; border-radius: 3px; flex: 0 0 14px; display: inline-flex; align-items: center; justify-content: center; }
+  .chk.done { background: #7c6cf0; border-color: #7c6cf0; }
+  .chk svg { width: 10px; height: 10px; color: #fbf9f4; }
+  .done-t { color: var(--ink-4); text-decoration: line-through; }
+  .meta { margin-left: auto; font-family: var(--font-mono); font-size: 10.5px; color: var(--ink-3); }
+  .due { color: #b0564a; }
+</style></head><body><div class="card" style="gap:2px">
+  <div class="task"><span class="chk"></span>Draft Polaris README<span class="meta">today</span></div>
+  <div class="task"><span class="chk"></span>Define color tokens<span class="meta due">overdue · 2d</span></div>
+  <div class="task"><span class="chk done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span><span class="done-t">Set up local vault</span><span class="meta">yesterday</span></div>
+  <div class="task"><span class="chk"></span>Morning pages<span class="meta">tomorrow</span></div>
+</div></body></html>

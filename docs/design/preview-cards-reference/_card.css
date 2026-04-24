@@ -1,0 +1,61 @@
+/* Preview card base — each preview/*.html loads this */
+@import url('../colors_and_type.css');
+
+* { box-sizing: border-box; }
+html, body {
+  margin: 0;
+  padding: 0;
+  background: var(--bg);
+  color: var(--fg);
+  font-family: var(--font-sans);
+  overflow: hidden;
+}
+.card {
+  padding: 20px 24px;
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+.stack { display: flex; flex-direction: column; gap: 8px; }
+.lbl {
+  font-size: 10px;
+  font-family: var(--font-mono);
+  color: var(--fg-muted);
+  text-transform: lowercase;
+  letter-spacing: 0.02em;
+}
+.swatch {
+  flex: 1;
+  min-width: 80px;
+  height: 64px;
+  border-radius: var(--r-md);
+  border: 1px solid var(--border);
+  padding: 8px 10px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  position: relative;
+}
+.swatch .name {
+  font-size: 11px;
+  font-family: var(--font-mono);
+  font-weight: 500;
+  color: var(--ink-1);
+  mix-blend-mode: difference;
+  filter: invert(1) grayscale(1) contrast(100);
+}
+.swatch .hex {
+  font-size: 10px;
+  font-family: var(--font-mono);
+  color: var(--ink-3);
+  mix-blend-mode: difference;
+  filter: invert(1) grayscale(1) contrast(100);
+}
+/* For dark swatches, force readable labels */
+.swatch.dark .name, .swatch.dark .hex {
+  color: var(--moon-0);
+  mix-blend-mode: normal;
+  filter: none;
+}

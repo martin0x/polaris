@@ -1,0 +1,20 @@
+<!doctype html><html><head><meta charset="utf-8"><title>Status Colors</title>
+<link rel="stylesheet" href="_card.css">
+<style>
+  .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+  .row { background: var(--bg-raised); border: 1px solid var(--border); border-radius: 8px; padding: 10px 12px; display: flex; align-items: center; gap: 10px; }
+  .dot { width: 10px; height: 10px; border-radius: 50%; flex: 0 0 10px; }
+  .row .t { font-size: 13px; font-weight: 500; color: var(--ink-1); }
+  .row .h { font-family: var(--font-mono); font-size: 10px; color: var(--ink-3); margin-left: auto; }
+  .wash { padding: 8px 10px; border-radius: 6px; font-size: 12px; }
+</style></head>
+<body><div class="card">
+  <div class="grid">
+    <div class="row"><span class="dot" style="background:#4f8a6a"></span><span class="t">success</span><span class="h">#4f8a6a</span></div>
+    <div class="row"><span class="dot" style="background:#c08a3d"></span><span class="t">warning</span><span class="h">#c08a3d</span></div>
+    <div class="row"><span class="dot" style="background:#b0564a"></span><span class="t">danger</span><span class="h">#b0564a</span></div>
+    <div class="wash" style="background:#e4efe7;color:#2e5340">Saved to local vault</div>
+    <div class="wash" style="background:#f4ebd6;color:#6b4e1c">Working offline</div>
+    <div class="wash" style="background:#f2dedb;color:#7a2f25">Sync failed — retrying</div>
+  </div>
+</div></body></html>

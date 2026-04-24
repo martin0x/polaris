@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Polaris — Workspace</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" href="../../assets/polaris-glyph.svg">
+<link rel="stylesheet" href="workspace.css">
+</head>
+<body>
+<div id="root"></div>
+
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+<script type="text/babel" src="Icon.jsx"></script>
+<script type="text/babel" src="Sidebar.jsx"></script>
+<script type="text/babel" src="CommandPalette.jsx"></script>
+<script type="text/babel" src="Docs.jsx"></script>
+<script type="text/babel" src="EditorPane.jsx"></script>
+<script type="text/babel" src="TitleBar.jsx"></script>
+
+<script type="text/babel" data-presets="react">
+const TWEAKS_DEFAULTS = /*EDITMODE-BEGIN*/{
+  "accent": "purple",
+  "theme": "light",
+  "displayFont": "serif"
+}/*EDITMODE-END*/;
+
+const App = () => {
+  const [active, setActive] = React.useState(() => localStorage.getItem('polaris.active') || 'today');
+  const [paletteOpen, setPaletteOpen] = React.useState(false);
+  const [tweaksVisible, setTweaksVisible] = React.useState(false);
+  const [tweaks, setTweaks] = React.useState(TWEAKS_DEFAULTS);
+
+  const validIds = ['today', 'budget', 'journal', 'quotes'];
+  const docId = validIds.includes(active) ? active : 'today';
+  const doc = WORKFLOWS[docId];
+  const meta = WORKFLOW_META[docId];
+
+  React.useEffect(() => { localStorage.setItem('polaris.active', active); }, [active]);
+
+  // ⌘K
+  React.useEffect(() => {
+    const onKey = (e) => {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault(); setPaletteOpen(v => !v);
+      }
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, []);
+
+  // Edit-mode protocol
+  React.useEffect(() => {
+    const onMsg = (e) => {
+      const d = e.data || {};
+      if (d.type === '__activate_edit_mode') setTweaksVisible(true);
+      if (d.type === '__deactivate_edit_mode') setTweaksVisible(false);
+    };
+    window.addEventListener('message', onMsg);
+    window.parent.postMessage({ type: '__edit_mode_available' }, '*');
+    return () => window.removeEventListener('message', onMsg);
+  }, []);
+
+  const setTweak = (k, v) => {
+    const next = { ...tweaks, [k]: v };
+    setTweaks(next);
+    window.parent.postMessage({ type: '__edit_mode_set_keys', edits: { [k]: v } }, '*');
+  };
+
+  // Apply tweaks
+  React.useEffect(() => {
+    const r = document.documentElement;
+    const accents = {
+      purple: { a: '#7c6cf0', h: '#6a58ec', p: '#5847d6', w: '#efecff', ink: '#4232a8' },
+      ochre:  { a: '#c96442', h: '#b95532', p: '#a14828', w: '#fbe8df', ink: '#7a3218' },
+      slate:  { a: '#5f74c1', h: '#4658a8', p: '#384690', w: '#e4e8f2', ink: '#2c3a78' },
+    };
+    const ac = accents[tweaks.accent] || accents.purple;
+    r.style.setProperty('--accent', ac.a);
+    r.style.setProperty('--accent-hover', ac.h);
+    r.style.setProperty('--accent-press', ac.p);
+    r.style.setProperty('--accent-wash', ac.w);
+    r.style.setProperty('--accent-ink', ac.ink);
+    r.setAttribute('data-theme', tweaks.theme === 'dark' ? 'dark' : 'light');
+    // Display font
+    const fonts = {
+      serif: "'Source Serif 4', Georgia, serif",
+      sans:  "'Inter', sans-serif",
+      mono:  "'JetBrains Mono', monospace",
+    };
+    r.style.setProperty('--font-serif-override', fonts[tweaks.displayFont] || fonts.serif);
+    // Apply via heading overrides
+    document.querySelectorAll('.doc h1, .doc h2, .doc h3').forEach(h => {
+      h.style.fontFamily = fonts[tweaks.displayFont] || fonts.serif;
+    });
+  }, [tweaks]);
+
+  return (
+    <div className="app">
+      <TitleBar docPath={doc.path} syncState="ok" />
+      <div className="body with-right">
+        <Sidebar activeId={active} onSelect={setActive} onOpenPalette={() => setPaletteOpen(true)} />
+        <EditorPane doc={doc} />
+        <RightPane meta={meta} />
+      </div>
+      {paletteOpen && (
+        <CommandPalette
+          onClose={() => setPaletteOpen(false)}
+          onAction={(a) => {
+            setPaletteOpen(false);
+            if (validIds.includes(a.id)) setActive(a.id);
+            else if (a.id === 'a4') setTweak('theme', tweaks.theme === 'dark' ? 'light' : 'dark');
+          }}
+        />
+      )}
+      {tweaksVisible && (
+        <div className="tweaks">
+          <h5>Tweaks</h5>
+          <div className="trow">
+            <span className="tlbl">Accent</span>
+            <div className="seg">
+              {['purple','ochre','slate'].map(k => (
+                <button key={k} className={tweaks.accent === k ? 'on' : ''} onClick={() => setTweak('accent', k)}>{k}</button>
+              ))}
+            </div>
+          </div>
+          <div className="trow">
+            <span className="tlbl">Theme</span>
+            <div className="seg">
+              {['light','dark'].map(k => (
+                <button key={k} className={tweaks.theme === k ? 'on' : ''} onClick={() => setTweak('theme', k)}>{k}</button>
+              ))}
+            </div>
+          </div>
+          <div className="trow">
+            <span className="tlbl">Display font</span>
+            <div className="seg">
+              {['serif','sans','mono'].map(k => (
+                <button key={k} className={tweaks.displayFont === k ? 'on' : ''} onClick={() => setTweak('displayFont', k)}>{k}</button>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+</script>
+</body>
+</html>

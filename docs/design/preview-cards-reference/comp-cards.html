@@ -1,0 +1,23 @@
+<!doctype html><html><head><meta charset="utf-8"><title>Cards</title>
+<link rel="stylesheet" href="_card.css">
+<style>
+  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .c { background: #f6f2e9; border: 1px solid #e7dfcd; border-radius: 10px; padding: 14px 16px; box-shadow: 0 1px 2px rgba(40,32,20,0.06); }
+  .c-title { font-family: var(--font-serif); font-size: 17px; font-weight: 500; color: var(--ink-1); margin: 0 0 4px; }
+  .c-meta { font-size: 11.5px; color: var(--ink-3); font-family: var(--font-mono); }
+  .c-body { font-size: 13px; color: var(--ink-2); line-height: 1.55; margin-top: 6px; }
+  .c-raised { box-shadow: 0 2px 6px rgba(40,32,20,0.08), 0 1px 2px rgba(40,32,20,0.05); }
+</style></head><body><div class="card">
+  <div class="grid">
+    <div class="c">
+      <h3 class="c-title">On note-taking</h3>
+      <div class="c-meta">2 min ago · 340 words</div>
+      <p class="c-body">A place to think is a place you live in. This note started as a thought in the shower…</p>
+    </div>
+    <div class="c c-raised">
+      <h3 class="c-title">Today</h3>
+      <div class="c-meta">3 tasks · 1 overdue</div>
+      <p class="c-body">Draft Polaris readme · Reply to A · Run morning pages</p>
+    </div>
+  </div>
+</div></body></html>

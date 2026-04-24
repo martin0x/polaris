@@ -1,1 +1,726 @@
 @import "tailwindcss";
+
+/* ==========================================================================
+   Polaris Design System — design tokens
+   Warm paper + ink, Obsidian-forward with humanist serif.
+   Source of truth: docs/design/polaris-design-system.md
+   ========================================================================== */
+
+:root {
+  /* --- Paper (light surfaces) ------------------------------------------- */
+  --paper-0:   #fefcf7;
+  --paper-1:   #faf7ef;
+  --paper-2:   #f5f0e4;
+  --paper-3:   #ece6d5;
+  --paper-4:   #dfd7c0;
+
+  /* --- Ink (foreground on paper) ---------------------------------------- */
+  --ink-0:     #1d1b17;
+  --ink-1:     #2e2a23;
+  --ink-2:     #4a4439;
+  --ink-3:     #6b6454;
+  --ink-4:     #9a9281;
+  --ink-5:     #b7ae9a;
+
+  /* --- Night (dark surfaces, secondary) --------------------------------- */
+  --night-0:   #1c1b20;
+  --night-1:   #24232a;
+  --night-2:   #2d2c34;
+  --night-3:   #3a3944;
+  --moon-0:    #e8e4da;
+  --moon-1:    #c4bfb3;
+  --moon-2:    #8d8877;
+
+  /* --- Accent (Obsidian purple) ----------------------------------------- */
+  --accent:        #3c2ea3;
+  --accent-hover:  #2e2380;
+  --accent-press:  #1f165d;
+  --accent-wash:   #e0dbff;
+  --accent-ink:    #1f165d;
+
+  /* --- Semantic (Obsidian markdown palette) ----------------------------- */
+  --tag:         #d291bc;
+  --tag-ink:     #8d3e6d;
+  --link:        #5f74c1;
+  --link-hover:  #4658a8;
+  --heading:     #8a5a3a;
+  --emphasis:    #a17a3f;
+  --mark:        #f4d47a;
+  --mark-ink:    #6b4a00;
+
+  --success:      #4f8a6a;
+  --success-wash: #e4efe7;
+  --warning:      #c08a3d;
+  --warning-wash: #f4ebd6;
+  --danger:       #b0564a;
+  --danger-wash:  #f2dedb;
+  --info:         var(--link);
+  --info-wash:    #e4e8f2;
+
+  /* --- Code-block palette ----------------------------------------------- */
+  --code-bg:      #f1ecdf;
+  --code-border:  #e1d9c4;
+  --code-fg:      #2e2a23;
+  --code-keyword: #7c6cf0;
+  --code-string:  #8a5a3a;
+  --code-number:  #b0564a;
+  --code-comment: #9a9281;
+  --code-fn:      #5f74c1;
+
+  /* --- Semantic surface tokens ------------------------------------------ */
+  --bg:            var(--paper-0);
+  --bg-raised:     var(--paper-1);
+  --bg-sunken:     var(--paper-2);
+  --bg-hover:      var(--paper-2);
+  --bg-active:     var(--paper-3);
+  --border:        var(--paper-3);
+  --border-strong: var(--paper-4);
+  --fg:            var(--ink-0);
+  --fg-muted:      var(--ink-3);
+  --fg-faint:      var(--ink-4);
+  --selection:     #dcd4ff;
+
+  /* --- Typography — families -------------------------------------------- */
+  /* Next.js next/font injects --font-source-serif, --font-inter, --font-jetbrains */
+  --font-serif:
+    var(--font-source-serif, "Source Serif 4"),
+    "Iowan Old Style", "Charter", Georgia, serif;
+  --font-sans:
+    var(--font-inter, "Inter"),
+    ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-mono:
+    var(--font-jetbrains, "JetBrains Mono"),
+    ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+
+  /* --- Typography — scale (1.2 modular, body 14.5px medium density) ----- */
+  --fs-xs:   11px;
+  --fs-sm:   12.5px;
+  --fs-base: 14.5px;
+  --fs-md:   16px;
+  --fs-lg:   19px;
+  --fs-xl:   23px;
+  --fs-2xl:  28px;
+  --fs-3xl:  34px;
+  --fs-4xl:  42px;
+  --fs-5xl:  54px;
+
+  --lh-tight:   1.15;
+  --lh-snug:    1.35;
+  --lh-normal:  1.55;
+  --lh-relaxed: 1.7;
+
+  --tracking-tight:  -0.015em;
+  --tracking-normal: 0;
+  --tracking-wide:   0.02em;
+  --tracking-caps:   0.08em;
+
+  /* --- Spacing (4px base) ----------------------------------------------- */
+  --sp-0:   0;
+  --sp-0-5: 2px;
+  --sp-1:   4px;
+  --sp-1-5: 6px;
+  --sp-2:   8px;
+  --sp-3:   12px;
+  --sp-4:   16px;
+  --sp-5:   20px;
+  --sp-6:   24px;
+  --sp-8:   32px;
+  --sp-10:  40px;
+  --sp-12:  48px;
+  --sp-16:  64px;
+  --sp-20:  80px;
+
+  /* --- Radii ------------------------------------------------------------ */
+  --r-xs:   3px;
+  --r-sm:   4px;
+  --r-md:   6px;
+  --r-lg:   10px;
+  --r-xl:   14px;
+  --r-2xl:  20px;
+  --r-full: 999px;
+
+  /* --- Shadows (warm papercut) ------------------------------------------ */
+  --shadow-xs: 0 1px 0 rgba(40, 32, 20, 0.04);
+  --shadow-sm: 0 1px 2px rgba(40, 32, 20, 0.06), 0 1px 0 rgba(40, 32, 20, 0.03);
+  --shadow-md: 0 2px 6px rgba(40, 32, 20, 0.08), 0 1px 2px rgba(40, 32, 20, 0.05);
+  --shadow-lg: 0 8px 24px rgba(40, 32, 20, 0.10), 0 2px 4px rgba(40, 32, 20, 0.05);
+  --shadow-xl: 0 20px 48px rgba(40, 32, 20, 0.14), 0 4px 8px rgba(40, 32, 20, 0.06);
+  --shadow-inset: inset 0 1px 0 rgba(40, 32, 20, 0.04);
+  --ring:        0 0 0 3px rgba(124, 108, 240, 0.25);
+  --ring-danger: 0 0 0 3px rgba(176, 86, 74, 0.25);
+
+  /* --- Motion ----------------------------------------------------------- */
+  --ease-out:    cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --dur-fast: 120ms;
+  --dur-med:  200ms;
+  --dur-slow: 320ms;
+
+  /* --- Z-index ---------------------------------------------------------- */
+  --z-base:    0;
+  --z-sticky:  10;
+  --z-overlay: 40;
+  --z-modal:   50;
+  --z-popover: 60;
+  --z-toast:   80;
+}
+
+/* ---------- Dark mode (secondary) ---------------------------------------- */
+:root[data-theme="dark"],
+.theme-dark {
+  --bg:            var(--night-0);
+  --bg-raised:     var(--night-1);
+  --bg-sunken:     var(--night-2);
+  --bg-hover:      var(--night-2);
+  --bg-active:     var(--night-3);
+  --border:        var(--night-3);
+  --border-strong: #4a4855;
+  --fg:            var(--moon-0);
+  --fg-muted:      var(--moon-1);
+  --fg-faint:      var(--moon-2);
+  --selection:     #3d355e;
+
+  --accent-wash:   #2a2544;
+  --code-bg:       #24232a;
+  --code-border:   #3a3944;
+  --code-fg:       var(--moon-0);
+  --mark:          #6b4a00;
+  --mark-ink:      #f4d47a;
+
+  --shadow-xs: 0 1px 0 rgba(0, 0, 0, 0.2);
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 2px 8px rgba(0, 0, 0, 0.35);
+  --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.45);
+  --shadow-xl: 0 20px 48px rgba(0, 0, 0, 0.55);
+}
+
+/* ==========================================================================
+   Tailwind v4 theme — expose tokens as utilities (bg-paper-1, text-ink-2, etc).
+   ========================================================================== */
+@theme {
+  --color-paper-0: #fefcf7;
+  --color-paper-1: #faf7ef;
+  --color-paper-2: #f5f0e4;
+  --color-paper-3: #ece6d5;
+  --color-paper-4: #dfd7c0;
+
+  --color-ink-0: #1d1b17;
+  --color-ink-1: #2e2a23;
+  --color-ink-2: #4a4439;
+  --color-ink-3: #6b6454;
+  --color-ink-4: #9a9281;
+  --color-ink-5: #b7ae9a;
+
+  --color-night-0: #1c1b20;
+  --color-night-1: #24232a;
+  --color-night-2: #2d2c34;
+  --color-night-3: #3a3944;
+  --color-moon-0:  #e8e4da;
+  --color-moon-1:  #c4bfb3;
+  --color-moon-2:  #8d8877;
+
+  --color-accent:       #3c2ea3;
+  --color-accent-hover: #2e2380;
+  --color-accent-press: #1f165d;
+  --color-accent-wash:  #e0dbff;
+  --color-accent-ink:   #1f165d;
+
+  --color-tag:     #d291bc;
+  --color-tag-ink: #8d3e6d;
+  --color-link:    #5f74c1;
+  --color-link-hover: #4658a8;
+  --color-heading: #8a5a3a;
+  --color-emphasis: #a17a3f;
+  --color-mark:    #f4d47a;
+  --color-mark-ink: #6b4a00;
+
+  --color-success:      #4f8a6a;
+  --color-success-wash: #e4efe7;
+  --color-warning:      #c08a3d;
+  --color-warning-wash: #f4ebd6;
+  --color-danger:       #b0564a;
+  --color-danger-wash:  #f2dedb;
+
+  --font-serif: var(--font-serif);
+  --font-sans:  var(--font-sans);
+  --font-mono:  var(--font-mono);
+
+  --radius-xs:  3px;
+  --radius-sm:  4px;
+  --radius-md:  6px;
+  --radius-lg:  10px;
+  --radius-xl:  14px;
+  --radius-2xl: 20px;
+}
+
+/* ==========================================================================
+   Semantic element styles — base typography for any surface.
+   Rules: sentence case, no emoji in chrome, smart quotes in display serif.
+   ========================================================================== */
+
+html, body { height: 100%; }
+
+body {
+  font-family: var(--font-sans);
+  font-size: var(--fs-base);
+  line-height: var(--lh-normal);
+  color: var(--fg);
+  background: var(--bg);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+::selection { background: var(--selection); color: var(--ink-0); }
+
+/* Prose headings — serif, Obsidian-inspired terracotta H1 ----------------- */
+.prose h1, .doc h1 {
+  font-family: var(--font-serif);
+  font-size: var(--fs-4xl);
+  line-height: var(--lh-tight);
+  letter-spacing: var(--tracking-tight);
+  font-weight: 500;
+  color: var(--heading);
+  margin: 0 0 var(--sp-4);
+}
+.prose h2, .doc h2 {
+  font-family: var(--font-serif);
+  font-size: var(--fs-3xl);
+  line-height: var(--lh-tight);
+  letter-spacing: var(--tracking-tight);
+  font-weight: 500;
+  color: var(--ink-1);
+  margin: var(--sp-8) 0 var(--sp-3);
+}
+.prose h3, .doc h3 {
+  font-family: var(--font-serif);
+  font-size: var(--fs-2xl);
+  line-height: var(--lh-snug);
+  font-weight: 500;
+  color: var(--ink-1);
+  margin: var(--sp-6) 0 var(--sp-2);
+}
+.prose h4, .doc h4 {
+  font-family: var(--font-sans);
+  font-size: var(--fs-lg);
+  line-height: var(--lh-snug);
+  font-weight: 600;
+  color: var(--ink-1);
+  margin: var(--sp-5) 0 var(--sp-2);
+}
+.prose h5, .doc h5 {
+  font-family: var(--font-sans);
+  font-size: var(--fs-base);
+  font-weight: 600;
+  color: var(--ink-1);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-caps);
+  margin: var(--sp-4) 0 var(--sp-1);
+}
+
+.prose p, .doc p {
+  font-size: var(--fs-base);
+  line-height: var(--lh-relaxed);
+  color: var(--ink-2);
+  margin: 0 0 var(--sp-4);
+  text-wrap: pretty;
+}
+
+.lead {
+  font-family: var(--font-serif);
+  font-size: var(--fs-lg);
+  line-height: var(--lh-normal);
+  color: var(--ink-2);
+}
+
+.caption {
+  font-size: var(--fs-sm);
+  color: var(--fg-muted);
+}
+
+.overline {
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-caps);
+  color: var(--fg-muted);
+  font-weight: 600;
+}
+
+.prose a, .doc a, .link {
+  color: var(--link);
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 2px;
+  transition: color var(--dur-fast) var(--ease-out);
+}
+.prose a:hover, .doc a:hover, .link:hover { color: var(--link-hover); }
+
+.prose code, .doc code, .mono-inline {
+  font-family: var(--font-mono);
+  font-size: 0.9em;
+  color: var(--code-fg);
+  background: var(--code-bg);
+  border: 1px solid var(--code-border);
+  border-radius: var(--r-xs);
+  padding: 0.08em 0.35em;
+}
+.prose pre, .doc pre {
+  font-family: var(--font-mono);
+  font-size: var(--fs-sm);
+  line-height: var(--lh-normal);
+  background: var(--code-bg);
+  border: 1px solid var(--code-border);
+  border-radius: var(--r-md);
+  padding: var(--sp-4);
+  overflow-x: auto;
+  color: var(--code-fg);
+}
+.prose pre code, .doc pre code {
+  background: transparent; border: 0; padding: 0; font-size: inherit;
+}
+
+.prose blockquote, .doc blockquote {
+  border-left: 2px solid var(--accent);
+  padding: var(--sp-1) var(--sp-4);
+  margin: var(--sp-4) 0;
+  color: var(--ink-2);
+  font-family: var(--font-serif);
+  font-style: italic;
+}
+
+.prose hr, .doc hr {
+  border: 0;
+  border-top: 1px solid var(--border);
+  margin: var(--sp-6) 0;
+}
+
+/* Obsidian-style inline primitives ---------------------------------------- */
+.tag-inline {
+  color: var(--tag-ink);
+  background: color-mix(in srgb, var(--tag) 22%, transparent);
+  border-radius: var(--r-full);
+  padding: 1px 8px;
+  font-size: 0.9em;
+  font-weight: 500;
+}
+.wikilink {
+  color: var(--link);
+  text-decoration: none;
+  border-bottom: 1px dashed currentColor;
+}
+.mark-inline {
+  background: var(--mark);
+  color: var(--mark-ink);
+  padding: 0 3px;
+  border-radius: 2px;
+}
+
+/* Focus ring consistent across controls ----------------------------------- */
+:where(button, a, input, textarea, select, [tabindex]):focus-visible {
+  outline: none;
+  box-shadow: var(--ring);
+  border-radius: var(--r-sm);
+}
+
+/* ==========================================================================
+   App shell — workspace layout primitives
+   ========================================================================== */
+
+.app-shell {
+  display: grid;
+  grid-template-rows: 36px 1fr;
+  height: 100vh;
+  overflow: hidden;
+}
+
+/* Title bar --------------------------------------------------------------- */
+.titlebar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 12px;
+  background: var(--paper-1);
+  border-bottom: 1px solid var(--border);
+  font-size: 12px;
+  color: var(--fg-muted);
+  user-select: none;
+}
+.titlebar .crumbs {
+  display: flex; gap: 6px; align-items: center;
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+}
+.titlebar .crumbs .sep { color: var(--ink-4); }
+.titlebar .crumbs .cur { color: var(--ink-1); font-weight: 500; }
+.titlebar .titlebar-right {
+  margin-left: auto;
+  display: flex; gap: 8px; align-items: center;
+}
+.titlebar .sync-dot {
+  width: 7px; height: 7px;
+  border-radius: 50%;
+  background: var(--success);
+}
+
+/* Body (two- or three-column layout) -------------------------------------- */
+.body {
+  display: grid;
+  grid-template-columns: 248px 1fr;
+  min-height: 0;
+  height: 100%;
+  overflow: hidden;
+}
+.body.with-right { grid-template-columns: 248px 1fr 280px; }
+
+/* Sidebar ----------------------------------------------------------------- */
+.sidebar {
+  background: var(--paper-1);
+  border-right: 1px solid var(--border);
+  padding: 10px 10px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  overflow-y: auto;
+}
+.sb-search {
+  display: flex; align-items: center; gap: 8px;
+  background: var(--paper-2);
+  border: 1px solid var(--paper-3);
+  border-radius: var(--r-md);
+  padding: 6px 10px;
+  font-size: 12.5px;
+  color: var(--ink-3);
+  cursor: pointer;
+  margin-bottom: 6px;
+}
+.sb-search .k {
+  margin-left: auto;
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  background: var(--paper-0);
+  border: 1px solid var(--paper-3);
+  border-radius: 3px;
+  padding: 1px 5px;
+  color: var(--ink-3);
+}
+.sb-sec {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--ink-4);
+  padding: 10px 6px 4px;
+  display: flex;
+  align-items: center;
+}
+.sb-sec .add {
+  margin-left: auto;
+  cursor: pointer;
+  color: var(--ink-4);
+  padding: 2px;
+  border-radius: 3px;
+}
+.sb-sec .add:hover { background: var(--paper-2); color: var(--ink-2); }
+.sb-item {
+  display: flex; align-items: center; gap: 8px;
+  padding: 5px 8px;
+  border-radius: 5px;
+  font-size: 13px;
+  color: var(--ink-2);
+  cursor: pointer;
+  user-select: none;
+  text-decoration: none;
+}
+.sb-item:hover { background: var(--paper-2); color: var(--ink-2); }
+.sb-item.active {
+  background: var(--accent-wash);
+  color: var(--accent-ink);
+  font-weight: 500;
+}
+.sb-item .count {
+  margin-left: auto;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--ink-4);
+}
+.sb-item.active .count { color: var(--accent-ink); }
+.sb-item svg { flex: 0 0 14px; }
+
+/* Main pane --------------------------------------------------------------- */
+.main {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  overflow: hidden;
+  background: var(--bg);
+}
+.mainbar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 20px;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg);
+}
+.mainbar .path {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--ink-3);
+}
+.mainbar .path .file { color: var(--ink-1); }
+.mainbar .spacer { flex: 1; }
+.mainbar .tools { display: flex; gap: 4px; }
+.icon-btn {
+  width: 28px; height: 28px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--ink-3);
+  border-radius: var(--r-sm);
+  cursor: pointer;
+  border: 0;
+  background: transparent;
+}
+.icon-btn:hover { background: var(--paper-2); color: var(--ink-1); }
+.icon-btn.active { background: var(--accent-wash); color: var(--accent-ink); }
+.icon-btn svg { width: 16px; height: 16px; }
+
+.content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 48px 80px 120px;
+}
+.doc {
+  max-width: 720px;
+  margin: 0 auto;
+}
+
+/* Right pane (metadata) --------------------------------------------------- */
+.right-pane {
+  border-left: 1px solid var(--border);
+  background: var(--paper-1);
+  overflow-y: auto;
+  padding: 14px 14px;
+}
+.right-pane h5 {
+  font-family: var(--font-sans);
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--ink-3);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin: 0 0 8px;
+}
+.meta-item {
+  padding: 8px 10px;
+  border-radius: 6px;
+  font-size: 12.5px;
+  color: var(--ink-2);
+  margin-bottom: 2px;
+}
+.meta-item:hover { background: var(--paper-2); }
+
+/* Cards ------------------------------------------------------------------- */
+.paper-card {
+  background: var(--bg-raised);
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  padding: var(--sp-4);
+  box-shadow: var(--shadow-sm);
+}
+
+/* Buttons ----------------------------------------------------------------- */
+.btn {
+  font-family: var(--font-sans);
+  font-size: var(--fs-sm);
+  font-weight: 450;
+  padding: 9px 18px;
+  border-radius: var(--r-md);
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition:
+    background var(--dur-fast) var(--ease-out),
+    color var(--dur-fast) var(--ease-out);
+}
+.btn-primary {
+  background: var(--accent);
+  color: #fff;
+  border-color: var(--accent);
+}
+.btn-primary:hover { background: var(--accent-hover); border-color: var(--accent-hover); }
+.btn-primary:active { background: var(--accent-press); border-color: var(--accent-press); }
+
+.btn-secondary {
+  background: var(--paper-1);
+  color: var(--ink-1);
+  border-color: var(--paper-3);
+}
+.btn-secondary:hover { background: var(--paper-2); }
+
+.btn-ghost {
+  background: transparent;
+  color: var(--ink-2);
+  border-color: transparent;
+}
+.btn-ghost:hover { background: var(--paper-2); color: var(--ink-1); }
+
+.btn-danger {
+  background: transparent;
+  color: var(--danger);
+  border-color: transparent;
+}
+.btn-danger:hover { background: var(--danger-wash); }
+
+/* kbd chip --------------------------------------------------------------- */
+kbd, .kbd {
+  display: inline-flex;
+  align-items: center;
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  background: var(--paper-0);
+  border: 1px solid var(--paper-3);
+  border-radius: 3px;
+  padding: 1px 5px;
+  color: var(--ink-3);
+}
+
+/* Task rows (agenda / iteration lists) ----------------------------------- */
+.task-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 4px 0;
+}
+.task-row .chk {
+  width: 14px; height: 14px;
+  border: 1.5px solid var(--ink-4);
+  border-radius: 3px;
+  flex: 0 0 14px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.task-row .chk.done {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--paper-0);
+}
+.task-row.done .lbl {
+  color: var(--ink-4);
+  text-decoration: line-through;
+}
+.task-row .lbl {
+  font-size: 15px;
+  color: var(--ink-2);
+}
+
+/* Subtle scrollbars ------------------------------------------------------- */
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-thumb {
+  background: var(--paper-3);
+  border-radius: 10px;
+  border: 2px solid var(--bg);
+}
+::-webkit-scrollbar-thumb:hover { background: var(--paper-4); }
+::-webkit-scrollbar-track { background: transparent; }

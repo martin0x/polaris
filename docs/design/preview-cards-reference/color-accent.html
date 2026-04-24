@@ -1,0 +1,19 @@
+<!doctype html><html><head><meta charset="utf-8"><title>Accent</title>
+<link rel="stylesheet" href="_card.css">
+<style>
+  .wrap { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 10px; height: 112px; }
+  .hero { background: var(--accent); color: #fbf9f4; border-radius: 10px; padding: 14px 16px; display: flex; flex-direction: column; justify-content: space-between; }
+  .hero .big { font-family: var(--font-serif); font-size: 22px; font-weight: 500; }
+  .hero .hex { font-family: var(--font-mono); font-size: 11px; opacity: 0.85; }
+  .sw { border-radius: 10px; padding: 10px; display: flex; flex-direction: column; justify-content: flex-end; border: 1px solid var(--border); }
+  .sw .t { font-size: 11px; font-family: var(--font-mono); font-weight: 600; }
+  .sw .h { font-size: 10px; font-family: var(--font-mono); color: var(--ink-3); }
+</style></head>
+<body><div class="card">
+  <div class="wrap">
+    <div class="hero"><div class="big">Obsidian purple</div><div><div style="font-size:11px;opacity:0.85;font-family:var(--font-mono)">--accent</div><div class="hex">#3c2ea3</div></div></div>
+    <div class="sw" style="background:#2e2380;color:#fbf9f4"><div class="t" style="color:inherit">hover</div><div class="h" style="color:inherit;opacity:.85">#2e2380</div></div>
+    <div class="sw" style="background:#1f165d;color:#fbf9f4"><div class="t" style="color:inherit">press</div><div class="h" style="color:inherit;opacity:.85">#1f165d</div></div>
+    <div class="sw" style="background:#e0dbff"><div class="t">wash</div><div class="h">#e0dbff</div></div>
+  </div>
+</div></body></html>

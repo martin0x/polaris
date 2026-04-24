@@ -1,0 +1,354 @@
+/* ==========================================================================
+   Polaris Design System — colors_and_type.css
+   A personal OS. Warm paper + ink, Obsidian-forward with humanist serif.
+   ========================================================================== */
+
+/* ---------- Fonts ---------------------------------------------------------- */
+/* Source Serif 4 — humanist display serif (Anthropic-style warmth)           */
+/* Inter — UI sans (crisp, utilitarian)                                       */
+/* JetBrains Mono — code + terminal moments                                   */
+@import url('https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,opsz,wght@0,8..60,300..700;1,8..60,300..700&family=Inter:wght@300..700&family=JetBrains+Mono:wght@400;500;600&display=swap');
+
+:root {
+  /* ---------- Color — Paper (light surfaces) ----------------------------- */
+  --paper-0:   #fefcf7;  /* page — light warm ivory, the canvas          */
+  --paper-1:   #faf7ef;  /* raised — cards, aside rails                  */
+  --paper-2:   #f5f0e4;  /* sunken — inset fields, hover wells           */
+  --paper-3:   #ece6d5;  /* divider strong                               */
+  --paper-4:   #dfd7c0;  /* borderline between paper & ink               */
+
+  /* ---------- Color — Ink (foreground) ---------------------------------- */
+  --ink-0:     #1d1b17;  /* primary text — near-black with warm bias     */
+  --ink-1:     #2e2a23;  /* heading / emphasized                         */
+  --ink-2:     #4a4439;  /* body-strong                                  */
+  --ink-3:     #6b6454;  /* secondary — metadata, captions               */
+  --ink-4:     #9a9281;  /* tertiary — placeholders, disabled            */
+  --ink-5:     #b7ae9a;  /* quaternary — faint dividers on paper         */
+
+  /* ---------- Color — Night (dark surfaces, secondary mode) ------------- */
+  --night-0:   #1c1b20;  /* page dark                                    */
+  --night-1:   #24232a;  /* raised                                       */
+  --night-2:   #2d2c34;  /* sunken                                       */
+  --night-3:   #3a3944;  /* divider                                      */
+  --moon-0:    #e8e4da;  /* primary text on night                        */
+  --moon-1:    #c4bfb3;  /* secondary                                    */
+  --moon-2:    #8d8877;  /* tertiary                                     */
+
+  /* ---------- Color — Accents (Obsidian-forward) ------------------------ */
+  --accent:         #3c2ea3;  /* Obsidian purple, deep indigo              */
+  --accent-hover:   #2e2380;
+  --accent-press:   #1f165d;
+  --accent-wash:    #e0dbff;  /* tinted background                         */
+  --accent-ink:     #1f165d;  /* accent text on paper, AA-contrast         */
+
+  /* ---------- Color — Semantic (Obsidian markdown palette) -------------- */
+  --tag:          #d291bc;   /* Obsidian #tag pink                          */
+  --tag-ink:      #8d3e6d;
+  --link:         #5f74c1;   /* [[internal link]] — cool slate blue          */
+  --link-hover:   #4658a8;
+  --heading:      #8a5a3a;   /* warm terracotta for H1 in Obsidian md        */
+  --emphasis:     #a17a3f;   /* bold/strong accent                           */
+  --mark:         #f4d47a;   /* ==highlight==                                */
+  --mark-ink:     #6b4a00;
+
+  --success:      #4f8a6a;
+  --success-wash: #e4efe7;
+  --warning:      #c08a3d;
+  --warning-wash: #f4ebd6;
+  --danger:       #b0564a;
+  --danger-wash:  #f2dedb;
+  --info:         var(--link);
+  --info-wash:    #e4e8f2;
+
+  /* ---------- Color — Code-block palette (Obsidian md default) ---------- */
+  --code-bg:      #f1ecdf;
+  --code-border:  #e1d9c4;
+  --code-fg:      #2e2a23;
+  --code-keyword: #7c6cf0;
+  --code-string:  #8a5a3a;
+  --code-number:  #b0564a;
+  --code-comment: #9a9281;
+  --code-fn:      #5f74c1;
+
+  /* ---------- Semantic surface tokens ----------------------------------- */
+  --bg:           var(--paper-0);
+  --bg-raised:    var(--paper-1);
+  --bg-sunken:    var(--paper-2);
+  --bg-hover:     var(--paper-2);
+  --bg-active:    var(--paper-3);
+  --border:       var(--paper-3);
+  --border-strong:var(--paper-4);
+  --fg:           var(--ink-0);
+  --fg-muted:     var(--ink-3);
+  --fg-faint:     var(--ink-4);
+  --selection:    #dcd4ff;
+
+  /* ---------- Typography — families ------------------------------------- */
+  --font-serif:  'Source Serif 4', 'Iowan Old Style', 'Charter', Georgia, serif;
+  --font-sans:   'Inter', ui-sans-serif, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-mono:   'JetBrains Mono', ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+
+  /* ---------- Typography — scale (modular, 1.2 ratio) ------------------- */
+  --fs-xs:      11px;
+  --fs-sm:      12.5px;
+  --fs-base:    14.5px;
+  --fs-md:      16px;
+  --fs-lg:      19px;
+  --fs-xl:      23px;
+  --fs-2xl:     28px;
+  --fs-3xl:     34px;
+  --fs-4xl:     42px;
+  --fs-5xl:     54px;
+
+  --lh-tight:   1.15;
+  --lh-snug:    1.35;
+  --lh-normal:  1.55;
+  --lh-relaxed: 1.7;
+
+  --tracking-tight:  -0.015em;
+  --tracking-normal: 0;
+  --tracking-wide:   0.02em;
+  --tracking-caps:   0.08em;
+
+  /* ---------- Spacing (4px base) ---------------------------------------- */
+  --sp-0:   0;
+  --sp-0-5: 2px;
+  --sp-1:   4px;
+  --sp-1-5: 6px;
+  --sp-2:   8px;
+  --sp-3:   12px;
+  --sp-4:   16px;
+  --sp-5:   20px;
+  --sp-6:   24px;
+  --sp-8:   32px;
+  --sp-10:  40px;
+  --sp-12:  48px;
+  --sp-16:  64px;
+  --sp-20:  80px;
+
+  /* ---------- Radii ----------------------------------------------------- */
+  --r-xs:   3px;
+  --r-sm:   4px;
+  --r-md:   6px;
+  --r-lg:   10px;
+  --r-xl:   14px;
+  --r-2xl:  20px;
+  --r-full: 999px;
+
+  /* ---------- Shadows (warm, low, papercut) ----------------------------- */
+  --shadow-xs:  0 1px 0 rgba(40, 32, 20, 0.04);
+  --shadow-sm:  0 1px 2px rgba(40, 32, 20, 0.06), 0 1px 0 rgba(40, 32, 20, 0.03);
+  --shadow-md:  0 2px 6px rgba(40, 32, 20, 0.08), 0 1px 2px rgba(40, 32, 20, 0.05);
+  --shadow-lg:  0 8px 24px rgba(40, 32, 20, 0.10), 0 2px 4px rgba(40, 32, 20, 0.05);
+  --shadow-xl:  0 20px 48px rgba(40, 32, 20, 0.14), 0 4px 8px rgba(40, 32, 20, 0.06);
+  --shadow-inset: inset 0 1px 0 rgba(40, 32, 20, 0.04);
+  --ring:         0 0 0 3px rgba(124, 108, 240, 0.25);
+  --ring-danger:  0 0 0 3px rgba(176, 86, 74, 0.25);
+
+  /* ---------- Motion ---------------------------------------------------- */
+  --ease-out:    cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --dur-fast:    120ms;
+  --dur-med:     200ms;
+  --dur-slow:    320ms;
+
+  /* ---------- Z-index --------------------------------------------------- */
+  --z-base:    0;
+  --z-sticky:  10;
+  --z-overlay: 40;
+  --z-modal:   50;
+  --z-popover: 60;
+  --z-toast:   80;
+}
+
+/* ---------- Dark mode (secondary) ----------------------------------------- */
+:root[data-theme='dark'],
+.theme-dark {
+  --bg:           var(--night-0);
+  --bg-raised:    var(--night-1);
+  --bg-sunken:    var(--night-2);
+  --bg-hover:     var(--night-2);
+  --bg-active:    var(--night-3);
+  --border:       var(--night-3);
+  --border-strong:#4a4855;
+  --fg:           var(--moon-0);
+  --fg-muted:     var(--moon-1);
+  --fg-faint:     var(--moon-2);
+  --selection:    #3d355e;
+
+  --accent-wash:  #2a2544;
+  --code-bg:      #24232a;
+  --code-border:  #3a3944;
+  --code-fg:      var(--moon-0);
+  --mark:         #6b4a00;
+  --mark-ink:     #f4d47a;
+
+  --shadow-xs:  0 1px 0 rgba(0, 0, 0, 0.2);
+  --shadow-sm:  0 1px 2px rgba(0, 0, 0, 0.3);
+  --shadow-md:  0 2px 8px rgba(0, 0, 0, 0.35);
+  --shadow-lg:  0 8px 24px rgba(0, 0, 0, 0.45);
+  --shadow-xl:  0 20px 48px rgba(0, 0, 0, 0.55);
+}
+
+/* ==========================================================================
+   Semantic element styles — use as base for any surface
+   ========================================================================== */
+
+body {
+  font-family: var(--font-sans);
+  font-size: var(--fs-base);
+  line-height: var(--lh-normal);
+  color: var(--fg);
+  background: var(--bg);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+::selection { background: var(--selection); color: var(--ink-0); }
+
+/* --- Headings — serif, tight, Obsidian-inspired terracotta H1 ------------- */
+h1, .h1 {
+  font-family: var(--font-serif);
+  font-size: var(--fs-4xl);
+  line-height: var(--lh-tight);
+  letter-spacing: var(--tracking-tight);
+  font-weight: 500;
+  color: var(--heading);
+  margin: 0 0 var(--sp-4);
+}
+h2, .h2 {
+  font-family: var(--font-serif);
+  font-size: var(--fs-3xl);
+  line-height: var(--lh-tight);
+  letter-spacing: var(--tracking-tight);
+  font-weight: 500;
+  color: var(--ink-1);
+  margin: var(--sp-8) 0 var(--sp-3);
+}
+h3, .h3 {
+  font-family: var(--font-serif);
+  font-size: var(--fs-2xl);
+  line-height: var(--lh-snug);
+  font-weight: 500;
+  color: var(--ink-1);
+  margin: var(--sp-6) 0 var(--sp-2);
+}
+h4, .h4 {
+  font-family: var(--font-sans);
+  font-size: var(--fs-lg);
+  line-height: var(--lh-snug);
+  font-weight: 600;
+  color: var(--ink-1);
+  margin: var(--sp-5) 0 var(--sp-2);
+}
+h5, .h5 {
+  font-family: var(--font-sans);
+  font-size: var(--fs-base);
+  font-weight: 600;
+  color: var(--ink-1);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-caps);
+  margin: var(--sp-4) 0 var(--sp-1);
+}
+
+p, .p {
+  font-size: var(--fs-base);
+  line-height: var(--lh-relaxed);
+  color: var(--ink-2);
+  margin: 0 0 var(--sp-4);
+  text-wrap: pretty;
+}
+.lead {
+  font-family: var(--font-serif);
+  font-size: var(--fs-lg);
+  line-height: var(--lh-normal);
+  color: var(--ink-2);
+}
+small, .caption {
+  font-size: var(--fs-sm);
+  color: var(--fg-muted);
+}
+.overline {
+  font-size: var(--fs-xs);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-caps);
+  color: var(--fg-muted);
+  font-weight: 600;
+}
+
+a, .link {
+  color: var(--link);
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 2px;
+  transition: color var(--dur-fast) var(--ease-out);
+}
+a:hover { color: var(--link-hover); }
+
+code, kbd, .mono {
+  font-family: var(--font-mono);
+  font-size: 0.9em;
+  color: var(--code-fg);
+  background: var(--code-bg);
+  border: 1px solid var(--code-border);
+  border-radius: var(--r-xs);
+  padding: 0.08em 0.35em;
+}
+pre {
+  font-family: var(--font-mono);
+  font-size: var(--fs-sm);
+  line-height: var(--lh-normal);
+  background: var(--code-bg);
+  border: 1px solid var(--code-border);
+  border-radius: var(--r-md);
+  padding: var(--sp-4);
+  overflow-x: auto;
+  color: var(--code-fg);
+}
+pre code {
+  background: transparent; border: 0; padding: 0; font-size: inherit;
+}
+
+blockquote {
+  border-left: 2px solid var(--accent);
+  padding: var(--sp-1) var(--sp-4);
+  margin: var(--sp-4) 0;
+  color: var(--ink-2);
+  font-family: var(--font-serif);
+  font-style: italic;
+}
+
+hr {
+  border: 0;
+  border-top: 1px solid var(--border);
+  margin: var(--sp-6) 0;
+}
+
+/* --- Obsidian-style inline primitives ------------------------------------- */
+.tag {
+  color: var(--tag-ink);
+  background: color-mix(in srgb, var(--tag) 22%, transparent);
+  border-radius: var(--r-full);
+  padding: 1px 8px;
+  font-size: 0.9em;
+  font-weight: 500;
+}
+.wikilink {
+  color: var(--link);
+  text-decoration: none;
+  border-bottom: 1px dashed currentColor;
+}
+mark, .mark {
+  background: var(--mark);
+  color: var(--mark-ink);
+  padding: 0 3px;
+  border-radius: 2px;
+}
+
+/* --- Focus ring consistent across controls -------------------------------- */
+:where(button, a, input, textarea, select, [tabindex]):focus-visible {
+  outline: none;
+  box-shadow: var(--ring);
+  border-radius: var(--r-sm);
+}

@@ -1,0 +1,29 @@
+<!doctype html><html><head><meta charset="utf-8"><title>Buttons</title>
+<link rel="stylesheet" href="_card.css">
+<style>
+  .btn { font-family: var(--font-sans); font-size: 13px; font-weight: 450; padding: 9px 18px; border-radius: 6px; border: 1px solid transparent; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; line-height: 1; }
+  .btn-primary { background: #6a58ec; color: #fbf9f4; }
+  .btn-primary:hover { background: #5847d6; }
+  .btn-secondary { background: #fefcf7; color: var(--ink-1); border-color: #dfd7c0; }
+  .btn-secondary:hover { background: #faf7ef; }
+  .btn-ghost { background: transparent; color: var(--ink-2); }
+  .btn-ghost:hover { background: #f5f0e4; }
+  .btn-danger { background: transparent; color: #b0564a; border-color: #b0564a; }
+  .btn-sm { padding: 6px 14px; font-size: 12px; }
+  /* kbd on primary: translucent white for light-on-dark harmony */
+  .btn-primary kbd { background: rgba(255,255,255,0.18); color: #fbf9f4; border: 1px solid rgba(255,255,255,0.22); opacity: 1; }
+  kbd { font-family: var(--font-mono); font-size: 10.5px; background: rgba(0,0,0,0.06); padding: 1px 6px; border-radius: 3px; color: var(--ink-3); }
+</style></head><body><div class="card" style="gap:12px">
+  <div class="row">
+    <button class="btn btn-primary">Save note <kbd>⌘S</kbd></button>
+    <button class="btn btn-secondary">Cancel</button>
+    <button class="btn btn-ghost">Skip</button>
+    <button class="btn btn-danger">Delete</button>
+  </div>
+  <div class="row">
+    <button class="btn btn-primary btn-sm">Primary sm</button>
+    <button class="btn btn-secondary btn-sm">Secondary sm</button>
+    <button class="btn btn-secondary btn-sm" disabled style="opacity:0.5;cursor:not-allowed">Disabled</button>
+    <button class="btn btn-secondary btn-sm" style="box-shadow:0 0 0 3px rgba(60,46,163,0.25)">Focused</button>
+  </div>
+</div></body></html>

@@ -1,0 +1,21 @@
+<!doctype html><html><head><meta charset="utf-8"><title>Night</title>
+<link rel="stylesheet" href="_card.css">
+<style>
+  body { background: #1c1b20; }
+  .night-row { display: grid; grid-template-columns: repeat(4, 1fr) repeat(3, 1fr); gap: 8px; }
+  .sw { height: 88px; border-radius: 8px; border: 1px solid #3a3944; display: flex; flex-direction: column; justify-content: flex-end; padding: 10px; color: #e8e4da; }
+  .sw.light { color: #1c1b20; }
+  .sw .t { font-size: 11px; font-family: var(--font-mono); font-weight: 600; }
+  .sw .h { font-size: 10px; font-family: var(--font-mono); opacity: 0.7; }
+</style></head>
+<body><div class="card">
+  <div class="night-row">
+    <div class="sw" style="background:#1c1b20"><div class="t">night-0</div><div class="h">#1c1b20</div></div>
+    <div class="sw" style="background:#24232a"><div class="t">night-1</div><div class="h">#24232a</div></div>
+    <div class="sw" style="background:#2d2c34"><div class="t">night-2</div><div class="h">#2d2c34</div></div>
+    <div class="sw" style="background:#3a3944"><div class="t">night-3</div><div class="h">#3a3944</div></div>
+    <div class="sw light" style="background:#e8e4da"><div class="t">moon-0</div><div class="h">#e8e4da</div></div>
+    <div class="sw light" style="background:#c4bfb3"><div class="t">moon-1</div><div class="h">#c4bfb3</div></div>
+    <div class="sw" style="background:#8d8877"><div class="t">moon-2</div><div class="h">#8d8877</div></div>
+  </div>
+</div></body></html>

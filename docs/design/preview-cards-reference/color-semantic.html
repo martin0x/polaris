@@ -1,0 +1,18 @@
+<!doctype html><html><head><meta charset="utf-8"><title>Semantic Colors</title>
+<link rel="stylesheet" href="_card.css">
+<style>
+  .grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; }
+  .sw { height: 86px; border-radius: 8px; padding: 10px; display: flex; flex-direction: column; justify-content: space-between; border: 1px solid var(--border); }
+  .sw .sam { font-family: var(--font-serif); font-size: 18px; font-weight: 500; }
+  .sw .m { font-family: var(--font-mono); font-size: 10px; color: var(--ink-3); }
+  .sw .t { font-family: var(--font-mono); font-size: 11px; font-weight: 600; color: var(--ink-1); }
+</style></head>
+<body><div class="card">
+  <div class="grid">
+    <div class="sw"><div class="sam" style="color:#8a5a3a"># Heading</div><div><div class="t">heading</div><div class="m">#8a5a3a</div></div></div>
+    <div class="sw"><div class="sam" style="color:#5f74c1;font-style:italic">[[wikilink]]</div><div><div class="t">link</div><div class="m">#5f74c1</div></div></div>
+    <div class="sw"><div style="display:inline-block;align-self:flex-start;background:rgba(210,145,188,0.22);color:#8d3e6d;border-radius:999px;padding:2px 10px;font-size:13px;font-weight:500">#tag</div><div><div class="t">tag</div><div class="m">#d291bc</div></div></div>
+    <div class="sw"><div><span style="background:#f4d47a;color:#6b4a00;padding:1px 4px;border-radius:2px;font-size:13px">highlight</span></div><div><div class="t">mark</div><div class="m">#f4d47a</div></div></div>
+    <div class="sw"><div class="sam" style="color:#a17a3f">**emphasis**</div><div><div class="t">emphasis</div><div class="m">#a17a3f</div></div></div>
+  </div>
+</div></body></html>

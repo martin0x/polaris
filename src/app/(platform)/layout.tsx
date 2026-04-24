@@ -1,9 +1,20 @@
-import Link from "next/link";
 import { auth, signOut } from "@/platform/auth/config";
 import { manifests } from "@/systems";
 import { createSystemRegistry } from "@/systems/registry";
+import { TitleBar } from "@/app/_components/TitleBar";
+import { Sidebar } from "@/app/_components/Sidebar";
+import type { IconName } from "@/app/_components/Icon";
 
 const registry = createSystemRegistry(manifests);
+
+const FALLBACK_ICON: IconName = "folder";
+const ALLOWED_ICONS: IconName[] = [
+  "search", "plus", "compass", "calendar", "terminal", "book-open",
+  "star", "list", "git-branch", "settings", "clock", "panel-right",
+  "more-horizontal", "check", "x", "chevron-down", "chevron-right",
+  "folder", "inbox", "hash", "moon", "user", "file-text", "bell",
+  "sidebar", "list-todo",
+];
 
 export default async function PlatformLayout({
   children,
@@ -11,62 +22,45 @@ export default async function PlatformLayout({
   children: React.ReactNode;
 }) {
   const session = await auth();
+  const systems = registry.navItems().map((item) => ({
+    href: item.href,
+    label: item.label,
+    icon: (ALLOWED_ICONS.includes(item.icon as IconName)
+      ? item.icon
+      : FALLBACK_ICON) as IconName,
+  }));
+
+  const sidebarFooter = session?.user ? (
+    <form
+      action={async () => {
+        "use server";
+        await signOut({ redirectTo: "/auth/signin" });
+      }}
+      style={{ marginTop: 4 }}
+    >
+      <button
+        type="submit"
+        className="sb-item"
+        style={{ width: "100%", color: "var(--danger)" }}
+      >
+        Sign out
+      </button>
+    </form>
+  ) : null;
 
   return (
-    <div className="flex min-h-screen">
-      <nav className="w-64 border-r bg-gray-50 p-4">
-        <Link href="/dashboard" className="block text-xl font-bold mb-8">
-          Polaris
-        </Link>
-
-        <div className="space-y-1">
-          <Link
-            href="/dashboard"
-            className="block rounded px-3 py-2 text-sm hover:bg-gray-200"
-          >
-            Dashboard
-          </Link>
-
-          {registry.navItems().map((item) => (
-            <Link
-              key={item.href}
-              href={item.href}
-              className="block rounded px-3 py-2 text-sm hover:bg-gray-200"
-            >
-              {item.label}
-            </Link>
-          ))}
-        </div>
-
-        <div className="mt-auto pt-8 border-t">
-          <Link
-            href="/settings"
-            className="block rounded px-3 py-2 text-sm hover:bg-gray-200"
-          >
-            Settings
-          </Link>
-          {session?.user && (
-            <div className="px-3 py-2 text-xs text-gray-500">
-              {session.user.email}
-            </div>
-          )}
-          <form
-            action={async () => {
-              "use server";
-              await signOut({ redirectTo: "/auth/signin" });
-            }}
-          >
-            <button
-              type="submit"
-              className="block w-full text-left rounded px-3 py-2 text-sm text-red-600 hover:bg-red-50"
-            >
-              Sign out
-            </button>
-          </form>
-        </div>
-      </nav>
-
-      <main className="flex-1 p-8">{children}</main>
+    <div className="app-shell">
+      <TitleBar
+        crumbs={["Polaris"]}
+        syncState="ok"
+        email={session?.user?.email}
+      />
+      <div className="body">
+        <Sidebar systems={systems} footer={sidebarFooter} />
+        <main className="main">
+          <div className="content">{children}</div>
+        </main>
+      </div>
     </div>
   );
 }
