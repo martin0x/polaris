@@ -42,8 +42,9 @@ palette (separate spec).
   `/journal/search?q=...`.
 - Feedback integration: `entry_created`, `words_per_entry`, and
   `active_topic_count` metrics; reflections via the existing platform
-  dashboard; iterations logged via a small CLI script run on shipping
-  changes.
+  dashboard. Iteration logging for the journal uses the platform's
+  existing `feedback.logIteration` API; any tooling around it (CLI, CI
+  automation, admin UI) is platform-level and not in journal scope.
 - Web-only, responsive, desktop-first. The platform's design system already
   enforces responsive layouts; nothing additional ships in v1.
 - Manifest declares the `palette` block (`topics → notes` hierarchy) so the
@@ -63,8 +64,9 @@ palette (separate spec).
 - Single-entry standalone page at `/journal/entries/[id]`. Edits happen
   inline; the palette uses `#entry-<id>` anchor links into the topic page.
 - Tag management UI (rename, merge, archive). Read-only index only.
-- Automated iteration logging from CI. The CLI ships; wiring it into GitHub
-  Actions is follow-on.
+- Iteration-logging tooling (CLI, CI automation, admin UI). The journal
+  uses the existing `feedback.logIteration` API; any tooling around it is
+  a separate platform-level concern.
 
 ## 1. Data Model
 
@@ -503,8 +505,9 @@ matching entries with `ts_headline`-derived highlight spans wrapped in
 ## 8. Feedback Integration
 
 Three metrics, recorded passively. No journal-specific reflection or
-iteration UI in v1; reflections happen on the platform `/dashboard` and
-iterations are logged through the CLI below.
+iteration UI in v1; reflections happen on the platform `/dashboard`, and
+iterations are logged through the platform's existing
+`feedback.logIteration` API (see below).
 
 ### Metrics
 
@@ -537,21 +540,18 @@ Registered in the manifest's `jobs` block as `compute-active-topics`.
 Schedule pattern `"0 23 * * *"` (23:00 local). Schedule registration runs
 once on first worker boot via the manifest's setup function.
 
-### Iteration logging — `bin/log-iteration.ts`
+### Iteration logging
 
-Lives at the platform level (`bin/`), but specified here because the
-journal is the first consumer.
+Iteration logging for the journal happens through the platform's existing
+`feedback.logIteration("journal", { description, reason, outcome? })` API.
+The journal spec does not introduce a CLI or automation for this. A
+platform-level iteration-logging tool (CLI, GitHub Actions integration,
+etc.) is its own concern and will be specced separately when needed.
 
-- Invocation:
-  ```
-  bun bin/log-iteration --system journal \
-    --description "<text>" --reason "<text>" [--outcome "<text>"]
-  ```
-- Wraps `feedback.logIteration(system, { description, reason, outcome })`.
-- v1 usage: run manually after merging changes to main.
-- A `package.json` script alias is added: `"log-iteration": "bun bin/log-iteration.ts"`.
-- Automated iteration logging from CI is follow-on; not blocked on the
-  journal spec.
+For v1, iterations can be logged via any code path that imports the
+platform `feedback` singleton — for example, a one-off script run after
+merging journal changes, or an internal admin route. Whatever shape that
+takes is out of journal scope.
 
 ## 9. Testing Strategy
 
@@ -601,5 +601,6 @@ Pragmatic, not exhaustive. Vitest, in `src/systems/journal/__tests__/` and
 - Single-entry standalone page at `/journal/entries/[id]`. Edits are inline;
   deep links use the `#entry-<id>` anchor on the topic page.
 - Tag management UI (rename, merge, archive). Index page is read-only.
-- Automated iteration logging from CI. CLI ships; Actions wiring is
-  follow-on.
+- Iteration-logging tooling — CLI, GitHub Actions integration, admin UI,
+  etc. The journal uses the platform's existing `feedback.logIteration`
+  API; any tooling around it is platform-level and gets its own spec.
