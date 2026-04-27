@@ -1,15 +1,27 @@
 import { SystemManifest } from "../types";
 import * as palette from "./palette";
+import * as entries from "./routes/entries";
+import * as topics from "./routes/topics";
+import * as tags from "./routes/tags";
 
-// Routes and jobs are wired in subsequent tasks. The empty maps are deliberate:
-// they let the system register its nav and palette block with the platform
-// before the route handlers exist.
 export const manifest: SystemManifest = {
   name: "journal",
   displayName: "Engineering Journal",
   description: "Daily micro-log of building, learning, and working",
 
-  routes: {},
+  routes: {
+    "GET /entries":        entries.listEntries,
+    "POST /entries":       entries.createEntry,
+    "GET /entries/:id":    entries.getEntry,
+    "PATCH /entries/:id":  entries.updateEntry,
+    "DELETE /entries/:id": entries.deleteEntry,
+    "GET /topics":         topics.listTopics,
+    "POST /topics":        topics.createTopic,
+    "GET /topics/:id":     topics.getTopic,
+    "PATCH /topics/:id":   topics.updateTopic,
+    "GET /tags":           tags.listTags,
+  },
+
   jobs: {},
 
   nav: {
@@ -19,9 +31,6 @@ export const manifest: SystemManifest = {
   },
 };
 
-// The platform's `SystemManifest` contract does not yet include `palette`. The
-// Global Command Palette spec extends it. Until that spec ships we attach the
-// block via a non-typed assignment so the manifest still typechecks.
 (manifest as SystemManifest & { palette: { layers: unknown[] } }).palette = {
   layers: [palette.topicsLayer, palette.notesLayer],
 };
