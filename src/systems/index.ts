@@ -1,5 +1,6 @@
 import { SystemManifest } from "./types";
+import { manifest as journalManifest } from "./journal/manifest";
 
 export const manifests: SystemManifest[] = [
-  // Import and add system manifests here as they are built.
+  journalManifest,
 ];
