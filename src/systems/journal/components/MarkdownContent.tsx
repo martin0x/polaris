@@ -12,13 +12,9 @@ interface SubstitutedTextProps {
   value: string;
 }
 
-type WikiSegment =
-  | { kind: "text"; text: string }
-  | { kind: "wikilink"; name: string; raw: string };
+type WikiSegment = { kind: "wikilink"; name: string; raw: string };
 
-type TagSegment =
-  | { kind: "text"; text: string }
-  | { kind: "tag"; name: string; raw: string; prefix: string };
+type TagSegment = { kind: "tag"; name: string; raw: string; prefix: string };
 
 function SubstitutedText({ value }: SubstitutedTextProps): React.ReactNode {
   // Walk wikilinks first, then tags within the surviving plain segments.
@@ -72,24 +68,26 @@ function SubstitutedText({ value }: SubstitutedTextProps): React.ReactNode {
   return <>{final}</>;
 }
 
+type TextSegment = { kind: "text"; text: string };
+
 function splitByPattern<T extends { kind: string }>(
   source: string,
   pattern: RegExp,
-  build: (raw: string, match: RegExpExecArray) => Exclude<T, { kind: "text" }>
-): T[] {
-  const out: T[] = [];
+  build: (raw: string, match: RegExpExecArray) => T
+): (T | TextSegment)[] {
+  const out: (T | TextSegment)[] = [];
   const regex = new RegExp(pattern.source, pattern.flags);
   let last = 0;
   let m: RegExpExecArray | null;
   while ((m = regex.exec(source)) !== null) {
     if (m.index > last) {
-      out.push({ kind: "text", text: source.slice(last, m.index) } as T);
+      out.push({ kind: "text", text: source.slice(last, m.index) });
     }
-    out.push(build(m[0], m) as T);
+    out.push(build(m[0], m));
     last = m.index + m[0].length;
   }
   if (last < source.length) {
-    out.push({ kind: "text", text: source.slice(last) } as T);
+    out.push({ kind: "text", text: source.slice(last) });
   }
   return out;
 }

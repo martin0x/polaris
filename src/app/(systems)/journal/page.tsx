@@ -1,5 +1,6 @@
 import { listEntries } from "@/systems/journal/services/entries";
 import { EntryCard } from "@/systems/journal/components/EntryCard";
+import { ComposeBox } from "@/systems/journal/components/ComposeBox";
 
 const DATE_FORMAT = new Intl.DateTimeFormat("en-US", {
   month: "short",
@@ -23,17 +24,14 @@ export default async function JournalTodayPage() {
       <h1 style={{ fontFamily: "var(--font-serif)" }}>
         {formatHeader(new Date())}
       </h1>
-      {todays.length === 0 ? (
-        <p className="lead">
-          No entries today. Pick a topic and start logging.
-        </p>
-      ) : (
-        <div style={{ display: "flex", flexDirection: "column", gap: "var(--sp-3)" }}>
-          {todays.map((entry) => (
-            <EntryCard key={entry.id} entry={entry} />
-          ))}
-        </div>
-      )}
+      <ComposeBox />
+      <div style={{ display: "flex", flexDirection: "column", gap: "var(--sp-3)", marginTop: "var(--sp-6)" }}>
+        {todays.length === 0 ? (
+          <p className="lead">No entries today. Pick a topic and start logging.</p>
+        ) : (
+          todays.map((entry) => <EntryCard key={entry.id} entry={entry} />)
+        )}
+      </div>
     </article>
   );
 }
