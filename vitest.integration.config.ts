@@ -7,6 +7,7 @@ export default defineConfig({
     include: ["src/**/*.integration.test.ts", "src/**/*.integration.test.tsx"],
     setupFiles: ["src/test/setup-env.ts"],
     pool: "forks",
+    fileParallelism: false,
   },
   resolve: {
     alias: {
