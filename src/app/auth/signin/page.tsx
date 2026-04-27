@@ -1,4 +1,3 @@
-import Image from "next/image";
 import { signIn } from "@/platform/auth/config";
 
 export default function SignInPage() {
@@ -14,12 +13,15 @@ export default function SignInPage() {
       }}
     >
       <div style={{ textAlign: "center", maxWidth: 360 }}>
-        <Image
+        {/* Plain <img> rather than next/image: SVGs don't benefit from Next's
+            image optimizer, and the optimizer refuses SVGs without the
+            `dangerouslyAllowSVG` opt-in (which we don't want). */}
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
           src="/brand/polaris-wordmark.svg"
           alt="Polaris"
           width={240}
           height={56}
-          priority
           style={{
             display: "block",
             margin: "0 auto var(--sp-5)",
