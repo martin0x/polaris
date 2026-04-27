@@ -102,3 +102,40 @@ model SystemIteration {
 
   @@index([system])
 }
+
+// === Journal System ===
+
+model JournalTopic {
+  id          String    @id @default(cuid())
+  name        String    @unique
+  description String?
+  parentId    String?
+  archived    Boolean   @default(false)
+  archivedAt  DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  entries     JournalEntry[]
+
+  @@index([archived])
+  @@map("journal_topics")
+}
+
+model JournalEntry {
+  id           String    @id @default(cuid())
+  topicId      String
+  topic        JournalTopic @relation(fields: [topicId], references: [id])
+  title        String?
+  body         String    @db.Text
+  tags         String[]  @default([])
+  searchVector Unsupported("tsvector")?
+  deletedAt    DateTime?
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  @@index([topicId])
+  @@index([deletedAt])
+  @@index([createdAt(sort: Desc)])
+  @@index([tags], type: Gin)
+  @@map("journal_entries")
+}
