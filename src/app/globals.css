@@ -724,3 +724,130 @@ kbd, .kbd {
 }
 ::-webkit-scrollbar-thumb:hover { background: var(--paper-4); }
 ::-webkit-scrollbar-track { background: transparent; }
+
+/* ==========================================================================
+   Journal — entry surfaces and inline highlights
+   ========================================================================== */
+
+.entry-card {
+  background: var(--paper-1);
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  padding: var(--sp-4) var(--sp-5);
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+  transition: background 0.12s ease;
+}
+.entry-card:hover {
+  background: var(--paper-2);
+}
+.entry-card.flash {
+  background: var(--accent-wash);
+}
+.entry-card .meta {
+  display: flex;
+  gap: var(--sp-2);
+  align-items: center;
+  flex-wrap: wrap;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--fg-muted);
+}
+.entry-card .meta .time {
+  margin-left: auto;
+}
+.entry-card .actions {
+  display: none;
+  gap: var(--sp-1);
+}
+.entry-card:hover .actions {
+  display: flex;
+}
+.entry-card .actions button {
+  background: transparent;
+  border: 0;
+  color: var(--fg-muted);
+  padding: 2px 4px;
+  border-radius: var(--r-sm);
+  cursor: pointer;
+}
+.entry-card .actions button:hover {
+  background: var(--bg-hover);
+  color: var(--fg);
+}
+
+/* Tab strip used by the journal sub-nav. */
+.tab-strip {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-4);
+  padding: var(--sp-3) 0 var(--sp-4);
+  border-bottom: 1px solid var(--border);
+  margin-bottom: var(--sp-6);
+}
+.tab-strip a {
+  color: var(--fg-muted);
+  text-decoration: none;
+  font-size: 13.5px;
+  padding: 4px 0;
+}
+.tab-strip a.active {
+  color: var(--fg);
+  border-bottom: 2px solid var(--accent);
+  margin-bottom: -1px;
+  padding-bottom: 2px;
+}
+.tab-strip .grow { flex: 1; }
+.tab-strip .search-input {
+  background: var(--paper-0);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  padding: 4px 8px;
+  font-size: 13px;
+  width: 240px;
+  color: var(--fg);
+}
+
+/* Compose box surface. Tiptap-driven editor is wired in Task 7. */
+.compose {
+  background: var(--paper-1);
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  padding: var(--sp-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+}
+.compose .compose-header {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+}
+.compose .ProseMirror {
+  min-height: 80px;
+  outline: none;
+}
+.compose .ProseMirror p.is-editor-empty:first-child::before {
+  content: attr(data-placeholder);
+  color: var(--fg-faint);
+  pointer-events: none;
+  float: left;
+  height: 0;
+}
+.compose .compose-footer {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  font-size: 12px;
+  color: var(--fg-muted);
+}
+.compose .compose-footer .grow { flex: 1; }
+
+/* Highlight span used by the search results page. */
+.hl {
+  background: var(--mark);
+  color: var(--mark-ink);
+  padding: 0 2px;
+  border-radius: 2px;
+}

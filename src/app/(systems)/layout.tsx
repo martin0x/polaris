@@ -16,7 +16,7 @@ const ALLOWED_ICONS: IconName[] = [
   "sidebar", "list-todo", "archive", "edit-3", "trash-2", "tag", "command",
 ];
 
-export default async function PlatformLayout({
+export default async function SystemsLayout({
   children,
 }: {
   children: React.ReactNode;
@@ -51,7 +51,7 @@ export default async function PlatformLayout({
   return (
     <div className="app-shell">
       <TitleBar
-        crumbs={["Polaris"]}
+        crumbs={["Polaris", "Journal"]}
         syncState="ok"
         email={session?.user?.email}
       />
