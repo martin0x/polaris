@@ -3,6 +3,7 @@ import * as palette from "./palette";
 import * as entries from "./routes/entries";
 import * as topics from "./routes/topics";
 import * as tags from "./routes/tags";
+import { computeActiveTopicsJob } from "./services/jobs";
 
 export const manifest: SystemManifest = {
   name: "journal",
@@ -22,7 +23,9 @@ export const manifest: SystemManifest = {
     "GET /tags":           tags.listTags,
   },
 
-  jobs: {},
+  jobs: {
+    "compute-active-topics": computeActiveTopicsJob,
+  },
 
   nav: {
     label: "Journal",
