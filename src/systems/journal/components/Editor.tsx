@@ -2,7 +2,6 @@
 
 import { useEditor, EditorContent, Editor } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
-import Link from "@tiptap/extension-link";
 import Placeholder from "@tiptap/extension-placeholder";
 import { Markdown, type MarkdownStorage } from "tiptap-markdown";
 import { useEffect } from "react";
@@ -20,8 +19,9 @@ export function JournalEditor({
 }: JournalEditorProps) {
   const editor = useEditor({
     extensions: [
-      StarterKit,
-      Link.configure({ openOnClick: false }),
+      // StarterKit 3.x bundles Link; configure it here instead of importing
+      // separately (which produces a duplicate-extension warning at runtime).
+      StarterKit.configure({ link: { openOnClick: false } }),
       Placeholder.configure({
         placeholder: "What did you build, learn, or wrestle with?",
       }),
