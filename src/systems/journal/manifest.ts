@@ -32,8 +32,8 @@ export const manifest: SystemManifest = {
     icon: "book-open",
     href: "/journal",
   },
-};
 
-(manifest as SystemManifest & { palette: { layers: unknown[] } }).palette = {
-  layers: [palette.topicsLayer, palette.notesLayer],
+  palette: {
+    layers: [palette.topicsLayer, palette.notesLayer],
+  },
 };

@@ -1,11 +1,15 @@
-// Palette layers for the Global Command Palette (separate spec).
-// The shape is intentionally loose for v1: the palette consumer reads `name`
-// to identify the layer. The full layer interface lands with that spec.
+// Temporary stubs satisfying the PaletteLayer interface. Real implementations
+// land in Task 8 of the Global Command Palette plan.
+import type { PaletteLayer } from "@/platform/palette/types";
 
-export const topicsLayer = {
-  name: "journal:topics",
+export const topicsLayer: PaletteLayer = {
+  name: "topics",
+  singular: "topic",
+  search: async () => [],
 };
 
-export const notesLayer = {
-  name: "journal:notes",
+export const notesLayer: PaletteLayer = {
+  name: "notes",
+  singular: "note",
+  search: async () => [],
 };
