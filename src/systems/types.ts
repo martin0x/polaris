@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { Job } from "bullmq";
+import type { PaletteSystemConfig } from "@/platform/palette/types";
 
 export type RouteHandler = (
   req: NextRequest,
@@ -19,4 +20,5 @@ export interface SystemManifest {
     icon: string;
     href: string;
   };
+  palette?: PaletteSystemConfig;
 }
