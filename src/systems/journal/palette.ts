@@ -22,7 +22,7 @@ export const topicsLayer: PaletteLayer = {
       id: t.id,
       label: t.name,
       sublabel: t.description ?? undefined,
-      icon: "folder" as const,
+      icon: "spool" as const,
       href: `/journal/topics/${encodeURIComponent(t.name)}`,
       drillable: true,
     }));
