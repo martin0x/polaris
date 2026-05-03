@@ -14,7 +14,6 @@ const mockManifest: SystemManifest = {
     "POST /items": mockHandler,
     "GET /items/:id": mockHandler,
   },
-  jobs: {},
   nav: {
     label: "Test",
     icon: "beaker",
