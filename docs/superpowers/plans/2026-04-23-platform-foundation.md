@@ -4,6 +4,8 @@
 > reality. Divergences from the original plan are called out inline as
 > **Implementation note** blocks.
 >
+> **Update (2026-05-04):** Task 7 (Job Processing — BullMQ Setup) has been reverted. The `bullmq` and `ioredis` deps, the `workers` script, the `redis` Docker service, the `REDIS_URL` env var, the `src/platform/jobs/` directory, the `/api/platform/jobs` admin route, and the `SystemManifest.jobs` field were all removed. Scheduled work now runs as authenticated `/api/cron/*` HTTP routes. See `docs/superpowers/plans/2026-05-04-strip-async-jobs.md` and `ARCHITECTURE.md` ("Supplemental Services").
+>
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Build the shared infrastructure (auth, database, API layer, file storage, job processing, integration framework, system conventions, feedback mechanisms) that all future Polaris systems plug into.
@@ -705,6 +707,8 @@ bunx vitest run src/systems/registry.test.ts
 ---
 
 ## Task 7: Job Processing — BullMQ Setup
+
+> **Removed 2026-05-04.** Every artifact created by this task has been deleted from the codebase. Steps below reflect what was originally built, not the current state. See `docs/superpowers/plans/2026-05-04-strip-async-jobs.md` for the removal plan.
 
 **Status:** Complete. One deviation: the worker entrypoint runs under Bun instead of tsx.
 

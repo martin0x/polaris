@@ -5,6 +5,8 @@
 **Status:** Implemented. This document has been updated to describe the as-built
 foundation; sections that diverge from the original design are called out.
 
+> **Update (2026-05-04):** The BullMQ + Redis + standalone worker process described in this spec has been removed. Polaris now ships as a single synchronous Next.js app — see `ARCHITECTURE.md` ("Supplemental Services") and `docs/superpowers/plans/2026-05-04-strip-async-jobs.md`. References below to `src/platform/jobs/`, `bullmq`, `ioredis`, `REDIS_URL`, the `workers` script, and `SystemManifest.jobs` are kept for historical accuracy but no longer reflect the codebase. Scheduled work now runs as authenticated `/api/cron/*` HTTP routes triggered by an external scheduler.
+
 ## Overview
 
 The platform foundation for Polaris — a personal operating system built for a
@@ -347,6 +349,8 @@ infrastructure needed.
 **Production:** Flip `STORAGE_DRIVER=s3` and set S3 credentials.
 
 ## 6. Job Processing
+
+> **Removed 2026-05-04.** This entire subsystem was deleted. The single real job (`computeActiveTopics`) now runs via `GET /api/cron/compute-active-topics`. See `docs/superpowers/plans/2026-05-04-strip-async-jobs.md`.
 
 BullMQ with Redis for background and scheduled tasks.
 

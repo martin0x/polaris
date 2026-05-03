@@ -7,6 +7,8 @@ Command Palette spec (`2026-04-26-global-command-palette-design.md`). Builds
 on top of the platform foundation
 (`2026-04-22-platform-foundation-design.md`).
 
+> **Update (2026-05-04):** The `compute-active-topics` job is no longer scheduled via BullMQ. The function is exposed at `GET /api/cron/compute-active-topics` (Bearer-secret auth via `CRON_SECRET`) and triggered by an external scheduler (Vercel Cron / GitHub Actions / system cron). The business logic file moved from `src/systems/journal/services/jobs/computeActiveTopics.ts` to `src/systems/journal/services/computeActiveTopics.ts`. The `jobs:` block on the journal manifest was removed. See `docs/superpowers/plans/2026-05-04-strip-async-jobs.md`.
+
 ## Overview
 
 The Engineering Journal is the first system to ship on the Polaris platform.
@@ -522,6 +524,8 @@ entry create or update. Metric writes losing rows is acceptable; entry
 writes losing rows is not.
 
 ### Daily cron job
+
+> **Updated 2026-05-04.** File path is now `src/systems/journal/services/computeActiveTopics.ts` (out of the deleted `jobs/` subdir). Schedule is no longer registered via BullMQ — instead the function is invoked through `GET /api/cron/compute-active-topics` by an external scheduler.
 
 `src/systems/journal/services/jobs/computeActiveTopics.ts`:
 

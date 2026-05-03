@@ -33,6 +33,15 @@ Integrations are platform-level connectors to external services that already wor
 
 **Example:** If Google Calendar is my calendar of choice, I build a Google Calendar integration once at the platform level. Then my habit tracking system, daily journaling system, and any future system can all plug into it without duplicating the connection logic.
 
+### Supplemental Services
+
+Polaris is a single, synchronous Next.js app — request in, response out. Long-running, scheduled, or background work lives outside the main repo:
+
+- **Scheduled work** (cron jobs, daily aggregations) runs as authenticated HTTP routes under `/api/cron/*`, triggered by an external scheduler (Vercel Cron, GitHub Actions, system cron) with a shared secret.
+- **Async work** (queue workers, LLM pipelines, large indexing) lives in a separate supplemental repo when it eventually exists; Polaris talks to it via plain HTTP. Polaris does not embed a worker process or message broker.
+
+Keeping the main app request-driven means deployment stays simple — no long-lived workers, no Redis, no broker. The boundary also forces every async use case to justify itself in its own repo rather than accreting inside Polaris.
+
 ## North Star
 
 Polaris has three guiding principles.

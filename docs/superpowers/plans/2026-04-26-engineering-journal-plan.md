@@ -2,6 +2,8 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
+> **Update (2026-05-04):** Task 5 (Daily cron job) has been partially reverted. The BullMQ scheduling and worker bootstrap are gone; the `computeActiveTopics` function and its integration test remain (moved to `src/systems/journal/services/`) and now run via `GET /api/cron/compute-active-topics`. See `docs/superpowers/plans/2026-05-04-strip-async-jobs.md`.
+
 **Goal:** Ship the Engineering Journal — Polaris's first system on top of the foundation — as a topic-organised micro-log with markdown entries, full-text search, soft delete, and three-metric feedback integration.
 
 **Architecture:** A self-contained `src/systems/journal/` module that conforms to the existing `SystemManifest` contract. Postgres tables (`journal_topics`, `journal_entries`) use a generated `tsvector` column + GIN index for FTS. Page routes live under a new `(systems)` route group. UI reuses Polaris design tokens, primitives, and the Lucide-based `Icon` component — no new visual language. Tiptap (with `tiptap-markdown`) authors entries; `react-markdown` plus a post-process pass renders them with `[[Topic]]` and `#tag` links.
@@ -1679,6 +1681,8 @@ git commit -m "feat(journal): API routes, Zod schemas, and manifest route map"
 ---
 
 ## Task 5: Daily cron job
+
+> **Partially reverted 2026-05-04.** Steps 1–4 (the `computeActiveTopics` function + integration test) are still in the codebase, but the file moved to `src/systems/journal/services/computeActiveTopics.ts`. Steps 5–8 (BullMQ wrapper, manifest `jobs` registration, schedule registration on worker boot, manual `bun run workers` verification) are gone. Cron is now external — see `docs/superpowers/plans/2026-05-04-strip-async-jobs.md`.
 
 **Files:**
 - Create: `src/systems/journal/services/jobs/computeActiveTopics.ts`

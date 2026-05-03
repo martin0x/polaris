@@ -2,6 +2,8 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
+> **Update (2026-05-04):** Code samples below show `JobProcessor` and `jobs: Record<string, JobProcessor>` on `SystemManifest`, plus `jobs: {}` in mock manifests. Both have been removed — see `docs/superpowers/plans/2026-05-04-strip-async-jobs.md`. The palette portions of the plan are unaffected.
+
 **Goal:** Ship a platform-level Cmd-K command palette that lets the user navigate across every Polaris system from a single input. Each system extends its `SystemManifest` with a `palette: { layers }` block declaring its searchable entity hierarchy. v1 ships with the Engineering Journal as the only consumer (topics → notes); the manifest contract is generic and future-system-ready.
 
 **Architecture:** Server-side is a small platform module — types, an in-memory registry built from the system manifests, a resolver that fans out to layer `search()` calls, and a single auth-gated POST endpoint at `/api/platform/palette/search`. The client is a React context provider mounted in the root layout (only when authenticated) plus a portal modal with keyboard handling, debounced fetches, breadcrumb-style scope, and a flat result list. The journal contributes a `palette.ts` module exporting two `PaletteLayer`s.
