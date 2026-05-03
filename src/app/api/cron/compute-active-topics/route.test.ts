@@ -1,12 +1,12 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { NextRequest } from "next/server";
 
-vi.mock("@/systems/journal/services/jobs/computeActiveTopics", () => ({
+vi.mock("@/systems/journal/services/computeActiveTopics", () => ({
   computeActiveTopics: vi.fn().mockResolvedValue(undefined),
 }));
 
 import { GET } from "./route";
-import { computeActiveTopics } from "@/systems/journal/services/jobs/computeActiveTopics";
+import { computeActiveTopics } from "@/systems/journal/services/computeActiveTopics";
 
 describe("GET /api/cron/compute-active-topics", () => {
   beforeEach(() => {

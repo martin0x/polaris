@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { computeActiveTopics } from "@/systems/journal/services/jobs/computeActiveTopics";
+import { computeActiveTopics } from "@/systems/journal/services/computeActiveTopics";
 
 export async function GET(req: NextRequest) {
   const secret = process.env.CRON_SECRET;
