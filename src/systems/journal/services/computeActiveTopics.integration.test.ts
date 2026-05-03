@@ -1,8 +1,8 @@
 import { describe, it, expect, beforeAll, beforeEach } from "vitest";
 import { prisma } from "@/platform/db/client";
 import { requireTestDatabase, withCleanJournalTables } from "@/test/db";
-import { createTopic } from "../topics";
-import { createEntry } from "../entries";
+import { createTopic } from "./topics";
+import { createEntry } from "./entries";
 import { computeActiveTopics } from "./computeActiveTopics";
 
 describe("computeActiveTopics", () => {
