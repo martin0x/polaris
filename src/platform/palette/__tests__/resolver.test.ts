@@ -48,7 +48,6 @@ function makeRegistry(opts: {
           displayName: s.displayName,
           description: "",
           routes: {},
-          jobs: {},
           nav: { label: s.displayName, icon: s.icon ?? "folder", href: `/${s.name}` },
           palette: { layers: s.layers },
         },
