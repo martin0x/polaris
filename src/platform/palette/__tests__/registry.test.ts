@@ -20,7 +20,6 @@ function manifest(opts: {
     displayName: opts.displayName,
     description: "",
     routes: { "GET /x": noop },
-    jobs: {},
     nav: { label: opts.displayName, icon: "folder", href: `/${opts.name}` },
     ...(opts.withPalette ? { palette: { layers: opts.withPalette } } : {}),
   };
