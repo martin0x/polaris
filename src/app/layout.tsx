@@ -28,6 +28,10 @@ export const metadata: Metadata = {
   icons: {
     icon: "/brand/polaris-glyph.svg",
   },
+  robots: {
+    index: false,
+    follow: false,
+  },
 };
 
 export default async function RootLayout({
