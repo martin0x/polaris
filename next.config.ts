@@ -1,7 +1,5 @@
 import type { NextConfig } from "next";
 
-const nextConfig: NextConfig = {
-  serverExternalPackages: ["ioredis", "bullmq"],
-};
+const nextConfig: NextConfig = {};
 
 export default nextConfig;
