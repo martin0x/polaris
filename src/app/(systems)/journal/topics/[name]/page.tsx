@@ -5,21 +5,27 @@ import { ComposeBox } from "@/systems/journal/components/ComposeBox";
 import { EntryCard } from "@/systems/journal/components/EntryCard";
 import { HashAnchorScroll } from "@/systems/journal/components/HashAnchorScroll";
 import { TopicHeaderActions } from "@/systems/journal/components/TopicHeaderActions";
+import { SortRedirect } from "@/systems/journal/components/SortRedirect";
 
 export default async function TopicPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ name: string }>;
+  searchParams: Promise<{ sort?: string }>;
 }) {
   const { name } = await params;
+  const { sort: sortParam } = await searchParams;
   const topic = await getTopicByName(name);
   if (!topic) notFound();
 
-  const entries = await listEntries({ topicId: topic.id, limit: 100 });
+  const sort = sortParam === "asc" ? "asc" : "desc";
+  const entries = await listEntries({ topicId: topic.id, limit: 100, sort });
 
   return (
     <article className="doc">
       <HashAnchorScroll />
+      <SortRedirect />
       <header style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: "var(--sp-4)" }}>
         <div>
           <h1>{topic.name}</h1>
