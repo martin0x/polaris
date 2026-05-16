@@ -158,6 +158,18 @@ const PATHS: Record<string, React.ReactNode> = {
       <path d="M10 12h4" />
     </>
   ),
+  "arrow-up": (
+    <>
+      <path d="m5 12 7-7 7 7" />
+      <path d="M12 19V5" />
+    </>
+  ),
+  "arrow-down": (
+    <>
+      <path d="M12 5v14" />
+      <path d="m19 12-7 7-7-7" />
+    </>
+  ),
   "edit-3": (
     <>
       <path d="M13 21h8" />
