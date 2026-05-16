@@ -405,6 +405,19 @@ body {
   color: var(--danger);
   margin-left: var(--sp-2);
 }
+/* Tiptap renders task items as <li><label>...</label><div>content</div></li>.
+   Without explicit flex sizing the content <div> wraps to its own line. */
+.compose .ProseMirror li[data-type="taskItem"] > label {
+  flex: 0 0 auto;
+  user-select: none;
+}
+.compose .ProseMirror li[data-type="taskItem"] > div {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+.compose .ProseMirror li[data-type="taskItem"] > div > p {
+  margin: 0;
+}
 
 .lead {
   font-family: var(--font-serif);
