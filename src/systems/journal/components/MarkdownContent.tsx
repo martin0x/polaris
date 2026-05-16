@@ -94,12 +94,14 @@ interface MarkdownContentProps {
 }
 
 export function MarkdownContent({ body, entryId }: MarkdownContentProps) {
-  // Precompute source task lines once per render. The Nth task-list-item
-  // rendered maps to the Nth entry here; if remark-gfm renders more
-  // task-list-items than the source has markers, the extras degrade to
-  // non-interactive checkboxes with a console warning.
-  const taskLines = findTaskLines(body);
-  let renderCursor = 0;
+  // Map source line number (0-based) -> task metadata. The Nth-task counter
+  // approach fails under React StrictMode because <ReactMarkdown> is
+  // double-rendered with the same `components` prop, sharing a mutable
+  // closure that would be at index 1 by the second render. Position-based
+  // lookup is stateless and idempotent.
+  const taskLinesByLine = new Map(
+    findTaskLines(body).map((t) => [t.line, t])
+  );
 
   const components: Components = {
     p: ({ children }) => <p>{renderChildren(children)}</p>,
@@ -107,11 +109,13 @@ export function MarkdownContent({ body, entryId }: MarkdownContentProps) {
       const classNames = hastClassList(node);
       const isTask = classNames.includes("task-list-item");
       if (isTask && entryId) {
-        const task = taskLines[renderCursor++];
+        const sourceLine = hastSourceLine(node); // 0-based, or null
+        const task = sourceLine !== null ? taskLinesByLine.get(sourceLine) : undefined;
         if (!task) {
           if (typeof window !== "undefined") {
             console.warn(
-              "[MarkdownContent] task-list-item rendered without matching source marker; rendering as disabled checkbox"
+              "[MarkdownContent] task-list-item rendered without matching source marker; rendering as disabled checkbox",
+              { sourceLine, taskLines: Array.from(taskLinesByLine.keys()) }
             );
           }
           const checked = hastTaskItemChecked(node);
@@ -178,12 +182,25 @@ function renderChildren(children: React.ReactNode): React.ReactNode {
   return children;
 }
 
+type HastPosition = {
+  start?: { line?: number };
+};
+
 type HastElement = {
   type: "element";
   tagName: string;
   properties?: Record<string, unknown>;
   children?: HastElement[];
+  position?: HastPosition;
 };
+
+function hastSourceLine(node: unknown): number | null {
+  if (!node || typeof node !== "object") return null;
+  const n = node as HastElement;
+  const startLine = n.position?.start?.line;
+  // hast/mdast use 1-based line numbers; convert to 0-based for our maps.
+  return typeof startLine === "number" ? startLine - 1 : null;
+}
 
 function hastClassList(node: unknown): string[] {
   if (!node || typeof node !== "object") return [];
