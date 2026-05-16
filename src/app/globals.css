@@ -431,6 +431,12 @@ body {
 .doc .task-item .task-label > p {
   margin: 0;
 }
+/* remark-gfm injects a disabled <input type="checkbox"> inside the task-list
+   item; sometimes it's wrapped (e.g. in a <p>) so the React-side filter
+   misses it. Hide any leftover checkbox inside the visible label. */
+.doc .task-item .task-label input[type="checkbox"] {
+  display: none;
+}
 .doc .task-item .task-error {
   font-size: var(--fs-xs);
   color: var(--danger);
