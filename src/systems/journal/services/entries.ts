@@ -70,20 +70,24 @@ export interface ListEntriesInput {
   tag?: string;
   cursor?: Date;
   limit?: number;
+  sort?: "asc" | "desc";
 }
 
 export async function listEntries(
   input: ListEntriesInput
 ): Promise<JournalEntryWithTopic[]> {
   const limit = Math.min(input.limit ?? 50, 100);
+  const sort = input.sort ?? "desc";
   return prisma.journalEntry.findMany({
     where: {
       deletedAt: null,
       ...(input.topicId ? { topicId: input.topicId } : {}),
       ...(input.tag ? { tags: { has: input.tag } } : {}),
-      ...(input.cursor ? { createdAt: { lt: input.cursor } } : {}),
+      ...(input.cursor
+        ? { createdAt: sort === "desc" ? { lt: input.cursor } : { gt: input.cursor } }
+        : {}),
     },
-    orderBy: { createdAt: "desc" },
+    orderBy: { createdAt: sort },
     take: limit,
     include: { topic: true },
   });

@@ -77,4 +77,42 @@ describe("entries service", () => {
     expect(secondPage).toHaveLength(2);
     expect(secondPage[0].id).not.toBe(firstPage[1].id);
   });
+
+  it("returns entries in ascending order when sort=asc", async () => {
+    const topic = await seedTopic();
+    const first = await createEntry({ topicId: topic.id, body: "first" });
+    await new Promise((r) => setTimeout(r, 5));
+    const second = await createEntry({ topicId: topic.id, body: "second" });
+
+    const asc = await listEntries({ topicId: topic.id, sort: "asc" });
+    expect(asc[0].id).toBe(first.id);
+    expect(asc[1].id).toBe(second.id);
+
+    const desc = await listEntries({ topicId: topic.id, sort: "desc" });
+    expect(desc[0].id).toBe(second.id);
+    expect(desc[1].id).toBe(first.id);
+  });
+
+  it("paginates correctly with sort=asc cursor", async () => {
+    const topic = await seedTopic();
+    for (let i = 0; i < 5; i++) {
+      await createEntry({ topicId: topic.id, body: `entry ${i}` });
+      await new Promise((r) => setTimeout(r, 5));
+    }
+
+    const firstPage = await listEntries({ topicId: topic.id, limit: 2, sort: "asc" });
+    expect(firstPage).toHaveLength(2);
+
+    const secondPage = await listEntries({
+      topicId: topic.id,
+      limit: 2,
+      sort: "asc",
+      cursor: firstPage[firstPage.length - 1].createdAt,
+    });
+    expect(secondPage).toHaveLength(2);
+    expect(secondPage[0].id).not.toBe(firstPage[1].id);
+    expect(secondPage[0].createdAt.getTime()).toBeGreaterThan(
+      firstPage[1].createdAt.getTime()
+    );
+  });
 });
