@@ -18,6 +18,7 @@ export const listEntriesQuerySchema = z.object({
   q: z.string().optional(),
   cursor: z.coerce.date().optional(),
   limit: z.coerce.number().int().min(1).max(100).optional(),
+  sort: z.enum(["asc", "desc"]).optional(),
 });
 
 export type CreateEntryBody = z.infer<typeof createEntrySchema>;
