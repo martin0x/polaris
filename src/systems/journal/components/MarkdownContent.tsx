@@ -1,10 +1,10 @@
+import { Children, isValidElement } from "react";
 import Link from "next/link";
-import ReactMarkdown from "react-markdown";
+import ReactMarkdown, { type Components } from "react-markdown";
+import remarkGfm from "remark-gfm";
+import { TaskCheckbox } from "./TaskCheckbox";
+import { findTaskLines } from "../lib/tasks";
 
-// Stricter than the parser's tag regex: only treat `#tag` as a substitution
-// candidate if the boundary is start-of-string or whitespace. This prevents URL
-// fragments like `https://example.com/#section` from being rewritten as tag
-// links, since `/` is non-word but isn't whitespace.
 const TAG = /(?:^|\s)#([a-zA-Z][\w-]*)/g;
 const WIKILINK = /\[\[([^\]]+)\]\]/g;
 
@@ -17,7 +17,6 @@ type WikiSegment = { kind: "wikilink"; name: string; raw: string };
 type TagSegment = { kind: "tag"; name: string; raw: string; prefix: string };
 
 function SubstitutedText({ value }: SubstitutedTextProps): React.ReactNode {
-  // Walk wikilinks first, then tags within the surviving plain segments.
   const wikiSegments = splitByPattern<WikiSegment>(value, WIKILINK, (raw, match) => ({
     kind: "wikilink",
     name: match[1],
@@ -43,9 +42,6 @@ function SubstitutedText({ value }: SubstitutedTextProps): React.ReactNode {
       kind: "tag",
       name: match[1].toLowerCase(),
       raw,
-      // The TAG regex consumes the boundary char in match[0]; restore it as a
-      // separate text segment so that "logged a #bug" reads as
-      // ["logged a ", <Link>#bug</Link>].
       prefix: raw.startsWith("#") ? "" : raw.slice(0, raw.indexOf("#")),
     }));
     for (const tag of tagSegments) {
@@ -92,21 +88,80 @@ function splitByPattern<T extends { kind: string }>(
   return out;
 }
 
-export function MarkdownContent({ body }: { body: string }) {
+interface MarkdownContentProps {
+  body: string;
+  entryId?: string;
+}
+
+export function MarkdownContent({ body, entryId }: MarkdownContentProps) {
+  // Precompute source task lines once per render. The Nth task-list-item
+  // rendered maps to the Nth entry here; if remark-gfm renders more
+  // task-list-items than the source has markers, the extras degrade to
+  // non-interactive checkboxes with a console warning.
+  const taskLines = findTaskLines(body);
+  let renderCursor = 0;
+
+  const components: Components = {
+    p: ({ children }) => <p>{renderChildren(children)}</p>,
+    li: ({ node, children, className, ...rest }) => {
+      const classNames = hastClassList(node);
+      const isTask = classNames.includes("task-list-item");
+      if (isTask && entryId) {
+        const task = taskLines[renderCursor++];
+        if (!task) {
+          if (typeof window !== "undefined") {
+            console.warn(
+              "[MarkdownContent] task-list-item rendered without matching source marker; rendering as disabled checkbox"
+            );
+          }
+          const checked = hastTaskItemChecked(node);
+          return (
+            <li className="task-item" data-checked={checked ? "true" : "false"}>
+              <input type="checkbox" checked={checked} disabled aria-label="Task (read-only)" />
+              <span className="task-label">{filterOutInputs(children)}</span>
+            </li>
+          );
+        }
+        return (
+          <TaskCheckbox
+            entryId={entryId}
+            lineNumber={task.line}
+            initiallyChecked={task.checked}
+            body={body}
+          >
+            {filterOutInputs(children)}
+          </TaskCheckbox>
+        );
+      }
+      return (
+        <li className={className} {...rest}>
+          {renderChildren(children)}
+        </li>
+      );
+    },
+    ul: ({ node, className, children, ...rest }) => {
+      const classNames = hastClassList(node);
+      if (classNames.includes("contains-task-list")) {
+        return (
+          <ul className="task-list" {...rest}>
+            {children}
+          </ul>
+        );
+      }
+      return (
+        <ul className={className} {...rest}>
+          {children}
+        </ul>
+      );
+    },
+    h1: ({ children }) => <h2>{renderChildren(children)}</h2>,
+    h2: ({ children }) => <h3>{renderChildren(children)}</h3>,
+    h3: ({ children }) => <h4>{renderChildren(children)}</h4>,
+  };
+
   return (
     <div className="doc">
-      <ReactMarkdown
-        components={{
-          // Substitute [[Topic]] / #tag in regular text nodes only —
-          // react-markdown routes fenced and inline code through `code`,
-          // which we leave untouched, so substitutions skip them automatically.
-          p: ({ children }) => <p>{renderChildren(children)}</p>,
-          li: ({ children }) => <li>{renderChildren(children)}</li>,
-          h1: ({ children }) => <h2>{renderChildren(children)}</h2>,
-          h2: ({ children }) => <h3>{renderChildren(children)}</h3>,
-          h3: ({ children }) => <h4>{renderChildren(children)}</h4>,
-        }}
-      >
+      <ReactMarkdown remarkPlugins={[remarkGfm]} components={components}>
         {body}
       </ReactMarkdown>
     </div>
@@ -121,4 +176,36 @@ function renderChildren(children: React.ReactNode): React.ReactNode {
     );
   }
   return children;
+}
+
+type HastElement = {
+  type: "element";
+  tagName: string;
+  properties?: Record<string, unknown>;
+  children?: HastElement[];
+};
+
+function hastClassList(node: unknown): string[] {
+  if (!node || typeof node !== "object") return [];
+  const n = node as HastElement;
+  const cls = n.properties?.className;
+  if (Array.isArray(cls)) return cls.map(String);
+  if (typeof cls === "string") return cls.split(/\s+/);
+  return [];
+}
+
+function hastTaskItemChecked(node: unknown): boolean {
+  if (!node || typeof node !== "object") return false;
+  const n = node as HastElement;
+  const input = n.children?.find(
+    (c) => c?.type === "element" && c?.tagName === "input"
+  );
+  return input?.properties?.checked === true;
+}
+
+function filterOutInputs(children: React.ReactNode): React.ReactNode {
+  return Children.toArray(children).filter((c) => {
+    if (isValidElement(c) && c.type === "input") return false;
+    return true;
+  });
 }
