@@ -274,7 +274,7 @@ body {
 ::selection { background: var(--selection); color: var(--ink-0); }
 
 /* Prose headings — serif, Obsidian-inspired terracotta H1 ----------------- */
-.prose h1, .doc h1 {
+.prose h1, .doc h1, .compose .ProseMirror h1 {
   font-family: var(--font-serif);
   font-size: var(--fs-4xl);
   line-height: var(--lh-tight);
@@ -283,7 +283,7 @@ body {
   color: var(--heading);
   margin: 0 0 var(--sp-4);
 }
-.prose h2, .doc h2 {
+.prose h2, .doc h2, .compose .ProseMirror h2 {
   font-family: var(--font-serif);
   font-size: var(--fs-3xl);
   line-height: var(--lh-tight);
@@ -292,7 +292,7 @@ body {
   color: var(--ink-1);
   margin: var(--sp-8) 0 var(--sp-3);
 }
-.prose h3, .doc h3 {
+.prose h3, .doc h3, .compose .ProseMirror h3 {
   font-family: var(--font-serif);
   font-size: var(--fs-2xl);
   line-height: var(--lh-snug);
@@ -300,7 +300,7 @@ body {
   color: var(--ink-1);
   margin: var(--sp-6) 0 var(--sp-2);
 }
-.prose h4, .doc h4 {
+.prose h4, .doc h4, .compose .ProseMirror h4 {
   font-family: var(--font-sans);
   font-size: var(--fs-lg);
   line-height: var(--lh-snug);
@@ -308,7 +308,7 @@ body {
   color: var(--ink-1);
   margin: var(--sp-5) 0 var(--sp-2);
 }
-.prose h5, .doc h5 {
+.prose h5, .doc h5, .compose .ProseMirror h5 {
   font-family: var(--font-sans);
   font-size: var(--fs-base);
   font-weight: 600;
@@ -317,13 +317,42 @@ body {
   letter-spacing: var(--tracking-caps);
   margin: var(--sp-4) 0 var(--sp-1);
 }
+.prose h6, .doc h6, .compose .ProseMirror h6 {
+  font-family: var(--font-sans);
+  font-size: var(--fs-sm);
+  font-weight: 600;
+  color: var(--ink-2);
+  margin: var(--sp-3) 0 var(--sp-1);
+}
 
-.prose p, .doc p {
+.prose p, .doc p, .compose .ProseMirror p {
   font-size: var(--fs-base);
   line-height: var(--lh-relaxed);
   color: var(--ink-2);
   margin: 0 0 var(--sp-4);
   text-wrap: pretty;
+}
+.compose .ProseMirror > p:last-child { margin-bottom: 0; }
+
+/* Tailwind preflight strips list-style/padding from ul/ol; restore them inside
+   prose surfaces and the Tiptap editor so bullets and numbers are visible. */
+.prose ul, .doc ul, .compose .ProseMirror ul {
+  list-style: disc outside;
+  margin: 0 0 var(--sp-4);
+  padding-inline-start: var(--sp-6);
+}
+.prose ol, .doc ol, .compose .ProseMirror ol {
+  list-style: decimal outside;
+  margin: 0 0 var(--sp-4);
+  padding-inline-start: var(--sp-6);
+}
+.prose li, .doc li, .compose .ProseMirror li {
+  color: var(--ink-2);
+  line-height: var(--lh-relaxed);
+  margin: var(--sp-1) 0;
+}
+.prose li > p, .doc li > p, .compose .ProseMirror li > p {
+  margin: 0;
 }
 
 .lead {
@@ -356,7 +385,7 @@ body {
 }
 .prose a:hover, .doc a:hover, .link:hover { color: var(--link-hover); }
 
-.prose code, .doc code, .mono-inline {
+.prose code, .doc code, .compose .ProseMirror code, .mono-inline {
   font-family: var(--font-mono);
   font-size: 0.9em;
   color: var(--code-fg);
@@ -365,7 +394,7 @@ body {
   border-radius: var(--r-xs);
   padding: 0.08em 0.35em;
 }
-.prose pre, .doc pre {
+.prose pre, .doc pre, .compose .ProseMirror pre {
   font-family: var(--font-mono);
   font-size: var(--fs-sm);
   line-height: var(--lh-normal);
@@ -375,12 +404,13 @@ body {
   padding: var(--sp-4);
   overflow-x: auto;
   color: var(--code-fg);
+  margin: 0 0 var(--sp-4);
 }
-.prose pre code, .doc pre code {
+.prose pre code, .doc pre code, .compose .ProseMirror pre code {
   background: transparent; border: 0; padding: 0; font-size: inherit;
 }
 
-.prose blockquote, .doc blockquote {
+.prose blockquote, .doc blockquote, .compose .ProseMirror blockquote {
   border-left: 2px solid var(--accent);
   padding: var(--sp-1) var(--sp-4);
   margin: var(--sp-4) 0;
@@ -388,11 +418,24 @@ body {
   font-family: var(--font-serif);
   font-style: italic;
 }
+.prose blockquote p, .doc blockquote p, .compose .ProseMirror blockquote p {
+  margin: 0;
+}
 
-.prose hr, .doc hr {
+.prose hr, .doc hr, .compose .ProseMirror hr {
   border: 0;
   border-top: 1px solid var(--border);
   margin: var(--sp-6) 0;
+}
+
+/* Inline emphasis — Tailwind preflight leaves strong/em mostly alone, but be
+   explicit so the editor and display are guaranteed to look the same. */
+.prose strong, .doc strong, .compose .ProseMirror strong {
+  font-weight: 600;
+  color: var(--ink-1);
+}
+.prose em, .doc em, .compose .ProseMirror em {
+  font-style: italic;
 }
 
 /* Obsidian-style inline primitives ---------------------------------------- */
