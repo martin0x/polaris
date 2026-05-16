@@ -3,6 +3,8 @@
 import { useEditor, EditorContent, Editor } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import Placeholder from "@tiptap/extension-placeholder";
+import TaskList from "@tiptap/extension-task-list";
+import TaskItem from "@tiptap/extension-task-item";
 import { Markdown, type MarkdownStorage } from "tiptap-markdown";
 import { useEffect } from "react";
 
@@ -25,6 +27,8 @@ export function JournalEditor({
       Placeholder.configure({
         placeholder: "What did you build, learn, or wrestle with?",
       }),
+      TaskList,
+      TaskItem.configure({ nested: true }),
       Markdown.configure({ html: false, breaks: true, linkify: true }),
     ],
     content: initialBody,
