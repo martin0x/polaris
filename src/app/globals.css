@@ -355,6 +355,57 @@ body {
   margin: 0;
 }
 
+/* Task lists (GFM checkboxes) -------------------------------------------- */
+.doc ul.task-list,
+.doc ul.contains-task-list,
+.compose .ProseMirror ul[data-type="taskList"] {
+  list-style: none;
+  padding-inline-start: 0;
+  margin: 0 0 var(--sp-4);
+}
+.doc .task-item,
+.doc li.task-list-item,
+.compose .ProseMirror li[data-type="taskItem"] {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--sp-2);
+  margin: var(--sp-1) 0;
+  color: var(--ink-2);
+  line-height: var(--lh-relaxed);
+}
+.doc .task-item > input[type="checkbox"],
+.doc li.task-list-item > input[type="checkbox"],
+.compose .ProseMirror li[data-type="taskItem"] > label > input[type="checkbox"] {
+  width: 14px;
+  height: 14px;
+  margin-top: 0.35em;
+  background: var(--paper-0);
+  border: 1px solid var(--border);
+  border-radius: var(--r-xs);
+  accent-color: var(--accent);
+  flex-shrink: 0;
+}
+.doc .task-item > input[type="checkbox"]:not(:disabled) {
+  cursor: pointer;
+  transition: border-color var(--dur-fast) var(--ease-out);
+}
+.doc .task-item > input[type="checkbox"]:not(:disabled):hover {
+  border-color: var(--accent);
+}
+.doc .task-item[data-checked="true"] .task-label,
+.compose .ProseMirror li[data-type="taskItem"][data-checked="true"] > div {
+  text-decoration: line-through;
+  color: var(--ink-4);
+}
+.doc .task-item .task-label > p {
+  margin: 0;
+}
+.doc .task-item .task-error {
+  font-size: var(--fs-xs);
+  color: var(--danger);
+  margin-left: var(--sp-2);
+}
+
 .lead {
   font-family: var(--font-serif);
   font-size: var(--fs-lg);
