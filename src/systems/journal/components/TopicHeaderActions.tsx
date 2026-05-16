@@ -3,8 +3,7 @@
 import { useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Icon } from "@/app/_components/Icon";
-
-const STORAGE_KEY = "polaris:journal:sortOrder";
+import { SORT_ORDER_KEY, parseSortOrder } from "../lib/sort-preference";
 
 interface TopicHeaderActionsProps {
   topic: { id: string; name: string; archived: boolean };
@@ -15,11 +14,11 @@ export function TopicHeaderActions({ topic }: TopicHeaderActionsProps) {
   const searchParams = useSearchParams();
   const [busy, setBusy] = useState(false);
 
-  const currentSort = (searchParams.get("sort") as "asc" | "desc") ?? "desc";
+  const currentSort = parseSortOrder(searchParams.get("sort"));
 
   function handleToggleSort() {
     const next = currentSort === "desc" ? "asc" : "desc";
-    localStorage.setItem(STORAGE_KEY, next);
+    localStorage.setItem(SORT_ORDER_KEY, next);
     const params = new URLSearchParams(searchParams.toString());
     params.set("sort", next);
     router.push(`?${params.toString()}`);

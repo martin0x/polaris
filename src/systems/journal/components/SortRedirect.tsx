@@ -2,20 +2,16 @@
 
 import { useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-
-const STORAGE_KEY = "polaris:journal:sortOrder";
+import { SORT_ORDER_KEY, parseSortOrder } from "../lib/sort-preference";
 
 export function SortRedirect() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
   useEffect(() => {
-    const current = searchParams.get("sort");
-    if (current) return;
+    if (searchParams.get("sort")) return;
 
-    const stored = localStorage.getItem(STORAGE_KEY) as "asc" | "desc" | null;
-    const sort = stored ?? "desc";
-
+    const sort = parseSortOrder(localStorage.getItem(SORT_ORDER_KEY));
     const params = new URLSearchParams(searchParams.toString());
     params.set("sort", sort);
     router.replace(`?${params.toString()}`);

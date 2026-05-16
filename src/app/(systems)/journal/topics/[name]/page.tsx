@@ -6,6 +6,7 @@ import { EntryCard } from "@/systems/journal/components/EntryCard";
 import { HashAnchorScroll } from "@/systems/journal/components/HashAnchorScroll";
 import { TopicHeaderActions } from "@/systems/journal/components/TopicHeaderActions";
 import { SortRedirect } from "@/systems/journal/components/SortRedirect";
+import { parseSortOrder } from "@/systems/journal/lib/sort-preference";
 
 export default async function TopicPage({
   params,
@@ -19,7 +20,7 @@ export default async function TopicPage({
   const topic = await getTopicByName(name);
   if (!topic) notFound();
 
-  const sort = sortParam === "asc" ? "asc" : "desc";
+  const sort = parseSortOrder(sortParam);
   const entries = await listEntries({ topicId: topic.id, limit: 100, sort });
 
   return (

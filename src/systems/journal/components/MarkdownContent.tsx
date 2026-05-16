@@ -5,6 +5,10 @@ import remarkGfm from "remark-gfm";
 import { TaskCheckbox } from "./TaskCheckbox";
 import { findTaskLines } from "../lib/tasks";
 
+// Stricter than the parser's tag regex: only treat `#tag` as a substitution
+// candidate if the boundary is start-of-string or whitespace. This prevents
+// URL fragments like `https://example.com/#section` from being rewritten as
+// tag links, since `/` is non-word but isn't whitespace.
 const TAG = /(?:^|\s)#([a-zA-Z][\w-]*)/g;
 const WIKILINK = /\[\[([^\]]+)\]\]/g;
 
@@ -94,11 +98,8 @@ interface MarkdownContentProps {
 }
 
 export function MarkdownContent({ body, entryId }: MarkdownContentProps) {
-  // Map source line number (0-based) -> task metadata. The Nth-task counter
-  // approach fails under React StrictMode because <ReactMarkdown> is
-  // double-rendered with the same `components` prop, sharing a mutable
-  // closure that would be at index 1 by the second render. Position-based
-  // lookup is stateless and idempotent.
+  // Position-based, not counter-based: <ReactMarkdown> double-renders under
+  // StrictMode and would share a mutable closure across renders.
   const taskLinesByLine = new Map(
     findTaskLines(body).map((t) => [t.line, t])
   );
@@ -106,13 +107,12 @@ export function MarkdownContent({ body, entryId }: MarkdownContentProps) {
   const components: Components = {
     p: ({ children }) => <p>{renderChildren(children)}</p>,
     li: ({ node, children, className, ...rest }) => {
-      const classNames = hastClassList(node);
-      const isTask = classNames.includes("task-list-item");
+      const isTask = hasClass(className, "task-list-item");
       if (isTask && entryId) {
-        const sourceLine = hastSourceLine(node); // 0-based, or null
+        const sourceLine = hastSourceLine(node);
         const task = sourceLine !== null ? taskLinesByLine.get(sourceLine) : undefined;
         if (!task) {
-          if (typeof window !== "undefined") {
+          if (process.env.NODE_ENV !== "production") {
             console.warn(
               "[MarkdownContent] task-list-item rendered without matching source marker; rendering as disabled checkbox",
               { sourceLine, taskLines: Array.from(taskLinesByLine.keys()) }
@@ -143,9 +143,8 @@ export function MarkdownContent({ body, entryId }: MarkdownContentProps) {
         </li>
       );
     },
-    ul: ({ node, className, children, ...rest }) => {
-      const classNames = hastClassList(node);
-      if (classNames.includes("contains-task-list")) {
+    ul: ({ className, children, ...rest }) => {
+      if (hasClass(className, "contains-task-list")) {
         return (
           <ul className="task-list" {...rest}>
             {children}
@@ -194,21 +193,16 @@ type HastElement = {
   position?: HastPosition;
 };
 
+function hasClass(className: string | undefined, target: string): boolean {
+  return typeof className === "string" && className.split(/\s+/).includes(target);
+}
+
 function hastSourceLine(node: unknown): number | null {
   if (!node || typeof node !== "object") return null;
   const n = node as HastElement;
   const startLine = n.position?.start?.line;
   // hast/mdast use 1-based line numbers; convert to 0-based for our maps.
   return typeof startLine === "number" ? startLine - 1 : null;
-}
-
-function hastClassList(node: unknown): string[] {
-  if (!node || typeof node !== "object") return [];
-  const n = node as HastElement;
-  const cls = n.properties?.className;
-  if (Array.isArray(cls)) return cls.map(String);
-  if (typeof cls === "string") return cls.split(/\s+/);
-  return [];
 }
 
 function hastTaskItemChecked(node: unknown): boolean {
