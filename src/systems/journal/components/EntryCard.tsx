@@ -43,7 +43,7 @@ export function EntryCard({ entry }: { entry: JournalEntryWithTopic }) {
       {entry.title ? (
         <h3 style={{ fontFamily: "var(--font-serif)", margin: 0 }}>{entry.title}</h3>
       ) : null}
-      <MarkdownContent body={entry.body} />
+      <MarkdownContent body={entry.body} entryId={entry.id} />
       {edited ? (
         <p className="caption" style={{ margin: 0 }}>
           Edited {relativeTime(new Date(entry.updatedAt))}
