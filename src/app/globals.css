@@ -365,7 +365,7 @@ body {
 }
 .doc .task-item,
 .doc li.task-list-item,
-.compose .ProseMirror li[data-type="taskItem"] {
+.compose .ProseMirror ul[data-type="taskList"] > li {
   display: flex;
   align-items: flex-start;
   gap: var(--sp-2);
@@ -375,7 +375,7 @@ body {
 }
 .doc .task-item > input[type="checkbox"],
 .doc li.task-list-item > input[type="checkbox"],
-.compose .ProseMirror li[data-type="taskItem"] > label > input[type="checkbox"] {
+.compose .ProseMirror ul[data-type="taskList"] > li > label > input[type="checkbox"] {
   width: 14px;
   height: 14px;
   margin-top: 0.35em;
@@ -393,7 +393,7 @@ body {
   border-color: var(--accent);
 }
 .doc .task-item[data-checked="true"] .task-label,
-.compose .ProseMirror li[data-type="taskItem"][data-checked="true"] > div {
+.compose .ProseMirror ul[data-type="taskList"] > li[data-checked="true"] > div {
   text-decoration: line-through;
   color: var(--ink-4);
 }
@@ -407,15 +407,15 @@ body {
 }
 /* Tiptap renders task items as <li><label>...</label><div>content</div></li>.
    Without explicit flex sizing the content <div> wraps to its own line. */
-.compose .ProseMirror li[data-type="taskItem"] > label {
+.compose .ProseMirror ul[data-type="taskList"] > li > label {
   flex: 0 0 auto;
   user-select: none;
 }
-.compose .ProseMirror li[data-type="taskItem"] > div {
+.compose .ProseMirror ul[data-type="taskList"] > li > div {
   flex: 1 1 auto;
   min-width: 0;
 }
-.compose .ProseMirror li[data-type="taskItem"] > div > p {
+.compose .ProseMirror ul[data-type="taskList"] > li > div > p {
   margin: 0;
 }
 
