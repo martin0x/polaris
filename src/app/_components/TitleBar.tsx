@@ -1,4 +1,5 @@
 import { PolarisGlyph } from "./PolarisGlyph";
+import { SidebarToggle } from "./SidebarChrome";
 
 // 36px app chrome — traffic lights, glyph, breadcrumbs, sync dot.
 export function TitleBar({
@@ -12,6 +13,7 @@ export function TitleBar({
 }) {
   return (
     <header className="titlebar">
+      <SidebarToggle />
       <span style={{ display: "inline-flex" }}>
         <PolarisGlyph size={14} />
       </span>

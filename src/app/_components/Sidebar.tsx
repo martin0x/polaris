@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
 import { Icon, type IconName } from "./Icon";
+import { useSidebar } from "./SidebarChrome";
 
 type NavItem = {
   href: string;
@@ -23,31 +24,33 @@ export function Sidebar({
   footer?: ReactNode;
 }) {
   const pathname = usePathname();
+  const { collapsed } = useSidebar();
   const isActive = (href: string) =>
     pathname === href || pathname.startsWith(href + "/");
+  // In the rail, labels are hidden — expose them as accessible name + tooltip.
+  const railName = (label: string) => (collapsed ? label : undefined);
 
   return (
     <aside className="sidebar">
-      <button className="sb-search" type="button" aria-label="Search or jump to">
+      <button
+        className="sb-search"
+        type="button"
+        aria-label="Search or jump to"
+        title={collapsed ? "Search or jump to (⌘K)" : undefined}
+      >
         <Icon name="search" size={14} />
-        <span>Search or jump to…</span>
+        <span className="sb-label">Search or jump to…</span>
         <span className="k">⌘K</span>
       </button>
 
       <Link
         href="/dashboard"
         className={`sb-item${isActive("/dashboard") ? " active" : ""}`}
+        aria-label={railName("Today")}
+        title={railName("Today")}
       >
         <Icon name="compass" size={14} />
-        <span
-          style={{
-            overflow: "hidden",
-            textOverflow: "ellipsis",
-            whiteSpace: "nowrap",
-          }}
-        >
-          Today
-        </span>
+        <span className="sb-label">Today</span>
       </Link>
 
       <div className="sb-sec">
@@ -73,17 +76,11 @@ export function Sidebar({
             key={item.href}
             href={item.href}
             className={`sb-item${isActive(item.href) ? " active" : ""}`}
+            aria-label={railName(item.label)}
+            title={railName(item.label)}
           >
             <Icon name={item.icon} size={14} />
-            <span
-              style={{
-                overflow: "hidden",
-                textOverflow: "ellipsis",
-                whiteSpace: "nowrap",
-              }}
-            >
-              {item.label}
-            </span>
+            <span className="sb-label">{item.label}</span>
             {item.badge && (
               <span
                 className="count"
@@ -105,9 +102,11 @@ export function Sidebar({
       <Link
         href="/settings"
         className={`sb-item${isActive("/settings") ? " active" : ""}`}
+        aria-label={railName("Settings")}
+        title={railName("Settings")}
       >
         <Icon name="settings" size={14} />
-        <span>Settings</span>
+        <span className="sb-label">Settings</span>
       </Link>
       {footer}
     </aside>

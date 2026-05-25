@@ -3,7 +3,8 @@ import { manifests } from "@/systems";
 import { createSystemRegistry } from "@/systems/registry";
 import { TitleBar } from "@/app/_components/TitleBar";
 import { Sidebar } from "@/app/_components/Sidebar";
-import type { IconName } from "@/app/_components/Icon";
+import { SidebarProvider, ShellBody } from "@/app/_components/SidebarChrome";
+import { Icon, type IconName } from "@/app/_components/Icon";
 
 const registry = createSystemRegistry(manifests);
 
@@ -42,25 +43,30 @@ export default async function PlatformLayout({
         type="submit"
         className="sb-item"
         style={{ width: "100%", color: "var(--danger)" }}
+        aria-label="Sign out"
+        title="Sign out"
       >
-        Sign out
+        <Icon name="log-out" size={14} />
+        <span className="sb-label">Sign out</span>
       </button>
     </form>
   ) : null;
 
   return (
-    <div className="app-shell">
-      <TitleBar
-        crumbs={["Polaris"]}
-        syncState="ok"
-        email={session?.user?.email}
-      />
-      <div className="body">
-        <Sidebar systems={systems} footer={sidebarFooter} />
-        <main className="main">
-          <div className="content">{children}</div>
-        </main>
+    <SidebarProvider>
+      <div className="app-shell">
+        <TitleBar
+          crumbs={["Polaris"]}
+          syncState="ok"
+          email={session?.user?.email}
+        />
+        <ShellBody>
+          <Sidebar systems={systems} footer={sidebarFooter} />
+          <main className="main">
+            <div className="content">{children}</div>
+          </main>
+        </ShellBody>
       </div>
-    </div>
+    </SidebarProvider>
   );
 }

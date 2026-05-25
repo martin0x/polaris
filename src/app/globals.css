@@ -606,6 +606,24 @@ body {
   border-radius: 50%;
   background: var(--success);
 }
+.titlebar-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px; height: 24px;
+  border: none;
+  border-radius: var(--r-md);
+  background: transparent;
+  color: var(--ink-3);
+  cursor: pointer;
+  transition: background var(--dur-fast) var(--ease-out),
+    color var(--dur-fast) var(--ease-out);
+}
+.titlebar-btn:hover { background: var(--bg-hover); color: var(--ink-1); }
+.titlebar-btn:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
 
 /* Body (two- or three-column layout) -------------------------------------- */
 .body {
@@ -616,6 +634,11 @@ body {
   overflow: hidden;
 }
 .body.with-right { grid-template-columns: 248px 1fr 280px; }
+/* Collapsed sidebar = icon-only rail. .anim is added after the persisted state
+   is restored so the initial render doesn't animate, only deliberate toggles. */
+.body.anim { transition: grid-template-columns var(--dur-med) var(--ease-out); }
+.body.sidebar-collapsed { grid-template-columns: 56px 1fr; }
+.body.sidebar-collapsed.with-right { grid-template-columns: 56px 1fr 280px; }
 
 /* Sidebar ----------------------------------------------------------------- */
 .sidebar {
@@ -690,6 +713,27 @@ body {
 }
 .sb-item.active .count { color: var(--accent-ink); }
 .sb-item svg { flex: 0 0 14px; }
+/* Truncating text label inside search/nav rows. */
+.sb-label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Icon-only rail: hide labels, counts, and section headers; center icons. The
+   sidebar overflows hidden so labels don't spill while the grid track shrinks. */
+.body.sidebar-collapsed .sidebar { overflow-x: hidden; }
+.body.sidebar-collapsed .sb-label,
+.body.sidebar-collapsed .sb-search .k,
+.body.sidebar-collapsed .sb-sec,
+.body.sidebar-collapsed .sb-item .count {
+  display: none;
+}
+.body.sidebar-collapsed .sb-item,
+.body.sidebar-collapsed .sb-search {
+  justify-content: center;
+  gap: 0;
+}
 
 /* Main pane --------------------------------------------------------------- */
 .main {
