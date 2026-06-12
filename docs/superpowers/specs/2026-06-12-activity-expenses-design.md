@@ -2,7 +2,7 @@
 
 **Date:** 2026-06-12
 **Author:** Raymart Villos
-**Status:** Approved. Replaces the two-column Google Sheet used for in-store
+**Status:** Shipped (implementation plan: `../plans/2026-06-12-activity-expenses-plan.md`). Replaces the two-column Google Sheet used for in-store
 expense capture. Follows the system conventions established by the Engineering
 Journal (`2026-04-26-engineering-journal-design.md`).
 
