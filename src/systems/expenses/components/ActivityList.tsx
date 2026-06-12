@@ -16,6 +16,20 @@ export interface ActivityRow {
 }
 
 const DATE_FORMAT = new Intl.DateTimeFormat("en-US", { month: "short", day: "numeric" });
+const MONTH_FORMAT = new Intl.DateTimeFormat("en-US", { month: "long", year: "numeric" });
+
+/** Activities arrive newest-first, so consecutive rows with the same month
+ *  label form one group — no API change needed. */
+function groupByMonth(activities: ActivityRow[]) {
+  const groups: Array<{ label: string; rows: ActivityRow[] }> = [];
+  for (const a of activities) {
+    const label = MONTH_FORMAT.format(new Date(a.startedAt));
+    const last = groups[groups.length - 1];
+    if (last && last.label === label) last.rows.push(a);
+    else groups.push({ label, rows: [a] });
+  }
+  return groups;
+}
 
 export function ActivityList({ activities }: { activities: ActivityRow[] }) {
   const router = useRouter();
@@ -39,30 +53,37 @@ export function ActivityList({ activities }: { activities: ActivityRow[] }) {
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 2, marginTop: "var(--sp-4)" }}>
-      {activities.map((a) => (
-        <div key={a.id} className="exp-row">
-          <Link
-            href={`/expenses/${a.id}`}
-            style={{ flex: 1, minWidth: 0, display: "flex", alignItems: "baseline", gap: "var(--sp-3)", color: "inherit", textDecoration: "none" }}
-          >
-            <span style={{ fontWeight: 500 }}>{a.title ?? a.typeName}</span>
-            <span className="caption" style={{ color: "var(--fg-muted)" }}>
-              {a.title ? `${a.typeName} · ` : ""}
-              {DATE_FORMAT.format(new Date(a.startedAt))} · {a.itemCount}{" "}
-              {a.itemCount === 1 ? "item" : "items"}
-            </span>
-          </Link>
-          <span className="amount">{formatCentavos(a.totalCentavos)}</span>
-          <button
-            type="button"
-            className="btn btn-ghost"
-            aria-label={`Delete ${a.title ?? a.typeName}`}
-            disabled={deletingId === a.id}
-            onClick={() => remove(a.id)}
-          >
-            <Icon name="trash-2" size={16} />
-          </button>
-        </div>
+      {groupByMonth(activities).map((group) => (
+        <section key={group.label} style={{ display: "flex", flexDirection: "column", gap: 2 }}>
+          <h2 className="overline" style={{ margin: "var(--sp-3) 0 var(--sp-1)" }}>
+            {group.label}
+          </h2>
+          {group.rows.map((a) => (
+            <div key={a.id} className="exp-row">
+              <Link
+                href={`/expenses/${a.id}`}
+                style={{ flex: 1, minWidth: 0, display: "flex", alignItems: "baseline", gap: "var(--sp-3)", color: "inherit", textDecoration: "none" }}
+              >
+                <span style={{ fontWeight: 500 }}>{a.title ?? a.typeName}</span>
+                <span className="caption" style={{ color: "var(--fg-muted)" }}>
+                  {a.title ? `${a.typeName} · ` : ""}
+                  {DATE_FORMAT.format(new Date(a.startedAt))} · {a.itemCount}{" "}
+                  {a.itemCount === 1 ? "item" : "items"}
+                </span>
+              </Link>
+              <span className="amount">{formatCentavos(a.totalCentavos)}</span>
+              <button
+                type="button"
+                className="btn btn-ghost"
+                aria-label={`Delete ${a.title ?? a.typeName}`}
+                disabled={deletingId === a.id}
+                onClick={() => remove(a.id)}
+              >
+                <Icon name="trash-2" size={16} />
+              </button>
+            </div>
+          ))}
+        </section>
       ))}
     </div>
   );
