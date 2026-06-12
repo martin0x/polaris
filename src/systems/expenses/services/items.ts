@@ -35,22 +35,33 @@ export async function upsertItem(
       position: input.position,
     },
   });
-  await recordActivityMetrics(activityId);
+  if (item.activityId !== activityId) {
+    throw new ItemConflictError(itemId);
+  }
+  void recordActivityMetrics(activityId);
   return item;
 }
 
 export async function deleteItem(activityId: string, itemId: string): Promise<void> {
   // deleteMany so deleting an already-deleted item is a success (sync replays).
   await prisma.expenseItem.deleteMany({ where: { id: itemId, activityId } });
-  await recordActivityMetrics(activityId);
+  void recordActivityMetrics(activityId);
 }
 
+/** Telemetry snapshot — intentionally fire-and-forget: a metrics failure must
+ *  never fail or slow an item sync from a flaky in-store connection. */
 async function recordActivityMetrics(activityId: string): Promise<void> {
-  const agg = await prisma.expenseItem.aggregate({
-    where: { activityId },
-    _count: { _all: true },
-    _sum: { amountCentavos: true },
-  });
-  await feedback.recordMetric("expenses", "items_per_activity", agg._count._all);
-  await feedback.recordMetric("expenses", "activity_total_centavos", agg._sum.amountCentavos ?? 0);
+  try {
+    const agg = await prisma.expenseItem.aggregate({
+      where: { activityId },
+      _count: { _all: true },
+      _sum: { amountCentavos: true },
+    });
+    await Promise.all([
+      feedback.recordMetric("expenses", "items_per_activity", agg._count._all),
+      feedback.recordMetric("expenses", "activity_total_centavos", agg._sum.amountCentavos ?? 0),
+    ]);
+  } catch (err) {
+    console.error("expenses: metric recording failed", err);
+  }
 }

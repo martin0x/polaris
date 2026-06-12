@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { requireTestDatabase, withCleanExpenseTables } from "@/test/db";
 import { createType } from "./types";
 import { startActivity } from "./activities";
@@ -45,6 +45,19 @@ describe("upsertItem", () => {
     });
     expect(updated.name).toBe("Eggs (dozen)");
     expect(updated.amountCentavos).toBe(22000);
+  });
+
+  it("records snapshot metrics after an upsert", async () => {
+    const a = await fixture();
+    await upsertItem(a.id, "client-id-1", { name: "Eggs", amountCentavos: 21500, position: 0 });
+    // fire-and-forget: give the async metric write a moment
+    await vi.waitFor(async () => {
+      const rows = await prisma.systemMetric.findMany({
+        where: { system: "expenses", name: "activity_total_centavos" },
+      });
+      expect(rows.length).toBeGreaterThan(0);
+      expect(rows[rows.length - 1].value).toBe(21500);
+    });
   });
 
   it("rejects an id that belongs to a different activity", async () => {

@@ -42,7 +42,7 @@ describe("types service", () => {
 
   it("rejects a duplicate name", async () => {
     await createType("Groceries");
-    await expect(createType("Groceries")).rejects.toThrow();
+    await expect(createType("Groceries")).rejects.toMatchObject({ code: "P2002" });
   });
 });
 

@@ -10,6 +10,7 @@ export async function withCleanExpenseTables(): Promise<void> {
   await prisma.$executeRawUnsafe(
     'TRUNCATE TABLE "expense_items", "expense_activities", "expense_activity_types" RESTART IDENTITY CASCADE'
   );
+  await prisma.systemMetric.deleteMany({ where: { system: "expenses" } });
 }
 
 export function requireTestDatabase(): void {
