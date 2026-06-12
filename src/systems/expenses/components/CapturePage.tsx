@@ -32,6 +32,8 @@ function applyQueuedOps(items: CaptureItem[], ops: QueueOp[]): CaptureItem[] {
 
 export function CapturePage({ activity, initialItems }: CapturePageProps) {
   const [items, setItems] = useState<CaptureItem[]>(initialItems);
+  const [title, setTitle] = useState(activity.title);
+  const [editingTitle, setEditingTitle] = useState(false);
   const [pending, setPending] = useState(0);
   const [failing, setFailing] = useState(false);
   const queueRef = useRef<SyncQueue | null>(null);
@@ -97,15 +99,59 @@ export function CapturePage({ activity, initialItems }: CapturePageProps) {
     queueRef.current?.enqueue({ kind: "delete", itemId: id });
   }
 
+  async function saveTitle(raw: string) {
+    setEditingTitle(false);
+    const next = raw.trim() || null;
+    if (next === title) return;
+    const previous = title;
+    setTitle(next);
+    try {
+      const res = await fetch(`/api/systems/expenses/activities/${activity.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ title: next }),
+      });
+      if (!res.ok) throw new Error(String(res.status));
+    } catch {
+      setTitle(previous);
+    }
+  }
+
   return (
     <article className="doc" style={{ display: "flex", flexDirection: "column", minHeight: "70vh" }}>
       <header className="exp-header">
         <div style={{ minWidth: 0 }}>
-          <h1 style={{ margin: 0, fontSize: "var(--fs-lg)" }}>
-            {activity.title ?? activity.typeName}
-          </h1>
+          {editingTitle ? (
+            <input
+              type="text"
+              defaultValue={title ?? ""}
+              autoFocus
+              aria-label="Activity title"
+              style={{ width: "100%", padding: "var(--sp-1) var(--sp-2)", border: "1px solid var(--border-strong)", borderRadius: "var(--r-md)", background: "var(--bg-raised)", font: "inherit", fontSize: "var(--fs-lg)" }}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  e.preventDefault();
+                  void saveTitle(e.currentTarget.value);
+                } else if (e.key === "Escape") {
+                  setEditingTitle(false);
+                }
+              }}
+              onBlur={(e) => void saveTitle(e.target.value)}
+            />
+          ) : (
+            <h1 style={{ margin: 0, fontSize: "var(--fs-lg)" }}>
+              <button
+                type="button"
+                aria-label="Edit title"
+                style={{ border: "none", background: "none", font: "inherit", color: "inherit", padding: 0, textAlign: "left", cursor: "pointer" }}
+                onClick={() => setEditingTitle(true)}
+              >
+                {title ?? activity.typeName}
+              </button>
+            </h1>
+          )}
           <p className="caption" style={{ margin: 0, color: "var(--fg-muted)" }}>
-            {activity.title ? `${activity.typeName} · ` : ""}
+            {title ? `${activity.typeName} · ` : ""}
             {DATE_FORMAT.format(new Date(activity.startedAt))}
             {items.length > 0 ? ` · ${items.length} ${items.length === 1 ? "item" : "items"}` : ""}
           </p>
