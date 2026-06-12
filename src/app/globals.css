@@ -164,6 +164,16 @@
   --z-modal:   50;
   --z-popover: 60;
   --z-toast:   80;
+
+  /* Chart series palette — multi-series charts need more than the single
+     accent. Derived from existing semantic colors; first consumer is the
+     expenses trends chart. */
+  --chart-1: var(--accent);
+  --chart-2: var(--heading);
+  --chart-3: var(--link);
+  --chart-4: var(--success);
+  --chart-5: var(--warning);
+  --chart-6: var(--tag-ink);
 }
 
 /* ---------- Dark mode (secondary) ---------------------------------------- */
@@ -901,6 +911,86 @@ kbd, .kbd {
 .task-row .lbl {
   font-size: 15px;
   color: var(--ink-2);
+}
+
+/* Expenses — in-store capture surface */
+.exp-header {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--sp-4);
+  padding: var(--sp-3) 0;
+  background: var(--bg);
+  border-bottom: 1px solid var(--border);
+}
+.exp-total {
+  font-family: var(--font-mono);
+  font-size: var(--fs-xl);
+  font-weight: 500;
+  white-space: nowrap;
+}
+.exp-composer {
+  position: sticky;
+  bottom: 0;
+  z-index: 2;
+  display: flex;
+  gap: var(--sp-2);
+  padding: var(--sp-3) 0;
+  background: var(--bg);
+  border-top: 1px solid var(--border);
+}
+.exp-composer input {
+  min-width: 0;
+  padding: var(--sp-2) var(--sp-3);
+  font-size: var(--fs-md); /* 16px floor stops iOS zoom-on-focus */
+  border: 1px solid var(--border-strong);
+  border-radius: var(--r-md);
+  background: var(--bg-raised);
+  color: var(--fg);
+}
+.exp-composer input:focus-visible {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: var(--ring);
+}
+.exp-composer input[data-invalid="true"] {
+  border-color: var(--danger);
+}
+.exp-composer .exp-name {
+  flex: 1 1 60%;
+}
+.exp-composer .exp-price {
+  flex: 1 1 32%;
+  font-family: var(--font-mono);
+  text-align: right;
+}
+.exp-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-3);
+  padding: var(--sp-2) var(--sp-2);
+  border-radius: var(--r-md);
+}
+.exp-row:hover {
+  background: var(--bg-hover);
+}
+.exp-row .amount {
+  font-family: var(--font-mono);
+  white-space: nowrap;
+}
+.exp-unsynced {
+  font-size: var(--fs-xs);
+  font-family: var(--font-mono);
+  color: var(--fg-muted);
+  background: var(--bg-sunken);
+  border: 1px solid var(--border);
+  border-radius: var(--r-full);
+  padding: 2px var(--sp-2);
+  white-space: nowrap;
 }
 
 /* Subtle scrollbars ------------------------------------------------------- */
