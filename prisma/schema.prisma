@@ -139,3 +139,50 @@ model JournalEntry {
   @@index([tags], type: Gin)
   @@map("journal_entries")
 }
+
+// === Expenses System ===
+
+model ExpenseActivityType {
+  id         String    @id @default(cuid())
+  name       String    @unique
+  position   Int       @default(0)
+  archived   Boolean   @default(false)
+  archivedAt DateTime?
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+
+  activities ExpenseActivity[]
+
+  @@index([archived])
+  @@map("expense_activity_types")
+}
+
+model ExpenseActivity {
+  id        String   @id @default(cuid())
+  typeId    String
+  type      ExpenseActivityType @relation(fields: [typeId], references: [id])
+  title     String?
+  startedAt DateTime @default(now())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  items     ExpenseItem[]
+
+  @@index([typeId])
+  @@index([startedAt(sort: Desc)])
+  @@map("expense_activities")
+}
+
+model ExpenseItem {
+  id             String   @id
+  activityId     String
+  activity       ExpenseActivity @relation(fields: [activityId], references: [id], onDelete: Cascade)
+  name           String
+  amountCentavos Int
+  position       Int
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@index([activityId])
+  @@map("expense_items")
+}
