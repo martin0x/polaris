@@ -99,13 +99,16 @@ export const putItem: RouteHandler = async (req, params) => {
     if (err instanceof ZodError) return badRequest("Invalid item", err.flatten());
     throw err;
   }
-  const activity = await getActivityWithItems(params.id);
-  if (!activity) return notFound(`Activity ${params.id} not found`);
   try {
     const item = await upsertItem(params.id, params.itemId, parsed);
     return NextResponse.json({ item });
   } catch (err) {
     if (err instanceof ItemConflictError) return apiError(409, err.message);
+    // FK violation on activityId — the activity does not exist (or was deleted
+    // mid-flight). Cheaper than a per-sync existence pre-check, and race-free.
+    if (err instanceof Prisma.PrismaClientKnownRequestError && err.code === "P2003") {
+      return notFound(`Activity ${params.id} not found`);
+    }
     throw err;
   }
 };
