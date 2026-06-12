@@ -51,8 +51,9 @@ export function TypesManager({ types }: { types: TypeRow[] }) {
   async function move(index: number, dir: -1 | 1) {
     const other = index + dir;
     if (other < 0 || other >= active.length) return;
-    // Swap positions of the two adjacent rows.
-    await call(`/types/${active[index].id}`, "PATCH", { position: active[other].position });
+    // Swap positions of the two adjacent rows; bail if the first write fails
+    // so a half-applied swap can't leave two rows sharing a position.
+    if (!(await call(`/types/${active[index].id}`, "PATCH", { position: active[other].position }))) return;
     await call(`/types/${active[other].id}`, "PATCH", { position: active[index].position });
   }
 

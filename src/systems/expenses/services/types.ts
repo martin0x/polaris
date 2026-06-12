@@ -13,7 +13,9 @@ export async function listTypes(opts: {
 }): Promise<ExpenseActivityType[]> {
   return prisma.expenseActivityType.findMany({
     where: opts.includeArchived ? {} : { archived: false },
-    orderBy: { position: "asc" },
+    // Secondary key keeps ordering stable if positions ever tie
+    // (e.g. an interrupted reorder swap).
+    orderBy: [{ position: "asc" }, { createdAt: "asc" }],
   });
 }
 
