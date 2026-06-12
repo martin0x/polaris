@@ -21,7 +21,11 @@ export async function startActivity(input: { typeId: string; title?: string }) {
     data: { typeId: input.typeId, title: input.title ?? null },
     include: { type: true },
   });
-  await feedback.recordMetric("expenses", "activity_started", 1);
+  // Fire-and-forget for consistency with items.ts — a metrics failure must
+  // never fail or slow starting an activity.
+  feedback.recordMetric("expenses", "activity_started", 1).catch((err) => {
+    console.error("expenses: metric recording failed", err);
+  });
   return activity;
 }
 
