@@ -9,8 +9,9 @@ requireTestDatabase();
 
 beforeEach(withCleanExpenseTables);
 
+let typeCounter = 0;
 async function fixture() {
-  const t = await createType("Groceries");
+  const t = await createType(`Groceries ${typeCounter++}`);
   return startActivity({ typeId: t.id });
 }
 

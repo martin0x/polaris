@@ -39,6 +39,11 @@ describe("types service", () => {
     const restored = await updateType(t.id, { archived: false });
     expect(restored.archivedAt).toBeNull();
   });
+
+  it("rejects a duplicate name", async () => {
+    await createType("Groceries");
+    await expect(createType("Groceries")).rejects.toThrow();
+  });
 });
 
 describe("activities service", () => {
