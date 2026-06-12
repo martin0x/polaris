@@ -95,15 +95,21 @@ export class SyncQueue {
         this.scheduleRetry();
         return;
       }
+      if (res.redirected) {
+        // An auth redirect (expired session) means the op never reached the
+        // API — retry until the session is restored, never drop.
+        this.scheduleRetry();
+        return;
+      }
       if (res.ok) {
         this.ops.shift();
         this.attempt = 0;
         this.failing = false;
         this.persist();
         this.notify();
-      } else if (res.status >= 400 && res.status < 500) {
-        // A validation/conflict response will never succeed on retry — drop it
-        // rather than poison the queue. The item stays visible locally.
+      } else if (res.status === 400 || res.status === 404 || res.status === 409) {
+        // Only statuses the API emits as permanent verdicts are dropped —
+        // anything else (401/403/405/5xx) might succeed after re-auth or recovery.
         console.error(`expenses sync: dropping ${op.kind} ${op.itemId} (${res.status})`);
         this.ops.shift();
         this.persist();

@@ -63,6 +63,27 @@ describe("SyncQueue", () => {
     expect(fetchFn).toHaveBeenCalledTimes(1);
   });
 
+  it("retries on 401 instead of dropping", async () => {
+    const fetchFn = vi.fn(() => Promise.resolve(new Response(null, { status: 401 })));
+    const q = new SyncQueue({ activityId: "a1", fetchFn, storage: memoryStorage() });
+    q.enqueue(putOp("i1"));
+    await vi.advanceTimersByTimeAsync(0);
+    expect(q.pending()).toBe(1);
+    fetchFn.mockImplementation(ok);
+    await vi.advanceTimersByTimeAsync(1000);
+    expect(q.pending()).toBe(0);
+  });
+
+  it("retries on an auth redirect instead of trusting the response", async () => {
+    const redirected = Object.defineProperty(new Response(null, { status: 200 }), "redirected", { value: true });
+    const fetchFn = vi.fn(() => Promise.resolve(redirected));
+    const q = new SyncQueue({ activityId: "a1", fetchFn, storage: memoryStorage() });
+    q.enqueue(putOp("i1"));
+    await vi.advanceTimersByTimeAsync(0);
+    expect(q.pending()).toBe(1);
+    q.dispose();
+  });
+
   it("coalesces a second put for the same item", async () => {
     const fetchFn = vi.fn(serverError);
     const q = new SyncQueue({ activityId: "a1", fetchFn, storage: memoryStorage() });
