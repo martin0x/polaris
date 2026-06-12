@@ -2,6 +2,8 @@ import { prisma } from "@/platform/db/client";
 import type { ExpenseActivityType } from "@/generated/prisma/client";
 
 export async function createType(name: string): Promise<ExpenseActivityType> {
+  const existing = await prisma.expenseActivityType.findUnique({ where: { name } });
+  if (existing) return existing;
   const max = await prisma.expenseActivityType.aggregate({ _max: { position: true } });
   return prisma.expenseActivityType.create({
     data: { name, position: (max._max.position ?? -1) + 1 },
