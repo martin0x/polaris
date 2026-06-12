@@ -7,7 +7,8 @@ export function TitleBar({
   syncState = "ok",
   email,
 }: {
-  crumbs: string[];
+  /** Plain strings or client islands (e.g. SystemCrumb) — each renders as one crumb. */
+  crumbs: React.ReactNode[];
   syncState?: "ok" | "offline";
   email?: string | null;
 }) {
@@ -38,7 +39,7 @@ export function TitleBar({
       <div className="crumbs">
         {crumbs.map((p, i) => (
           <span
-            key={`${p}-${i}`}
+            key={i}
             style={{ display: "inline-flex", alignItems: "center", gap: 6 }}
           >
             <span className={i === crumbs.length - 1 ? "cur" : undefined}>

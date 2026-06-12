@@ -5,6 +5,7 @@ import { TitleBar } from "@/app/_components/TitleBar";
 import { Sidebar } from "@/app/_components/Sidebar";
 import { SidebarProvider, ShellBody } from "@/app/_components/SidebarChrome";
 import { Icon, type IconName } from "@/app/_components/Icon";
+import { SystemCrumb } from "@/app/_components/SystemCrumb";
 
 const registry = createSystemRegistry(manifests);
 
@@ -15,6 +16,7 @@ const ALLOWED_ICONS: IconName[] = [
   "more-horizontal", "check", "x", "chevron-down", "chevron-right",
   "folder", "inbox", "hash", "moon", "user", "file-text", "bell",
   "sidebar", "list-todo", "archive", "edit-3", "trash-2", "tag", "command",
+  "receipt",
 ];
 
 export default async function SystemsLayout({
@@ -56,7 +58,7 @@ export default async function SystemsLayout({
     <SidebarProvider>
       <div className="app-shell">
         <TitleBar
-          crumbs={["Polaris", "Journal"]}
+          crumbs={["Polaris", <SystemCrumb key="system" systems={systems} />]}
           syncState="ok"
           email={session?.user?.email}
         />

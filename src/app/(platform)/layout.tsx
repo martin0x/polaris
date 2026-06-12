@@ -15,6 +15,7 @@ const ALLOWED_ICONS: IconName[] = [
   "more-horizontal", "check", "x", "chevron-down", "chevron-right",
   "folder", "inbox", "hash", "moon", "user", "file-text", "bell",
   "sidebar", "list-todo", "archive", "edit-3", "trash-2", "tag", "command",
+  "receipt",
 ];
 
 export default async function PlatformLayout({
