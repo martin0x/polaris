@@ -77,9 +77,6 @@ export class SyncQueue {
   private async drain(): Promise<void> {
     if (this.draining) return;
     this.draining = true;
-    // Re-sync from storage before draining: another instance may have already
-    // flushed the same ops (e.g. after a page reload into a new SyncQueue).
-    this.restore();
     while (this.ops.length > 0) {
       const op = this.ops[0];
       let res: Response;

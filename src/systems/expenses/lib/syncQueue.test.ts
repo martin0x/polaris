@@ -78,7 +78,8 @@ describe("SyncQueue", () => {
     const q = new SyncQueue({ activityId: "a1", fetchFn, storage });
     q.enqueue(putOp("i1"));
     await vi.advanceTimersByTimeAsync(0);
-    // Simulate a refresh: a new queue over the same storage.
+    // Simulate a refresh: the old instance's retry timer dies with the page.
+    q.dispose();
     const fetchFn2 = vi.fn(ok);
     const q2 = new SyncQueue({ activityId: "a1", fetchFn: fetchFn2, storage });
     expect(q2.pending()).toBe(1);
