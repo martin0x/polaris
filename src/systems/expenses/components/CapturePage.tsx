@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { formatCentavos } from "../lib/money";
-import { SyncQueue } from "../lib/syncQueue";
+import { SyncQueue, type QueueOp } from "../lib/syncQueue";
 import { ItemComposer } from "./ItemComposer";
 import { ItemRow, type CaptureItem } from "./ItemRow";
 
@@ -13,27 +13,14 @@ interface CapturePageProps {
 
 const DATE_FORMAT = new Intl.DateTimeFormat("en-US", { month: "short", day: "numeric" });
 
-/** Merge pending queue ops on top of the server snapshot to restore optimistic
- *  state after a page refresh. Reads localStorage directly so the merge runs
- *  synchronously during the first render instead of inside an effect. */
-function mergeQueuedOps(activityId: string, serverItems: CaptureItem[]): CaptureItem[] {
-  if (typeof window === "undefined") return serverItems;
-  const key = `expenses:queue:${activityId}`;
-  const raw = window.localStorage.getItem(key);
-  if (!raw) return serverItems;
-  let ops: Array<{ kind: string; itemId: string; body?: { name: string; amountCentavos: number; position: number } }>;
-  try {
-    const parsed = JSON.parse(raw);
-    if (!Array.isArray(parsed)) return serverItems;
-    ops = parsed;
-  } catch {
-    return serverItems;
-  }
-  let next = [...serverItems];
+/** Replay pending queue ops on top of the server snapshot so optimistic state
+ *  survives a refresh inside a dead zone. Pure — the queue owns the storage. */
+function applyQueuedOps(items: CaptureItem[], ops: QueueOp[]): CaptureItem[] {
+  let next = [...items];
   for (const op of ops) {
     if (op.kind === "delete") {
       next = next.filter((i) => i.id !== op.itemId);
-    } else if (op.kind === "put" && op.body) {
+    } else if (op.body) {
       const existing = next.findIndex((i) => i.id === op.itemId);
       const restored = { id: op.itemId, ...op.body };
       if (existing >= 0) next[existing] = restored;
@@ -44,9 +31,7 @@ function mergeQueuedOps(activityId: string, serverItems: CaptureItem[]): Capture
 }
 
 export function CapturePage({ activity, initialItems }: CapturePageProps) {
-  const [items, setItems] = useState<CaptureItem[]>(() =>
-    mergeQueuedOps(activity.id, initialItems)
-  );
+  const [items, setItems] = useState<CaptureItem[]>(initialItems);
   const [pending, setPending] = useState(0);
   const [failing, setFailing] = useState(false);
   const queueRef = useRef<SyncQueue | null>(null);
@@ -61,6 +46,15 @@ export function CapturePage({ activity, initialItems }: CapturePageProps) {
       },
     });
     queueRef.current = queue;
+
+    const restored = queue.pendingOps();
+    if (restored.length > 0) {
+      // localStorage is only available on the client; merging during render
+      // would cause a hydration mismatch (see ComposeBox for the precedent).
+      // Runs at most once on mount, so this is not a cascading-render situation.
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setItems((current) => applyQueuedOps(current, restored));
+    }
     queue.flush();
 
     const flush = () => queue.flush();
