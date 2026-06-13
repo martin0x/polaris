@@ -584,7 +584,14 @@ body {
 .app-shell {
   display: grid;
   grid-template-rows: 36px 1fr;
+  /* minmax(0, …) keeps the column at viewport width — an auto track would
+     grow to fit overflowing chrome (e.g. a wide title bar) and the whole
+     shell would lay out past the viewport, clipped by overflow: hidden. */
+  grid-template-columns: minmax(0, 1fr);
   height: 100vh;
+  /* iOS Safari: dvh tracks the visible viewport as the toolbars collapse;
+     100vh above stays as the fallback for browsers without dvh. */
+  height: 100dvh;
   overflow: hidden;
 }
 
@@ -993,6 +1000,16 @@ kbd, .kbd {
   white-space: nowrap;
 }
 
+/* Dashboard metric rows — fixed columns keep dates, tags, and values aligned
+   across rows; the phone variant lives in the narrow-viewport block below. */
+.metric-row {
+  display: grid;
+  grid-template-columns: 80px 1fr 140px 100px;
+  padding: 8px 0;
+  font-size: 13.5px;
+  align-items: center;
+}
+
 /* Subtle scrollbars ------------------------------------------------------- */
 ::-webkit-scrollbar { width: 10px; height: 10px; }
 ::-webkit-scrollbar-thumb {
@@ -1208,4 +1225,72 @@ kbd, .kbd {
 .palette-divider {
   border-top: 1px solid var(--border);
   margin: var(--sp-1) 0;
+}
+
+/* ==========================================================================
+   Narrow viewports (phones) — the shell adapts, the system stays the same.
+   The sidebar drops to the 56px icon rail (the same shape as
+   .sidebar-collapsed); the title-bar toggle then hides it entirely. Chrome
+   that can't fit (account email, sync label, wordmark) leaves the title bar
+   so it can't push the shell past the viewport.
+   ========================================================================== */
+@media (max-width: 768px) {
+  .body,
+  .body.with-right {
+    grid-template-columns: 56px 1fr;
+  }
+  .body.sidebar-collapsed,
+  .body.sidebar-collapsed.with-right {
+    grid-template-columns: 0 1fr;
+  }
+  .body.sidebar-collapsed .sidebar { display: none; }
+  .right-pane { display: none; }
+
+  /* Icon-only rail, unconditionally — mirrors the .body.sidebar-collapsed
+     rules above. */
+  .sidebar { overflow-x: hidden; }
+  .sb-label,
+  .sb-search .k,
+  .sb-sec,
+  .sb-item .count {
+    display: none;
+  }
+  .sb-item,
+  .sb-search {
+    justify-content: center;
+    gap: 0;
+  }
+
+  /* Title bar: crumbs truncate; wordmark, email, and sync label hide (the
+     crumbs carry "Polaris" and the dot still signals sync state). */
+  .titlebar .crumbs { min-width: 0; overflow: hidden; }
+  .titlebar .tb-wordmark,
+  .titlebar .tb-email,
+  .titlebar .sync-label {
+    display: none;
+  }
+
+  /* Desktop gutters give way to the 4px grid. */
+  .mainbar { padding: 8px var(--sp-4); }
+  .content { padding: var(--sp-5) var(--sp-4) var(--sp-16); }
+
+  /* Sub-nav: tabs stay on one row, the search field wraps to its own. */
+  .tab-strip { flex-wrap: wrap; row-gap: var(--sp-2); }
+  .tab-strip form { flex: 1 1 100%; }
+  .tab-strip .search-input { width: 100%; }
+
+  /* Dashboard metric rows: the system tag column goes; date and value
+     tighten so the metric name keeps the room. */
+  .metric-row { grid-template-columns: 64px 1fr 90px; }
+  .metric-row .metric-system { display: none; }
+
+  /* Rows that carry several action buttons (e.g. the types manager) wrap
+     instead of running past the pane. */
+  .exp-row { flex-wrap: wrap; }
+}
+
+/* Touch devices have no hover — controls gated behind :hover must be
+   visible from the start. */
+@media (hover: none) {
+  .entry-card .actions { display: flex; }
 }

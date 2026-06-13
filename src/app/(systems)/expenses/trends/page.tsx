@@ -18,7 +18,7 @@ export default async function TrendsPage({
 
   return (
     <article className="doc">
-      <header style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", gap: "var(--sp-4)" }}>
+      <header style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", gap: "var(--sp-4)", flexWrap: "wrap" }}>
         <h1>Trends</h1>
         <nav aria-label="Range" style={{ display: "flex", gap: "var(--sp-1)" }}>
           {RANGES.map((r) => (

@@ -19,6 +19,7 @@ export function TitleBar({
         <PolarisGlyph size={14} />
       </span>
       <span
+        className="tb-wordmark"
         style={{
           fontFamily: "var(--font-serif)",
           fontSize: 13,
@@ -29,6 +30,7 @@ export function TitleBar({
         Polaris
       </span>
       <span
+        className="tb-wordmark"
         style={{
           width: 1,
           height: 14,
@@ -57,10 +59,13 @@ export function TitleBar({
               syncState === "ok" ? "var(--success)" : "var(--warning)",
           }}
         />
-        <span>{syncState === "ok" ? "synced" : "offline"}</span>
+        <span className="sync-label">
+          {syncState === "ok" ? "synced" : "offline"}
+        </span>
         {email && (
           <>
             <span
+              className="tb-email"
               style={{
                 width: 1,
                 height: 14,
@@ -68,7 +73,10 @@ export function TitleBar({
                 margin: "0 4px",
               }}
             />
-            <span style={{ fontFamily: "var(--font-mono)", fontSize: 11 }}>
+            <span
+              className="tb-email"
+              style={{ fontFamily: "var(--font-mono)", fontSize: 11 }}
+            >
               {email}
             </span>
           </>

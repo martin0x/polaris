@@ -70,13 +70,9 @@ export default async function DashboardPage() {
           {metrics.slice(0, 10).map((m, i) => (
             <div
               key={m.id}
+              className="metric-row"
               style={{
-                display: "grid",
-                gridTemplateColumns: "80px 1fr 140px 100px",
-                padding: "8px 0",
                 borderTop: i === 0 ? "0" : "1px solid var(--border)",
-                fontSize: 13.5,
-                alignItems: "center",
               }}
             >
               <span
@@ -89,7 +85,10 @@ export default async function DashboardPage() {
                 {TIME_FORMATTER.format(new Date(m.recordedAt))}
               </span>
               <span style={{ color: "var(--ink-1)" }}>{m.name}</span>
-              <span className="tag-inline" style={{ justifySelf: "start" }}>
+              <span
+                className="tag-inline metric-system"
+                style={{ justifySelf: "start" }}
+              >
                 {m.system}
               </span>
               <span
