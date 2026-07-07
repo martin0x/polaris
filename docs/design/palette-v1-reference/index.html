@@ -1,0 +1,544 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Polaris — command palette v1 reference</title>
+<link rel="stylesheet" href="../tokens-reference.css">
+<style>
+  /* ========================================================================
+     Command palette v1 — interactive design reference
+     Spec: docs/superpowers/specs/2026-04-26-global-command-palette-design.md
+     Visual language extends ui-kit-reference/workspace (.pal-*) — all values
+     are tokens from tokens-reference.css; no raw hex/px color values here.
+     ======================================================================== */
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; overflow: hidden; }
+  body { background: var(--paper-0); font-family: var(--font-sans); }
+
+  /* ---- mock workspace behind the scrim (non-interactive scenery) -------- */
+  .shell { position: fixed; inset: 0; display: flex; flex-direction: column; }
+  .shell-titlebar { height: 36px; flex: 0 0 36px; background: var(--paper-1);
+    border-bottom: 1px solid var(--border); display: flex; align-items: center;
+    gap: 8px; padding: 0 14px; }
+  .tl { width: 10px; height: 10px; border-radius: var(--r-full);
+    border: 1px solid var(--paper-4); background: var(--paper-2); }
+  .shell-crumb { font-family: var(--font-mono); font-size: 11px; color: var(--ink-4); margin-left: 10px; }
+  .shell-body { flex: 1; display: flex; min-height: 0; }
+  .shell-side { width: 248px; flex: 0 0 248px; background: var(--paper-1);
+    border-right: 1px solid var(--border); padding: 14px 12px;
+    display: flex; flex-direction: column; gap: 10px; }
+  .shell-main { flex: 1; padding: 48px 64px; }
+  .sk { border-radius: var(--r-sm); background: var(--paper-2); height: 12px; }
+  .sk.deep { background: var(--paper-3); }
+  .shell-main .sk { margin-bottom: 14px; }
+
+  /* closed-state caption */
+  .open-hint { position: fixed; inset: 0; display: flex; align-items: center;
+    justify-content: center; z-index: 40; }
+  .open-hint span { font-size: 13px; color: var(--ink-3); background: var(--paper-1);
+    border: 1px solid var(--border); border-radius: var(--r-md);
+    box-shadow: var(--shadow-sm); padding: 10px 16px; }
+  .open-hint kbd { font-family: var(--font-mono); font-size: 11px; color: var(--ink-2);
+    background: var(--paper-0); border: 1px solid var(--border-strong);
+    border-radius: var(--r-sm); padding: 1px 6px; margin: 0 2px; }
+
+  /* ---- palette ----------------------------------------------------------- */
+  .scrim { position: fixed; inset: 0; background: rgba(29, 27, 23, 0.35);
+    z-index: 50; display: flex; justify-content: center; align-items: flex-start;
+    padding-top: 15vh; }
+  .palette { width: 640px; max-width: 92vw; background: var(--paper-0);
+    border: 1px solid var(--paper-4); border-radius: var(--r-lg);
+    box-shadow: var(--shadow-xl); overflow: hidden;
+    animation: pop 160ms var(--ease-spring); }
+  @keyframes pop { from { transform: translateY(6px) scale(0.98); opacity: 0; }
+    to { transform: none; opacity: 1; } }
+
+  /* scope trail — the poppable path. Deepest segment is a wash capsule; the
+     ⌫ glyph appears only while Backspace would actually pop it (empty input). */
+  .pal-scope { display: flex; align-items: center; gap: 7px;
+    padding: 10px 16px 0; font-family: var(--font-mono); font-size: 11px;
+    color: var(--ink-3); }
+  .pal-scope .arrow { color: var(--accent); }
+  .pal-scope .seg { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .pal-scope .seg.deep { background: var(--accent-wash); color: var(--accent-ink);
+    border-radius: var(--r-sm); padding: 2px 8px; display: inline-flex;
+    align-items: center; gap: 6px; }
+  .pal-scope .pop-key { font-size: 10px; background: none; border: 0;
+    padding: 0; margin: 0; color: inherit; opacity: 0;
+    transition: opacity var(--dur-fast) var(--ease-out); }
+  .pal-scope .pop-key.on { opacity: 1; }
+
+  .pal-search { display: flex; align-items: center; gap: 10px;
+    padding: 12px 16px; border-bottom: 1px solid var(--border); }
+  .pal-search svg { flex: 0 0 16px; color: var(--ink-3); }
+  .pal-search input, .pal-search input:focus, .pal-search input:focus-visible {
+    flex: 1; min-width: 0; border: 0; border-radius: 0; box-shadow: none;
+    padding: 0; margin: 0; background: transparent; outline: none;
+    font-family: var(--font-sans); font-size: 15px; color: var(--ink-1); }
+  .pal-search input::placeholder { color: var(--ink-4); }
+  .load-dot { width: 7px; height: 7px; flex: 0 0 7px; border-radius: var(--r-full);
+    background: var(--accent); opacity: 0; }
+  .load-dot.on { opacity: 1; animation: pulse 1s var(--ease-in-out) infinite; }
+  @keyframes pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(0.55); } }
+  .esc { font-family: var(--font-mono); font-size: 10px; color: var(--ink-4); }
+
+  .pal-list { max-height: 380px; overflow-y: auto;
+    scrollbar-width: thin; scrollbar-color: var(--paper-4) transparent; }
+  .pal-list.swap { animation: swap var(--dur-fast) var(--ease-out); }
+  @keyframes swap { from { opacity: 0; transform: translateY(2px); } to { opacity: 1; transform: none; } }
+
+  .pal-sec { padding: 10px 16px 4px; font-family: var(--font-mono);
+    font-size: 10px; text-transform: uppercase; letter-spacing: 0.08em;
+    color: var(--ink-4); }
+  .pal-div { height: 1px; background: var(--border); margin: 6px 0; }
+
+  /* rows — shared template: [icon] label/sublabel | meta + keys */
+  .pal-row { display: flex; align-items: center; gap: 10px;
+    padding: 7px 16px; cursor: pointer; }
+  .pal-row svg { flex: 0 0 14px; width: 14px; height: 14px; color: var(--ink-3); }
+  .pal-main { flex: 1; min-width: 0; }
+  .pal-label { font-size: 13.5px; color: var(--ink-1); white-space: nowrap;
+    overflow: hidden; text-overflow: ellipsis; }
+  .pal-sub { font-size: 12px; color: var(--ink-3); white-space: nowrap;
+    overflow: hidden; text-overflow: ellipsis; margin-top: 1px; }
+  .pal-side { flex: 0 0 auto; display: flex; align-items: center; gap: 8px; }
+  .pal-meta { font-family: var(--font-mono); font-size: 10px; color: var(--ink-4); }
+  .pal-keys { display: flex; gap: 4px; }
+  .chip { font-family: var(--font-mono); font-size: 11px; color: var(--ink-3);
+    background: var(--paper-0); border: 1px solid var(--border-strong);
+    border-radius: var(--r-sm); padding: 0 6px; line-height: 18px;
+    box-shadow: none; margin: 0; }
+  .pal-row.active { background: var(--accent-wash); }
+  .pal-row.active svg, .pal-row.active .pal-label { color: var(--accent-ink); }
+  .pal-row.active .pal-sub, .pal-row.active .pal-meta { color: var(--accent-ink); }
+
+  .pal-hint, .pal-empty { padding: 18px 16px; text-align: center;
+    font-size: 12.5px; color: var(--ink-4); }
+  .pal-hint { border-top: 1px solid var(--border); }
+
+  /* Enter feedback — where navigation would go */
+  .toast { position: fixed; left: 50%; bottom: 32px; transform: translateX(-50%);
+    z-index: 60; background: var(--paper-1); border: 1px solid var(--border);
+    border-radius: var(--r-md); box-shadow: var(--shadow-md);
+    padding: 8px 14px; font-family: var(--font-mono); font-size: 11.5px;
+    color: var(--ink-2); opacity: 0;
+    transition: opacity var(--dur-med) var(--ease-out); pointer-events: none; }
+  .toast.on { opacity: 1; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .palette, .pal-list.swap { animation: none; }
+    .load-dot.on { animation: none; }
+    .pal-scope .pop-key { transition: none; }
+  }
+</style>
+</head>
+<body>
+
+<div class="shell" aria-hidden="true">
+  <div class="shell-titlebar">
+    <span class="tl"></span><span class="tl"></span><span class="tl"></span>
+    <span class="shell-crumb">Polaris</span>
+  </div>
+  <div class="shell-body">
+    <div class="shell-side">
+      <div class="sk deep" style="width:60%"></div>
+      <div class="sk" style="width:82%"></div>
+      <div class="sk" style="width:70%"></div>
+      <div class="sk" style="width:76%"></div>
+      <div class="sk deep" style="width:44%; margin-top:16px"></div>
+      <div class="sk" style="width:66%"></div>
+      <div class="sk" style="width:58%"></div>
+    </div>
+    <div class="shell-main">
+      <div class="sk deep" style="width:34%; height:22px"></div>
+      <div class="sk" style="width:88%"></div>
+      <div class="sk" style="width:74%"></div>
+      <div class="sk" style="width:81%"></div>
+      <div class="sk" style="width:52%"></div>
+    </div>
+  </div>
+</div>
+
+<div id="app"></div>
+<div id="toast" class="toast" role="status"></div>
+
+<script>
+/* =============================================================================
+   Fixture registry — mirrors the real manifests + palette layers:
+   src/systems/journal/palette.ts (topics → notes, spool / file-text icons)
+   src/systems/expenses/palette.ts (activities, receipt icon)
+   ========================================================================== */
+const ICONS = {
+  search: '<path d="m21 21-4.34-4.34"/><circle cx="11" cy="11" r="8"/>',
+  'book-open': '<path d="M12 7v14"/><path d="M3 18a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h5a4 4 0 0 1 4 4 4 4 0 0 1 4-4h5a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1h-6a3 3 0 0 0-3 3 3 3 0 0 0-3-3z"/>',
+  receipt: '<path d="M12 17V7"/><path d="M16 8h-6a2 2 0 0 0 0 4h4a2 2 0 0 1 0 4H8"/><path d="M4 3a1 1 0 0 1 1-1 1.3 1.3 0 0 1 .7.2l.933.6a1.3 1.3 0 0 0 1.4 0l.934-.6a1.3 1.3 0 0 1 1.4 0l.933.6a1.3 1.3 0 0 0 1.4 0l.933-.6a1.3 1.3 0 0 1 1.4 0l.934.6a1.3 1.3 0 0 0 1.4 0l.933-.6A1.3 1.3 0 0 1 19 2a1 1 0 0 1 1 1v18a1 1 0 0 1-1 1 1.3 1.3 0 0 1-.7-.2l-.933-.6a1.3 1.3 0 0 0-1.4 0l-.934.6a1.3 1.3 0 0 1-1.4 0l-.933-.6a1.3 1.3 0 0 0-1.4 0l-.933.6a1.3 1.3 0 0 1-1.4 0l-.934-.6a1.3 1.3 0 0 0-1.4 0l-.933.6a1.3 1.3 0 0 1-.7.2 1 1 0 0 1-1-1z"/>',
+  spool: '<path d="M17 13.44 4.442 17.082A2 2 0 0 0 4.982 21H19a2 2 0 0 0 .558-3.921l-1.115-.32A2 2 0 0 1 17 14.837V7.66"/><path d="m7 10.56 12.558-3.642A2 2 0 0 0 19.018 3H5a2 2 0 0 0-.558 3.921l1.115.32A2 2 0 0 1 7 9.163v7.178"/>',
+  'file-text': '<path d="M6 22a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h8a2.4 2.4 0 0 1 1.704.706l3.588 3.588A2.4 2.4 0 0 1 20 8v12a2 2 0 0 1-2 2z"/><path d="M14 2v5a1 1 0 0 0 1 1h5"/><path d="M10 9H8"/><path d="M16 13H8"/><path d="M16 17H8"/>',
+};
+function icon(name, size) {
+  return `<svg viewBox="0 0 24 24" width="${size}" height="${size}" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICONS[name] || ''}</svg>`;
+}
+
+const TOPICS = [
+  { id: 't1', label: 'Polaris', sublabel: 'Platform build log', href: '/journal/topics/Polaris' },
+  { id: 't2', label: 'Homelab', sublabel: 'Proxmox, networking, self-hosting', href: '/journal/topics/Homelab' },
+  { id: 't3', label: 'Mediajel', sublabel: 'Work notes', href: '/journal/topics/Mediajel' },
+  { id: 't4', label: 'Reading', sublabel: 'Books and papers', href: '/journal/topics/Reading' },
+];
+const NOTES = [
+  { id: 'n1', topic: 't1', label: 'Palette resolver sketch', sublabel: '2h ago', href: '/journal/topics/Polaris#entry-n1' },
+  { id: 'n2', topic: 't1', label: 'Prisma driver adapter gotcha', sublabel: 'yesterday', href: '/journal/topics/Polaris#entry-n2' },
+  { id: 'n3', topic: 't1', label: 'Expenses sync queue retries', sublabel: '3d ago', href: '/journal/topics/Polaris#entry-n3' },
+  { id: 'n4', topic: 't1', label: 'Turbopack stale CSS fix', sublabel: '1w ago', href: '/journal/topics/Polaris#entry-n4' },
+  { id: 'n5', topic: 't2', label: 'OPNsense VLAN segmentation', sublabel: '2d ago', href: '/journal/topics/Homelab#entry-n5' },
+  { id: 'n6', topic: 't2', label: 'Pi-hole upstream DNS', sublabel: '2w ago', href: '/journal/topics/Homelab#entry-n6' },
+  { id: 'n7', topic: 't3', label: 'Attribution pipeline notes', sublabel: '4d ago', href: '/journal/topics/Mediajel#entry-n7' },
+  { id: 'n8', topic: 't4', label: 'Designing Data-Intensive Applications, ch. 3', sublabel: '1w ago', href: '/journal/topics/Reading#entry-n8' },
+];
+const ACTIVITIES = [
+  { id: 'a1', label: 'Groceries — SM City', sublabel: 'Groceries · Jul 5', href: '/expenses/a1' },
+  { id: 'a2', label: 'Weekly palengke run', sublabel: 'Groceries · Jun 29', href: '/expenses/a2' },
+  { id: 'a3', label: 'Hardware store', sublabel: 'Household · Jun 21', href: '/expenses/a3' },
+  { id: 'a4', label: 'Pharmacy refill', sublabel: 'Health · Jun 14', href: '/expenses/a4' },
+];
+
+const SYSTEMS = [
+  {
+    name: 'journal', displayName: 'Engineering Journal', icon: 'book-open', href: '/journal',
+    layers: [
+      { name: 'topics', singular: 'topic',
+        search: (q, parentId) => TOPICS
+          .filter(t => !q || t.label.toLowerCase().includes(q))
+          .map(t => ({ ...t, icon: 'spool', drillable: true })) },
+      { name: 'notes', singular: 'note',
+        search: (q, parentId) => NOTES
+          .filter(n => (parentId ? n.topic === parentId : true))
+          .filter(n => !q || n.label.toLowerCase().includes(q))
+          .map(n => ({ ...n, icon: 'file-text', drillable: false })) },
+    ],
+  },
+  {
+    name: 'expenses', displayName: 'Activity Expenses', icon: 'receipt', href: '/expenses',
+    layers: [
+      { name: 'activities', singular: 'activity',
+        search: (q, parentId) => ACTIVITIES
+          .filter(a => !q || (a.label + ' ' + a.sublabel).toLowerCase().includes(q))
+          .map(a => ({ ...a, icon: 'receipt', drillable: false })) },
+    ],
+  },
+];
+
+/* rankResults: prefix-on-label > substring-on-label > substring-on-sublabel;
+   stable within a tier (layers pre-rank by recency). */
+function rank(results, q) {
+  if (!q) return results;
+  const tier = r => r.label.toLowerCase().startsWith(q) ? 0
+    : r.label.toLowerCase().includes(q) ? 1 : 2;
+  return results.map((r, i) => [tier(r), i, r])
+    .sort((a, b) => a[0] - b[0] || a[1] - b[1]).map(x => x[2]);
+}
+
+/* fake aggregation endpoint — ~220ms latency so the loading state is visible */
+function searchAPI({ query, scope }) {
+  const q = query.trim().toLowerCase();
+  return new Promise(resolve => setTimeout(() => {
+    if (!scope) {
+      const matchedSystems = SYSTEMS.filter(s =>
+        !q || s.name.includes(q) || s.displayName.toLowerCase().includes(q));
+      // v1 recommendation: no cross-system fallback wall on an empty query
+      const results = !q ? [] : rank(SYSTEMS.flatMap(s =>
+        s.layers.flatMap((layer, layerIndex) =>
+          layer.search(q, null).map(r => ({
+            ...r, systemName: s.name, systemDisplayName: s.displayName,
+            layerIndex, layerName: layer.name,
+          })))), q).slice(0, 30);
+      resolve({ matchedSystems, results });
+    } else {
+      const sys = SYSTEMS.find(s => s.name === scope.systemName);
+      const layer = sys.layers[scope.layerIndex];
+      resolve({ results: layer.search(q, scope.parentId).map(r => ({
+        ...r, systemName: sys.name, systemDisplayName: sys.displayName,
+        layerIndex: scope.layerIndex, layerName: layer.name,
+      })) });
+    }
+  }, 220));
+}
+
+/* =============================================================================
+   Palette state machine
+   ========================================================================== */
+const state = {
+  open: true, query: '', scopeStack: [], selected: 0, loading: false,
+  matchedSystems: [], results: [], fetched: false,
+};
+let debounceTimer = null, fetchSeq = 0;
+
+const app = document.getElementById('app');
+const toastEl = document.getElementById('toast');
+let toastTimer = null;
+
+function esc(s) { return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/"/g, '&quot;'); }
+
+function scopeOf() {
+  const top = state.scopeStack[state.scopeStack.length - 1];
+  return top ? { systemName: top.systemName, layerIndex: top.layerIndex, parentId: top.parentId } : undefined;
+}
+
+function currentLayer() {
+  const top = state.scopeStack[state.scopeStack.length - 1];
+  if (!top) return null;
+  return SYSTEMS.find(s => s.name === top.systemName).layers[top.layerIndex];
+}
+
+function placeholder() {
+  const top = state.scopeStack[state.scopeStack.length - 1];
+  if (!top) return 'Search systems and entities…';
+  const layer = currentLayer();
+  return `Search ${layer.name} in ${top.parentLabel}…`;
+}
+
+/* flat selectable list: system matches first (top level), then results */
+function selectable() {
+  const rows = [];
+  if (!scopeOf()) state.matchedSystems.forEach(s => rows.push({ kind: 'system', s }));
+  state.results.forEach(r => rows.push({ kind: 'result', r }));
+  return rows;
+}
+
+function runSearch(immediate) {
+  clearTimeout(debounceTimer);
+  const go = () => {
+    const seq = ++fetchSeq;
+    state.loading = true;
+    render();
+    searchAPI({ query: state.query, scope: scopeOf() }).then(res => {
+      if (seq !== fetchSeq) return; // stale response
+      state.matchedSystems = res.matchedSystems || [];
+      state.results = res.results;
+      state.loading = false;
+      state.fetched = true;
+      state.selected = 0;
+      render(true);
+    });
+  };
+  if (immediate) go(); else debounceTimer = setTimeout(go, 150);
+}
+
+function pushScope(entry) {
+  state.scopeStack.push(entry);
+  state.query = '';
+  state.fetched = false;
+  render();
+  runSearch(true);
+}
+
+function popScope() {
+  if (!state.scopeStack.length) return;
+  state.scopeStack.pop();
+  state.fetched = false;
+  render();
+  runSearch(true);
+}
+
+function navigate(href) {
+  toastEl.textContent = 'Open ' + href;
+  toastEl.classList.add('on');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => toastEl.classList.remove('on'), 1600);
+  close();
+}
+
+function openPalette() {
+  state.open = true; state.query = ''; state.scopeStack = [];
+  state.selected = 0; state.fetched = false;
+  render();
+  runSearch(true);
+}
+function close() { state.open = false; render(); }
+
+function onTab() {
+  const row = selectable()[state.selected];
+  if (!row) return;
+  if (row.kind === 'system' && row.s.layers.length) {
+    pushScope({ systemName: row.s.name, systemDisplayName: row.s.displayName,
+      layerIndex: 0, layerName: row.s.layers[0].name, parentId: null,
+      parentLabel: row.s.displayName });
+  } else if (row.kind === 'result' && row.r.drillable) {
+    const sys = SYSTEMS.find(s => s.name === row.r.systemName);
+    const next = row.r.layerIndex + 1;
+    if (next < sys.layers.length) {
+      pushScope({ systemName: sys.name, systemDisplayName: sys.displayName,
+        layerIndex: next, layerName: sys.layers[next].name,
+        parentId: row.r.id, parentLabel: row.r.label });
+    }
+  }
+}
+
+function onEnter() {
+  const row = selectable()[state.selected];
+  if (!row) return;
+  navigate(row.kind === 'system' ? row.s.href : row.r.href);
+}
+
+document.addEventListener('keydown', e => {
+  if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
+    e.preventDefault();
+    state.open ? close() : openPalette();
+    return;
+  }
+  if (!state.open) return;
+  const rows = selectable();
+  if (e.key === 'Escape') { e.preventDefault(); close(); }
+  else if (e.key === 'ArrowDown') { e.preventDefault();
+    state.selected = Math.min(rows.length - 1, state.selected + 1); render(); }
+  else if (e.key === 'ArrowUp') { e.preventDefault();
+    state.selected = Math.max(0, state.selected - 1); render(); }
+  else if (e.key === 'Tab') { e.preventDefault(); onTab(); }
+  else if (e.key === 'Enter') { e.preventDefault(); onEnter(); }
+  else if (e.key === 'Backspace' && state.query === '' && state.scopeStack.length) {
+    e.preventDefault(); popScope();
+  }
+});
+
+/* =============================================================================
+   Render
+   ========================================================================== */
+function renderScope() {
+  if (!state.scopeStack.length) return '';
+  const segs = state.scopeStack.map((s, i) => {
+    const deep = i === state.scopeStack.length - 1;
+    const label = esc(s.parentLabel);
+    return deep
+      ? `<span class="seg deep">${label}<kbd class="pop-key${state.query === '' ? ' on' : ''}">⌫</kbd></span>`
+      : `<span class="seg">${label}</span>`;
+  }).join('<span aria-hidden="true">·</span>');
+  return `<div class="pal-scope"><span class="arrow" aria-hidden="true">→</span>${segs}</div>`;
+}
+
+function renderRow(row, i) {
+  const active = i === state.selected;
+  const id = `pal-opt-${i}`;
+  if (row.kind === 'system') {
+    const chain = row.s.layers.map(l => l.name).join(' › ');
+    const keys = active
+      ? `<span class="pal-keys">${row.s.layers.length ? '<kbd class="chip">⇥</kbd>' : ''}<kbd class="chip">↵</kbd></span>` : '';
+    return `<div class="pal-row${active ? ' active' : ''}" id="${id}" role="option" aria-selected="${active}" data-i="${i}">
+      ${icon(row.s.icon, 14)}
+      <div class="pal-main"><div class="pal-label">${esc(row.s.displayName)}</div></div>
+      <div class="pal-side"><span class="pal-meta">${esc(chain)}</span>${keys}</div>
+    </div>`;
+  }
+  const r = row.r;
+  const scoped = !!scopeOf();
+  const meta = scoped ? '' : `<span class="pal-meta">${esc(r.systemDisplayName)} · ${esc(r.layerName)}</span>`;
+  const keys = active
+    ? `<span class="pal-keys">${r.drillable ? '<kbd class="chip">⇥</kbd>' : ''}<kbd class="chip">↵</kbd></span>` : '';
+  return `<div class="pal-row${active ? ' active' : ''}" id="${id}" role="option" aria-selected="${active}" data-i="${i}">
+    ${icon(r.icon, 14)}
+    <div class="pal-main">
+      <div class="pal-label">${esc(r.label)}</div>
+      ${r.sublabel ? `<div class="pal-sub">${esc(r.sublabel)}</div>` : ''}
+    </div>
+    <div class="pal-side">${meta}${keys}</div>
+  </div>`;
+}
+
+function renderList() {
+  const rows = selectable();
+  const scoped = !!scopeOf();
+  const q = state.query.trim();
+  let html = '';
+  if (!scoped && state.matchedSystems.length) {
+    html += `<div class="pal-sec">Systems</div>`;
+    html += state.matchedSystems.map((s, i) => renderRow({ kind: 'system', s }, i)).join('');
+    if (state.results.length) html += `<div class="pal-div" role="separator"></div>`;
+  }
+  const offset = scoped ? 0 : state.matchedSystems.length;
+  html += state.results.map((r, i) => renderRow({ kind: 'result', r }, offset + i)).join('');
+
+  if (state.fetched && !rows.length && q) {
+    html += `<div class="pal-empty">${scoped ? `No matching ${esc(currentLayer().name)}.` : 'No matches in any system.'}</div>`;
+  }
+  if (!q && !scoped) {
+    html += `<div class="pal-hint">Type to search systems and entities · Tab to drill in · Enter to open.</div>`;
+  } else if (state.fetched && !q && scoped && !rows.length) {
+    const layer = currentLayer();
+    const top = state.scopeStack[state.scopeStack.length - 1];
+    html += `<div class="pal-empty">Search ${esc(layer.name)} in ${esc(top.parentLabel)}.</div>`;
+  }
+  return html;
+}
+
+let lastListKey = '';
+function render(swapList) {
+  if (!state.open) {
+    app.innerHTML = `<div class="open-hint"><span>Press <kbd>⌘K</kbd> to open the command palette.</span></div>`;
+    return;
+  }
+  app.innerHTML = `
+  <div class="scrim">
+    <div class="palette" role="dialog" aria-modal="true" aria-label="Command palette">
+      ${renderScope()}
+      <div class="pal-search">
+        ${icon('search', 16)}
+        <input type="text" value="${esc(state.query)}" placeholder="${esc(placeholder())}"
+          aria-controls="pal-list" aria-activedescendant="pal-opt-${state.selected}"
+          autocomplete="off" spellcheck="false">
+        <span class="load-dot${state.loading ? ' on' : ''}" aria-hidden="true"></span>
+        <span class="esc">esc</span>
+      </div>
+      <div class="pal-list${swapList ? ' swap' : ''}" id="pal-list" role="listbox">
+        ${renderList()}
+      </div>
+    </div>
+  </div>`;
+
+  const scrim = app.querySelector('.scrim');
+  scrim.addEventListener('mousedown', e => { if (e.target === scrim) close(); });
+  const input = app.querySelector('input');
+  input.focus();
+  input.setSelectionRange(input.value.length, input.value.length);
+  input.addEventListener('input', e => {
+    state.query = e.target.value;
+    render(); // re-render chrome (pop-key, hint) without waiting for results
+    runSearch();
+  });
+  app.querySelectorAll('.pal-row').forEach(el => {
+    el.addEventListener('mousemove', () => {
+      const i = +el.dataset.i;
+      if (state.selected !== i) { state.selected = i; render(); }
+    });
+    el.addEventListener('mousedown', e => e.preventDefault());
+    el.addEventListener('click', () => { state.selected = +el.dataset.i; onEnter(); });
+  });
+  const activeRow = app.querySelector('.pal-row.active');
+  if (activeRow) activeRow.scrollIntoView({ block: 'nearest' });
+}
+
+/* =============================================================================
+   ?state= presets for screenshots / review
+   home | query | system | scoped | deep | deep-query | none | loading | closed
+   ========================================================================== */
+const preset = new URLSearchParams(location.search).get('state');
+const SCOPE_JOURNAL = { systemName: 'journal', systemDisplayName: 'Engineering Journal',
+  layerIndex: 0, layerName: 'topics', parentId: null, parentLabel: 'Engineering Journal' };
+const SCOPE_POLARIS = { systemName: 'journal', systemDisplayName: 'Engineering Journal',
+  layerIndex: 1, layerName: 'notes', parentId: 't1', parentLabel: 'Polaris' };
+
+if (preset === 'closed') { state.open = false; render(); }
+else {
+  if (preset === 'query') state.query = 'pol';
+  else if (preset === 'system') state.query = 'jo';
+  else if (preset === 'none') state.query = 'zzz';
+  else if (preset === 'scoped') state.scopeStack = [SCOPE_JOURNAL];
+  else if (preset === 'deep') state.scopeStack = [SCOPE_JOURNAL, SCOPE_POLARIS];
+  else if (preset === 'deep-query') { state.scopeStack = [SCOPE_JOURNAL, SCOPE_POLARIS]; state.query = 'sync'; }
+  else if (preset === 'loading') { state.query = 'pol'; }
+  render();
+  runSearch(true);
+  if (preset === 'loading') fetchSeq++; // orphan the response so the dot persists
+}
+</script>
+</body>
+</html>
