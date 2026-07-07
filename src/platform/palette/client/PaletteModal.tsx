@@ -342,8 +342,8 @@ export function PaletteModal({ onClose }: PaletteModalProps) {
                     <span className="palette-scope-seg deep">
                       {s.parentLabel}
                       <kbd
-                        className={`palette-pop-key${emptyQuery ? " on" : ""}`}
-                        aria-hidden={!emptyQuery}
+                        className={`palette-pop-key${query === "" ? " on" : ""}`}
+                        aria-hidden={query !== ""}
                       >
                         ⌫
                       </kbd>
@@ -368,8 +368,8 @@ export function PaletteModal({ onClose }: PaletteModalProps) {
             onKeyDown={onKeyDown}
             aria-label="Command palette input"
             role="combobox"
-            aria-expanded="true"
-            aria-controls="palette-listbox"
+            aria-expanded={selectable.length > 0}
+            aria-controls={selectable.length > 0 ? "palette-listbox" : undefined}
             aria-activedescendant={
               selectable.length > 0 ? `palette-option-${selectedIndex}` : undefined
             }
@@ -386,12 +386,12 @@ export function PaletteModal({ onClose }: PaletteModalProps) {
           <ul className="palette-results" id="palette-listbox" role="listbox">
             {systemItems.length > 0 ? (
               <>
-                <li className="palette-group-header" aria-hidden="true">
+                <li className="palette-group-header" role="presentation" aria-hidden="true">
                   Systems
                 </li>
                 {systemItems.map((s, i) => row(i, s))}
                 {resultItems.length > 0 ? (
-                  <li className="palette-divider" role="separator" />
+                  <li className="palette-divider" role="presentation" aria-hidden="true" />
                 ) : null}
               </>
             ) : null}

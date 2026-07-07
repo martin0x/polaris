@@ -1282,6 +1282,7 @@ kbd, .kbd {
   cursor: default;
 }
 .palette-row svg { color: var(--ink-3); }
+.palette-main { min-width: 0; }
 .palette-row .lbl {
   color: var(--ink-1);
   font-size: var(--fs-base);
