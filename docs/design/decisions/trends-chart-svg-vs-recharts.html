@@ -1,0 +1,212 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Decision — Trends chart: custom SVG vs Recharts</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap');
+  /* Tokens copied from src/app/globals.css for this standalone sample */
+  :root {
+    --paper-0: #fefcf7; --paper-1: #faf7ef; --paper-2: #f5f0e4;
+    --paper-3: #ece6d5; --paper-4: #dfd7c0;
+    --ink-0: #1d1b17; --ink-1: #2e2a23; --ink-2: #4a4439;
+    --ink-3: #6b6454; --ink-4: #9a9281;
+    --accent: #3c2ea3; --heading: #8a5a3a; --link: #5f74c1;
+    --bg: var(--paper-0); --bg-raised: var(--paper-1);
+    --border: var(--paper-3); --border-strong: var(--paper-4);
+    --fg: var(--ink-0); --fg-muted: var(--ink-3); --fg-faint: var(--ink-4);
+    --r-md: 6px; --r-lg: 10px;
+    --shadow-sm: 0 1px 3px rgba(40, 32, 20, 0.08), 0 1px 2px rgba(40, 32, 20, 0.05);
+    --shadow-md: 0 4px 10px rgba(40, 32, 20, 0.1), 0 2px 4px rgba(40, 32, 20, 0.06);
+    --fs-xs: 11px; --fs-sm: 12.5px; --fs-base: 14.5px; --fs-lg: 19px; --fs-xl: 23px;
+    --font-serif: "Source Serif 4", Georgia, serif;
+    --font-sans: "Inter", system-ui, sans-serif;
+    --font-mono: "JetBrains Mono", ui-monospace, monospace;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; padding: 40px 24px; background: var(--bg); color: var(--fg);
+    font-family: var(--font-sans); font-size: var(--fs-base); line-height: 1.55;
+  }
+  .wrap { max-width: 760px; margin: 0 auto; }
+  h1 {
+    font-family: var(--font-serif); color: var(--heading);
+    font-size: var(--fs-xl); font-weight: 600; letter-spacing: -0.015em; margin: 0 0 4px;
+  }
+  .lead { color: var(--fg-muted); margin: 0 0 32px; }
+  .paper-card {
+    background: var(--bg-raised); border: 1px solid var(--border);
+    border-radius: var(--r-lg); box-shadow: var(--shadow-sm);
+    padding: 24px; margin-bottom: 32px;
+  }
+  .card-title { font-size: var(--fs-base); font-weight: 600; margin: 0 0 2px; }
+  .card-sub { font-size: var(--fs-sm); color: var(--fg-muted); margin: 0 0 16px; }
+  .legend { display: flex; gap: 16px; margin: 12px 0 0; font-size: var(--fs-sm); color: var(--fg-muted); }
+  .legend span { display: inline-flex; align-items: center; gap: 6px; }
+  .legend i { width: 10px; height: 10px; border-radius: 2px; display: inline-block; }
+  .note { font-size: var(--fs-sm); color: var(--fg-muted); border-top: 1px solid var(--border); padding-top: 12px; margin-top: 16px; }
+  .tick { font-family: var(--font-mono); font-size: 11px; fill: var(--fg-faint); }
+  .tooltip {
+    position: fixed; pointer-events: none; display: none; z-index: 10;
+    background: var(--bg-raised); border: 1px solid var(--border);
+    border-radius: var(--r-md); box-shadow: var(--shadow-md);
+    padding: 8px 10px; font-size: var(--fs-sm);
+  }
+  .tooltip b { display: block; font-family: var(--font-mono); font-weight: 500; margin-bottom: 4px; }
+  .tooltip .row { display: flex; justify-content: space-between; gap: 16px; }
+  .tooltip .row em { font-style: normal; color: var(--fg-muted); }
+  .tooltip .row var { font-style: normal; font-family: var(--font-mono); }
+  .recharts-fallback { color: var(--fg-muted); font-size: var(--fs-sm); padding: 40px 0; text-align: center; }
+  .decision {
+    border: 1px solid var(--border-strong); border-left: 3px solid var(--accent);
+    border-radius: var(--r-md); background: var(--bg-raised);
+    padding: 16px 18px; margin: 0 0 32px;
+  }
+  .decision .overline {
+    font-family: var(--font-mono); font-size: var(--fs-xs); letter-spacing: 0.08em;
+    text-transform: uppercase; color: var(--accent); margin: 0 0 6px;
+  }
+  .decision p { margin: 0 0 8px; }
+  .decision p:last-child { margin-bottom: 0; }
+  .decision code { font-family: var(--font-mono); font-size: var(--fs-sm); }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Trends chart comparison</h1>
+  <p class="lead">The same six months of sample data, rendered both ways. Hover the bars in each — the tooltip behavior is part of the comparison.</p>
+
+  <div class="decision">
+    <p class="overline">Decision — resolved June 2026</p>
+    <p><strong>Recharts (Option B) shipped.</strong> The live chart is
+      <code>src/systems/expenses/components/TrendsChart.tsx</code>, backed by the
+      <code>recharts</code> dependency in <code>package.json</code>.</p>
+    <p>Free tooltips, legend, and responsiveness plus a trivial path to line/area
+      charts later outweighed the ~150&nbsp;kB dependency and the leftover library
+      chrome (animation curve, tooltip, legend layout) that doesn't fully match
+      Polaris tokens. This page is kept as the record of that trade-off — re-open
+      it if bundle size or theming fidelity later makes the custom SVG (Option A)
+      worth the ~100 lines we'd own.</p>
+  </div>
+
+  <div class="paper-card">
+    <h2 class="card-title">Option A — custom SVG</h2>
+    <p class="card-sub">~100 lines we own, styled directly with tokens, no dependency.</p>
+    <div id="svg-chart"></div>
+    <div class="legend" id="svg-legend"></div>
+    <p class="note">This is what would ship: grouped monthly bars, mono axis labels, paper-card tooltip. Anything beyond this (lines, brushing, zoom) we would build ourselves.</p>
+  </div>
+
+  <div class="paper-card">
+    <h2 class="card-title">Option B — Recharts</h2>
+    <p class="card-sub">Library defaults re-themed toward Polaris as far as its API allows.</p>
+    <div id="recharts-chart" style="height: 280px;"></div>
+    <p class="note">Adds a ~150 kB dependency. Tooltips, legends, and responsiveness come free, and growing into line/area charts later is trivial. Look closely at the leftover library styling — animation curve, tooltip chrome, legend layout.</p>
+  </div>
+</div>
+
+<div class="tooltip" id="tip"></div>
+
+<script>
+  // Shared sample data — six months of activity totals in centavos.
+  const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'];
+  const SERIES = [
+    { name: 'Groceries',  color: '#3c2ea3', values: [842000, 795000, 931000, 878000, 1024000, 962000] },
+    { name: 'Dining out', color: '#8a5a3a', values: [230000, 315000, 284000, 402000, 356000, 431000] },
+    { name: 'Night out',  color: '#5f74c1', values: [120000, 0, 275000, 185000, 0, 320000] },
+  ];
+  const peso = c => '₱' + (c / 100).toLocaleString('en-PH', { minimumFractionDigits: 2 });
+  const pesoShort = c => c === 0 ? '0' : '₱' + (c / 100000) + 'k';
+
+  // ---- Option A: the custom SVG chart, as the real component would render it ----
+  (function () {
+    const W = 680, H = 260, M = { top: 8, right: 8, bottom: 24, left: 48 };
+    const iw = W - M.left - M.right, ih = H - M.top - M.bottom;
+    const max = 1200000; // niced from data max
+    const ticks = [0, 300000, 600000, 900000, 1200000];
+    const y = v => M.top + ih - (v / max) * ih;
+    const groupW = iw / MONTHS.length, barW = Math.min(16, (groupW * 0.6) / SERIES.length);
+
+    let s = '<svg viewBox="0 0 ' + W + ' ' + H + '" style="width:100%;height:auto;display:block" role="img" aria-label="Monthly spend by type">';
+    for (const t of ticks) {
+      s += '<line x1="' + M.left + '" x2="' + (W - M.right) + '" y1="' + y(t) + '" y2="' + y(t) + '" stroke="var(--border)" stroke-width="1"/>';
+      s += '<text class="tick" x="' + (M.left - 8) + '" y="' + (y(t) + 3.5) + '" text-anchor="end">' + pesoShort(t) + '</text>';
+    }
+    MONTHS.forEach((m, mi) => {
+      const cx = M.left + groupW * mi + groupW / 2;
+      const total = SERIES.length * barW + (SERIES.length - 1) * 3;
+      s += '<g class="month-group" data-mi="' + mi + '">';
+      s += '<rect x="' + (M.left + groupW * mi) + '" y="' + M.top + '" width="' + groupW + '" height="' + ih + '" fill="transparent"/>';
+      SERIES.forEach((sr, si) => {
+        const x = cx - total / 2 + si * (barW + 3);
+        const h = Math.max(sr.values[mi] ? 2 : 0, ih * sr.values[mi] / max);
+        s += '<rect x="' + x + '" y="' + (M.top + ih - h) + '" width="' + barW + '" height="' + h + '" rx="2" fill="' + sr.color + '"/>';
+      });
+      s += '<text class="tick" x="' + cx + '" y="' + (H - 6) + '" text-anchor="middle">' + m + '</text></g>';
+    });
+    s += '</svg>';
+    document.getElementById('svg-chart').innerHTML = s;
+    document.getElementById('svg-legend').innerHTML = SERIES.map(sr =>
+      '<span><i style="background:' + sr.color + '"></i>' + sr.name + '</span>').join('');
+
+    const tip = document.getElementById('tip');
+    document.querySelectorAll('.month-group').forEach(g => {
+      g.addEventListener('mousemove', ev => {
+        const mi = +g.dataset.mi;
+        tip.innerHTML = '<b>' + MONTHS[mi] + ' 2026</b>' + SERIES.map(sr =>
+          '<div class="row"><em>' + sr.name + '</em><var>' + peso(sr.values[mi]) + '</var></div>').join('');
+        tip.style.display = 'block';
+        tip.style.left = Math.min(ev.clientX + 12, innerWidth - 200) + 'px';
+        tip.style.top = (ev.clientY + 12) + 'px';
+      });
+      g.addEventListener('mouseleave', () => { tip.style.display = 'none'; });
+    });
+  })();
+</script>
+
+<script crossorigin src="https://unpkg.com/react@18.3.1/umd/react.production.min.js"></script>
+<script crossorigin src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.production.min.js"></script>
+<script crossorigin src="https://unpkg.com/prop-types@15.8.1/prop-types.min.js"></script>
+<script crossorigin src="https://unpkg.com/recharts@2.15.4/umd/Recharts.js"></script>
+<script>
+  // ---- Option B: Recharts, themed toward Polaris as far as props allow ----
+  (function () {
+    const mount = document.getElementById('recharts-chart');
+    if (!window.Recharts || !window.ReactDOM) {
+      mount.innerHTML = '<div class="recharts-fallback">Could not load Recharts from the CDN. Check your connection and reload.</div>';
+      return;
+    }
+    const { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend } = Recharts;
+    const e = React.createElement;
+    const data = MONTHS.map((m, i) => {
+      const row = { month: m };
+      SERIES.forEach(sr => { row[sr.name] = sr.values[i] / 100; });
+      return row;
+    });
+    const tickStyle = { fill: '#9a9281', fontSize: 11, fontFamily: '"JetBrains Mono", monospace' };
+    ReactDOM.createRoot(mount).render(
+      e(ResponsiveContainer, { width: '100%', height: 280 },
+        e(BarChart, { data, barGap: 3, barCategoryGap: '28%' },
+          e(CartesianGrid, { vertical: false, stroke: '#ece6d5' }),
+          e(XAxis, { dataKey: 'month', tickLine: false, axisLine: { stroke: '#dfd7c0' }, tick: tickStyle }),
+          e(YAxis, { tickLine: false, axisLine: false, width: 48, tick: tickStyle,
+                     tickFormatter: v => v === 0 ? '0' : '₱' + (v / 1000) + 'k' }),
+          e(Tooltip, {
+            formatter: v => '₱' + v.toLocaleString('en-PH', { minimumFractionDigits: 2 }),
+            cursor: { fill: '#f5f0e4' },
+            contentStyle: { background: '#faf7ef', border: '1px solid #ece6d5', borderRadius: 6,
+                            fontSize: 12.5, fontFamily: '"Inter", sans-serif',
+                            boxShadow: '0 4px 10px rgba(40,32,20,0.1)' },
+            labelStyle: { fontFamily: '"JetBrains Mono", monospace', fontWeight: 500 }
+          }),
+          e(Legend, { iconType: 'square', iconSize: 10,
+                      wrapperStyle: { fontSize: 12.5, color: '#6b6454' } }),
+          ...SERIES.map(sr => e(Bar, { key: sr.name, dataKey: sr.name, fill: sr.color, radius: [2, 2, 0, 0] }))
+        )
+      )
+    );
+  })();
+</script>
+</body>
+</html>

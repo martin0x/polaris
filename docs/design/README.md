@@ -18,6 +18,11 @@ override your training data.
   every token and component in the system (color swatches, type specimens,
   buttons, tags, toasts, cards, etc.). Use these as the reference when
   implementing a new component.
+- [`palette-v1-reference/`](./palette-v1-reference/) — interactive prototype of
+  the global command palette (scope trail, drill-down, all states). Supersedes
+  the ui-kit's `CommandPalette.jsx` for the palette build.
+- [`decisions/`](./decisions/) — records of UI decisions where more than one
+  option was seriously weighed, each noting what was compared and which shipped.
 
 ## Non-negotiable rules
 
