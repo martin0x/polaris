@@ -38,6 +38,7 @@ export interface MatchedSystem {
   name: string;
   displayName: string;
   icon?: IconName;
+  href: string;
   layers: Array<{ name: string; singular: string }>;
 }
 

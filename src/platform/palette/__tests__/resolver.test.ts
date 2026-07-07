@@ -67,6 +67,7 @@ function makeRegistry(opts: {
         name: s.name,
         displayName: s.displayName,
         icon: s.icon as never,
+        href: `/${s.name}`,
       }));
     },
     allLayers() {
@@ -104,6 +105,7 @@ describe("resolveQuery", () => {
         name: "journal",
         displayName: "Engineering Journal",
         icon: undefined,
+        href: "/journal",
         layers: [
           { name: "topics", singular: "topic" },
           { name: "notes", singular: "note" },

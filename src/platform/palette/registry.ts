@@ -15,7 +15,7 @@ export interface PaletteRegistry {
   ): { manifest: SystemManifest; palette: PaletteSystemConfig } | null;
   matchSystems(
     query: string
-  ): Array<{ name: string; displayName: string; icon?: IconName }>;
+  ): Array<{ name: string; displayName: string; icon?: IconName; href: string }>;
   allLayers(): FlatLayer[];
 }
 
@@ -51,6 +51,7 @@ export function buildPaletteRegistry(
           name: m.name,
           displayName: m.displayName,
           icon: m.nav.icon as IconName,
+          href: m.nav.href,
         }));
       }
       return manifests
@@ -63,6 +64,7 @@ export function buildPaletteRegistry(
           name: m.name,
           displayName: m.displayName,
           icon: m.nav.icon as IconName,
+          href: m.nav.href,
         }));
     },
     allLayers() {

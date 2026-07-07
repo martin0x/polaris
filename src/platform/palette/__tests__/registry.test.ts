@@ -91,4 +91,13 @@ describe("buildPaletteRegistry", () => {
     const reg = buildPaletteRegistry([journal, settings]);
     expect(reg.allLayers().every((l) => l.systemName === "journal")).toBe(true);
   });
+
+  it("matchSystems includes each system's nav href", () => {
+    const reg = buildPaletteRegistry([journal, budgeting, settings]);
+    expect(reg.matchSystems("").map((s) => s.href).sort()).toEqual([
+      "/budgeting",
+      "/journal",
+    ]);
+    expect(reg.matchSystems("engin")[0].href).toBe("/journal");
+  });
 });
