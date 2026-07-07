@@ -16,7 +16,8 @@ export async function resolveQuery(
   const { query, scope } = input;
 
   if (!scope) {
-    const matched = registry.matchSystems(query);
+    const trimmedQuery = query.trim();
+    const matched = registry.matchSystems(trimmedQuery);
     const matchedSystems: MatchedSystem[] = matched.map((m) => {
       const sys = registry.getSystem(m.name);
       const layers = sys
@@ -24,6 +25,10 @@ export async function resolveQuery(
         : [];
       return { ...m, layers };
     });
+
+    if (!trimmedQuery) {
+      return { matchedSystems, results: [] };
+    }
 
     const layerHits = await Promise.all(
       registry.allLayers().map(async ({ layer, systemName, systemDisplayName, layerIndex }) => {

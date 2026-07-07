@@ -240,4 +240,42 @@ describe("resolveQuery", () => {
     const out = await resolveQuery(reg, { query: "note" });
     expect(out.results).toHaveLength(30);
   });
+
+  it("empty top-level query does not call any layer search", async () => {
+    const search = vi.fn(async () => [] as PaletteResult[]);
+    const reg = makeRegistry({
+      systems: [
+        {
+          name: "journal",
+          displayName: "Engineering Journal",
+          layers: [{ name: "topics", singular: "topic", search }],
+        },
+      ],
+    });
+    const out = await resolveQuery(reg, { query: "   " });
+    expect(search).not.toHaveBeenCalled();
+    expect(out.matchedSystems).toHaveLength(1);
+    expect(out.results).toEqual([]);
+  });
+
+  it("scoped empty query still calls the layer (layer defaults)", async () => {
+    const search = vi.fn(async () => [
+      { id: "t1", label: "Polaris", href: "/x" } as PaletteResult,
+    ]);
+    const reg = makeRegistry({
+      systems: [
+        {
+          name: "journal",
+          displayName: "Engineering Journal",
+          layers: [{ name: "topics", singular: "topic", search }],
+        },
+      ],
+    });
+    const out = await resolveQuery(reg, {
+      query: "",
+      scope: { systemName: "journal", layerIndex: 0, parentId: null },
+    });
+    expect(search).toHaveBeenCalledWith("", null);
+    expect(out.results).toHaveLength(1);
+  });
 });
