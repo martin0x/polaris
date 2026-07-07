@@ -1,6 +1,7 @@
 "use client";
 
 import {
+  Fragment,
   useCallback,
   useEffect,
   useMemo,
@@ -9,10 +10,7 @@ import {
 } from "react";
 import { useRouter } from "next/navigation";
 import { Icon, type IconName } from "@/app/_components/Icon";
-import type {
-  MatchedSystem,
-  PaletteResultWithMeta,
-} from "../types";
+import type { MatchedSystem, PaletteResultWithMeta } from "../types";
 import type { PaletteScopeFrame } from "./PaletteProvider";
 
 interface PaletteModalProps {
@@ -46,6 +44,7 @@ export function PaletteModal({ onClose }: PaletteModalProps) {
   const systemsCatalogRef = useRef<Map<string, MatchedSystem>>(new Map());
 
   const currentScope = scopeStack[scopeStack.length - 1];
+  const emptyQuery = query.trim() === "";
 
   const selectable = useMemo<SelectableItem[]>(() => {
     const items: SelectableItem[] = [];
@@ -59,6 +58,13 @@ export function PaletteModal({ onClose }: PaletteModalProps) {
   useEffect(() => {
     inputRef.current?.focus();
   }, []);
+
+  // Keep the selected row visible while arrowing through a scrolled list.
+  useEffect(() => {
+    document
+      .getElementById(`palette-option-${selectedIndex}`)
+      ?.scrollIntoView({ block: "nearest" });
+  }, [selectedIndex, results, matchedSystems]);
 
   // One-shot catalog fetch on mount. Independent of the debounced query
   // fetch so the catalog is populated even if the user types fast and the
@@ -177,6 +183,14 @@ export function PaletteModal({ onClose }: PaletteModalProps) {
     setQuery("");
   }, []);
 
+  const activate = useCallback(
+    (sel: SelectableItem) => {
+      if (sel.kind === "system") navigate(sel.system.href);
+      else navigate(sel.result.href);
+    },
+    [navigate]
+  );
+
   const onKeyDown = useCallback(
     (e: React.KeyboardEvent<HTMLInputElement>) => {
       if (e.key === "Escape") {
@@ -210,11 +224,7 @@ export function PaletteModal({ onClose }: PaletteModalProps) {
       if (!sel) return;
       if (e.key === "Enter") {
         e.preventDefault();
-        if (sel.kind === "system") {
-          pushSystemScope(sel.system);
-        } else {
-          navigate(sel.result.href);
-        }
+        activate(sel);
         return;
       }
       if (e.key === "Tab") {
@@ -236,48 +246,73 @@ export function PaletteModal({ onClose }: PaletteModalProps) {
       popScope,
       pushSystemScope,
       pushDrillScope,
-      navigate,
+      activate,
     ]
   );
 
-  const placeholder = !currentScope
-    ? "Type to search systems and entities · Tab to drill in · Enter to open."
-    : `Search ${currentScope.layerName} in ${currentScope.systemDisplayName}.`;
+  const placeholder = currentScope
+    ? `Search ${currentScope.layerName} in ${currentScope.parentLabel}…`
+    : "Search systems and entities…";
 
-  const breadcrumb =
-    scopeStack.length === 0
-      ? null
-      : "→ " + scopeStack.map((s) => s.parentLabel).join(" · ") + " ·";
-
-  const noResults =
-    !loading &&
-    selectable.length === 0 &&
-    query.length > 0 &&
-    !(matchedSystems && matchedSystems.length > 0);
+  const noResults = !loading && !emptyQuery && selectable.length === 0;
+  const scopedIdle =
+    !loading && emptyQuery && !!currentScope && selectable.length === 0;
 
   const systemItems = selectable.filter(
     (s): s is { kind: "system"; system: MatchedSystem } => s.kind === "system"
   );
   const resultItems = selectable.filter(
-    (s): s is { kind: "result"; result: PaletteResultWithMeta } => s.kind === "result"
+    (s): s is { kind: "result"; result: PaletteResultWithMeta } =>
+      s.kind === "result"
   );
 
-  function rowFor(index: number, kind: "system" | "result", node: React.ReactNode) {
+  function row(index: number, sel: SelectableItem) {
+    const selected = index === selectedIndex;
+    const icon: IconName | undefined =
+      sel.kind === "system" ? (sel.system.icon as IconName | undefined) : sel.result.icon;
+    const drills =
+      sel.kind === "system"
+        ? sel.system.layers.length > 0
+        : sel.result.drillable === true;
     return (
       <li
-        key={`${kind}-${index}`}
+        key={sel.kind === "system" ? `sys-${sel.system.name}` : `res-${sel.result.id}`}
+        id={`palette-option-${index}`}
         role="option"
-        className={`palette-row${index === selectedIndex ? " selected" : ""}`}
-        aria-selected={index === selectedIndex}
-        onMouseEnter={() => setSelectedIndex(index)}
-        onClick={() => {
-          const sel = selectable[index];
-          if (!sel) return;
-          if (sel.kind === "system") pushSystemScope(sel.system);
-          else navigate(sel.result.href);
+        className={`palette-row${selected ? " selected" : ""}`}
+        aria-selected={selected}
+        onMouseMove={() => {
+          if (selectedIndex !== index) setSelectedIndex(index);
         }}
+        onClick={() => activate(sel)}
       >
-        {node}
+        {icon ? <Icon name={icon} size={14} /> : <span />}
+        <div className="palette-main">
+          <div className="lbl">
+            {sel.kind === "system" ? sel.system.displayName : sel.result.label}
+          </div>
+          {sel.kind === "result" && sel.result.sublabel ? (
+            <div className="sublabel">{sel.result.sublabel}</div>
+          ) : null}
+        </div>
+        <div className="palette-side">
+          {sel.kind === "system" && sel.system.layers.length > 0 ? (
+            <span className="meta">
+              {sel.system.layers.map((l) => l.name).join(" › ")}
+            </span>
+          ) : null}
+          {sel.kind === "result" && !currentScope ? (
+            <span className="meta">
+              {sel.result.systemDisplayName} · {sel.result.layerName}
+            </span>
+          ) : null}
+          {selected ? (
+            <span className="palette-keys">
+              {drills ? <kbd>⇥</kbd> : null}
+              <kbd>↵</kbd>
+            </span>
+          ) : null}
+        </div>
       </li>
     );
   }
@@ -293,21 +328,75 @@ export function PaletteModal({ onClose }: PaletteModalProps) {
       }}
     >
       <div className="palette-modal">
-        {breadcrumb ? (
-          <div className="palette-breadcrumb">{breadcrumb}</div>
+        {scopeStack.length > 0 ? (
+          <div className="palette-scope">
+            <span className="palette-scope-arrow" aria-hidden="true">
+              →
+            </span>
+            {scopeStack.map((s, i) => {
+              const deep = i === scopeStack.length - 1;
+              return (
+                <Fragment key={`${s.systemName}-${s.layerIndex}-${i}`}>
+                  {i > 0 ? <span aria-hidden="true">·</span> : null}
+                  {deep ? (
+                    <span className="palette-scope-seg deep">
+                      {s.parentLabel}
+                      <kbd
+                        className={`palette-pop-key${emptyQuery ? " on" : ""}`}
+                        aria-hidden={!emptyQuery}
+                      >
+                        ⌫
+                      </kbd>
+                    </span>
+                  ) : (
+                    <span className="palette-scope-seg">{s.parentLabel}</span>
+                  )}
+                </Fragment>
+              );
+            })}
+          </div>
         ) : null}
-        <input
-          ref={inputRef}
-          className="palette-input"
-          type="text"
-          value={query}
-          placeholder={placeholder}
-          onChange={(e) => setQuery(e.target.value)}
-          onKeyDown={onKeyDown}
-          aria-label="Command palette input"
-        />
-        {selectable.length === 0 && query === "" && !loading ? (
-          <p className="palette-empty">{placeholder}</p>
+        <div className="palette-search">
+          <Icon name="search" />
+          <input
+            ref={inputRef}
+            className="palette-input"
+            type="text"
+            value={query}
+            placeholder={placeholder}
+            onChange={(e) => setQuery(e.target.value)}
+            onKeyDown={onKeyDown}
+            aria-label="Command palette input"
+            role="combobox"
+            aria-expanded="true"
+            aria-controls="palette-listbox"
+            aria-activedescendant={
+              selectable.length > 0 ? `palette-option-${selectedIndex}` : undefined
+            }
+            autoComplete="off"
+            spellCheck={false}
+          />
+          <span
+            className={`palette-load-dot${loading ? " on" : ""}`}
+            aria-hidden="true"
+          />
+          <kbd className="palette-esc">esc</kbd>
+        </div>
+        {selectable.length > 0 ? (
+          <ul className="palette-results" id="palette-listbox" role="listbox">
+            {systemItems.length > 0 ? (
+              <>
+                <li className="palette-group-header" aria-hidden="true">
+                  Systems
+                </li>
+                {systemItems.map((s, i) => row(i, s))}
+                {resultItems.length > 0 ? (
+                  <li className="palette-divider" role="separator" />
+                ) : null}
+              </>
+            ) : null}
+            {resultItems.map((r, i) => row(systemItems.length + i, r))}
+          </ul>
         ) : null}
         {noResults ? (
           <p className="palette-empty">
@@ -316,52 +405,16 @@ export function PaletteModal({ onClose }: PaletteModalProps) {
               : "No matches in any system."}
           </p>
         ) : null}
-        {selectable.length > 0 ? (
-          <ul className="palette-results" role="listbox">
-            {systemItems.length > 0 ? (
-              <>
-                <li className="palette-group-header">Systems</li>
-                {systemItems.map((s, i) =>
-                  rowFor(
-                    i,
-                    "system",
-                    <>
-                      {s.system.icon ? (
-                        <Icon name={s.system.icon as IconName} />
-                      ) : (
-                        <span />
-                      )}
-                      <div>
-                        <div className="lbl">{s.system.displayName}</div>
-                        <div className="sublabel">{s.system.name}</div>
-                      </div>
-                      <span className="meta">↹</span>
-                    </>
-                  )
-                )}
-                {resultItems.length > 0 ? <li className="palette-divider" /> : null}
-              </>
-            ) : null}
-            {resultItems.map((r, i) => {
-              const idx = systemItems.length + i;
-              return rowFor(
-                idx,
-                "result",
-                <>
-                  {r.result.icon ? <Icon name={r.result.icon} /> : <span />}
-                  <div>
-                    <div className="lbl">{r.result.label}</div>
-                    {r.result.sublabel ? (
-                      <div className="sublabel">{r.result.sublabel}</div>
-                    ) : null}
-                  </div>
-                  <span className="meta">
-                    {r.result.systemDisplayName} · {r.result.layerName}
-                  </span>
-                </>
-              );
-            })}
-          </ul>
+        {scopedIdle && currentScope ? (
+          <p className="palette-empty">
+            {`Search ${currentScope.layerName} in ${currentScope.parentLabel}.`}
+          </p>
+        ) : null}
+        {!currentScope && emptyQuery ? (
+          <p className="palette-hint">
+            Type to search systems and entities · Tab to drill in · Enter to
+            open.
+          </p>
         ) : null}
       </div>
     </div>
