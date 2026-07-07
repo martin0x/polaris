@@ -1247,16 +1247,17 @@ kbd, .kbd {
   .right-pane { display: none; }
 
   /* Icon-only rail, unconditionally — mirrors the .body.sidebar-collapsed
-     rules above. */
+     rules above. Scoped to .sidebar so .sb-label/.sb-item reused elsewhere
+     (e.g. the journal TopicPicker) keep their text on narrow viewports. */
   .sidebar { overflow-x: hidden; }
-  .sb-label,
-  .sb-search .k,
-  .sb-sec,
-  .sb-item .count {
+  .sidebar .sb-label,
+  .sidebar .sb-search .k,
+  .sidebar .sb-sec,
+  .sidebar .sb-item .count {
     display: none;
   }
-  .sb-item,
-  .sb-search {
+  .sidebar .sb-item,
+  .sidebar .sb-search {
     justify-content: center;
     gap: 0;
   }
