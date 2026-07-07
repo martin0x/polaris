@@ -27,6 +27,11 @@ export function usePalette(): PaletteContextValue {
   return v;
 }
 
+/** Like usePalette, but returns null outside a provider (e.g. signed-out chrome). */
+export function usePaletteOptional(): PaletteContextValue | null {
+  return useContext(Ctx);
+}
+
 export function PaletteProvider({ children }: { children: React.ReactNode }) {
   const [isOpen, setIsOpen] = useState(false);
   const open = useCallback(() => setIsOpen(true), []);

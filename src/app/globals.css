@@ -1322,6 +1322,19 @@ kbd, .kbd {
   border-top: 1px solid var(--border);
   margin: var(--sp-1) 0;
 }
+
+.palette-trigger {
+  display: inline-flex;
+  align-items: center;
+  background: none;
+  border: 0;
+  padding: 2px;
+  cursor: pointer;
+  border-radius: var(--r-sm);
+}
+.palette-trigger:hover { background: var(--bg-hover); }
+.palette-trigger:focus-visible { box-shadow: var(--ring); outline: 0; }
+
 @media (prefers-reduced-motion: reduce) {
   .palette-modal { animation: none; }
   .palette-load-dot.on { animation: none; }

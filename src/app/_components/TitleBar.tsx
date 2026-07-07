@@ -1,5 +1,6 @@
 import { PolarisGlyph } from "./PolarisGlyph";
 import { SidebarToggle } from "./SidebarChrome";
+import { PaletteTrigger } from "./PaletteTrigger";
 
 // 36px app chrome — traffic lights, glyph, breadcrumbs, sync dot.
 export function TitleBar({
@@ -52,6 +53,7 @@ export function TitleBar({
         ))}
       </div>
       <div className="titlebar-right">
+        <PaletteTrigger />
         <span
           className="sync-dot"
           style={{
