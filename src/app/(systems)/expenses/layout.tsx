@@ -1,13 +1,16 @@
-import Link from "next/link";
+import { TabStrip } from "@/app/_components/TabStrip";
 
 export default function ExpensesLayout({ children }: { children: React.ReactNode }) {
   return (
     <>
-      <nav className="tab-strip" aria-label="Expenses sections">
-        <Link href="/expenses">Activities</Link>
-        <Link href="/expenses/trends">Trends</Link>
-        <Link href="/expenses/types">Types</Link>
-      </nav>
+      <TabStrip
+        label="Expenses sections"
+        items={[
+          { label: "Activities", href: "/expenses" },
+          { label: "Trends", href: "/expenses/trends" },
+          { label: "Types", href: "/expenses/types" },
+        ]}
+      />
       {children}
     </>
   );

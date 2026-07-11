@@ -1,4 +1,4 @@
-import Link from "next/link";
+import { TabStrip } from "@/app/_components/TabStrip";
 
 export default function JournalLayout({
   children,
@@ -7,10 +7,14 @@ export default function JournalLayout({
 }) {
   return (
     <>
-      <nav className="tab-strip" aria-label="Journal sections">
-        <Link href="/journal">Today</Link>
-        <Link href="/journal/topics">Topics</Link>
-        <Link href="/journal/tags">Tags</Link>
+      <TabStrip
+        label="Journal sections"
+        items={[
+          { label: "Today", href: "/journal", exact: true },
+          { label: "Topics", href: "/journal/topics" },
+          { label: "Tags", href: "/journal/tags" },
+        ]}
+      >
         <span className="grow" />
         <form action="/journal/search" method="GET">
           <input
@@ -21,7 +25,7 @@ export default function JournalLayout({
             aria-label="Search journal"
           />
         </form>
-      </nav>
+      </TabStrip>
       {children}
     </>
   );
