@@ -1,5 +1,5 @@
 import { feedback } from "@/platform/feedback";
-import { manifests } from "@/systems";
+import { dashboards } from "@/systems/dashboards";
 import { Icon } from "@/app/_components/Icon";
 
 const DATE_FORMATTER = new Intl.DateTimeFormat("en-US", {
@@ -13,53 +13,51 @@ const TIME_FORMATTER = new Intl.DateTimeFormat("en-US", {
   day: "numeric",
 });
 
+/** Metric names are code identifiers; the dashboard shows them as words and
+ *  renders centavo-valued metrics as pesos. */
+function metricLabel(name: string): string {
+  return name.replace(/_centavos$/, "").replace(/_/g, " ");
+}
+
+function metricValue(name: string, value: number): string {
+  if (name.endsWith("_centavos")) {
+    return `₱${(value / 100).toLocaleString("en-PH", {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    })}`;
+  }
+  return value.toLocaleString("en-US");
+}
+
 export default async function DashboardPage() {
-  const { metrics, reflections, iterations } = await feedback.getAllFeedback();
-  const today = DATE_FORMATTER.format(new Date());
-  const systemCount = manifests.length;
+  const [{ metrics, reflections, iterations }, ...fragments] =
+    await Promise.all([
+      feedback.getAllFeedback(),
+      ...dashboards.map((d) =>
+        d.summary().catch((err) => {
+          console.error(`dashboard: ${d.name} summary failed`, err);
+          return null;
+        })
+      ),
+    ]);
+
+  const line = fragments.filter(Boolean).join(", ");
 
   return (
     <article className="doc">
       <h1>Today</h1>
-      <p
-        className="caption"
-        style={{ marginTop: -8, marginBottom: "var(--sp-8)" }}
-      >
-        {today} · {systemCount} {systemCount === 1 ? "system" : "systems"}{" "}
-        active
+      <p className="lead daily-line">
+        {DATE_FORMATTER.format(new Date())}
+        {line ? <> — {line}.</> : "."}
       </p>
 
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "1fr 1fr",
-          gap: 14,
-          marginBottom: "var(--sp-8)",
-        }}
-      >
-        <StatCard
-          label="Metrics"
-          value={metrics.length.toString()}
-          hint={
-            metrics.length === 0
-              ? "No metrics recorded yet."
-              : `Most recent: ${metrics[0].system} · ${metrics[0].name}`
-          }
-          tone={metrics.length > 0 ? "success" : "muted"}
-        />
-        <StatCard
-          label="Reflections"
-          value={reflections.length.toString()}
-          hint={
-            reflections.length === 0
-              ? "No reflections yet."
-              : `Latest on ${reflections[0].system}`
-          }
-          tone="muted"
-        />
+      <div className="dash-cards">
+        {dashboards.map((d) => (
+          <d.Widget key={d.name} />
+        ))}
       </div>
 
-      <h2>Recent metrics</h2>
+      <h2>System health</h2>
       {metrics.length === 0 ? (
         <EmptyState
           title="No metrics recorded yet."
@@ -84,7 +82,9 @@ export default async function DashboardPage() {
               >
                 {TIME_FORMATTER.format(new Date(m.recordedAt))}
               </span>
-              <span style={{ color: "var(--ink-1)" }}>{m.name}</span>
+              <span style={{ color: "var(--ink-1)" }}>
+                {metricLabel(m.name)}
+              </span>
               <span
                 className="tag-inline metric-system"
                 style={{ justifySelf: "start" }}
@@ -98,142 +98,83 @@ export default async function DashboardPage() {
                   color: "var(--ink-2)",
                 }}
               >
-                {m.value}
+                {metricValue(m.name, m.value)}
               </span>
             </div>
           ))}
         </div>
       )}
 
-      <h2>Recent reflections</h2>
-      {reflections.length === 0 ? (
-        <EmptyState
-          title="No reflections yet."
-          hint="Write one when a system starts earning, or failing to earn, its place."
-        />
-      ) : (
-        <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-          {reflections.slice(0, 5).map((r) => (
-            <figure
-              key={r.id}
-              style={{
-                margin: 0,
-                paddingLeft: 18,
-                borderLeft: "2px solid var(--accent)",
-              }}
-            >
-              <blockquote
+      {reflections.length > 0 ? (
+        <>
+          <h2>Recent reflections</h2>
+          <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+            {reflections.slice(0, 5).map((r) => (
+              <figure
+                key={r.id}
                 style={{
-                  border: 0,
-                  padding: 0,
-                  margin: "0 0 6px",
-                  fontFamily: "var(--font-serif)",
-                  fontSize: 17,
-                  fontStyle: "italic",
-                  lineHeight: 1.5,
-                  color: "var(--ink-1)",
+                  margin: 0,
+                  paddingLeft: 18,
+                  borderLeft: "2px solid var(--accent)",
                 }}
               >
-                {r.content}
-              </blockquote>
-              <figcaption
-                style={{
-                  fontFamily: "var(--font-mono)",
-                  fontSize: 12,
-                  color: "var(--ink-3)",
-                  display: "flex",
-                  gap: 10,
-                }}
-              >
-                <span style={{ color: "var(--ink-2)" }}>— {r.system}</span>
-                <span>·</span>
-                <span>{TIME_FORMATTER.format(new Date(r.createdAt))}</span>
-              </figcaption>
-            </figure>
-          ))}
-        </div>
-      )}
+                <blockquote
+                  style={{
+                    border: 0,
+                    padding: 0,
+                    margin: "0 0 6px",
+                    fontFamily: "var(--font-serif)",
+                    fontSize: 17,
+                    fontStyle: "italic",
+                    lineHeight: 1.5,
+                    color: "var(--ink-1)",
+                  }}
+                >
+                  {r.content}
+                </blockquote>
+                <figcaption
+                  style={{
+                    fontFamily: "var(--font-mono)",
+                    fontSize: 12,
+                    color: "var(--ink-3)",
+                    display: "flex",
+                    gap: 10,
+                  }}
+                >
+                  <span style={{ color: "var(--ink-2)" }}>— {r.system}</span>
+                  <span>·</span>
+                  <span>{TIME_FORMATTER.format(new Date(r.createdAt))}</span>
+                </figcaption>
+              </figure>
+            ))}
+          </div>
+        </>
+      ) : null}
 
-      <h2>Iteration history</h2>
-      {iterations.length === 0 ? (
-        <EmptyState
-          title="No iterations logged yet."
-          hint="Every change to a system is worth recording."
-        />
-      ) : (
-        <div>
-          {iterations.slice(0, 8).map((i) => (
-            <div key={i.id} className="task-row">
-              <span className="chk done">
-                <Icon name="check" size={10} />
-              </span>
-              <span className="lbl">
-                <span style={{ color: "var(--ink-1)", fontWeight: 500 }}>
-                  {i.system}
+      {iterations.length > 0 ? (
+        <>
+          <h2>Iteration history</h2>
+          <div>
+            {iterations.slice(0, 8).map((i) => (
+              <div key={i.id} className="task-row">
+                <span className="chk done">
+                  <Icon name="check" size={10} />
                 </span>
-                <span style={{ color: "var(--ink-3)" }}> — {i.description}</span>
-              </span>
-            </div>
-          ))}
-        </div>
-      )}
+                <span className="lbl">
+                  <span style={{ color: "var(--ink-1)", fontWeight: 500 }}>
+                    {i.system}
+                  </span>
+                  <span style={{ color: "var(--ink-3)" }}>
+                    {" "}
+                    — {i.description}
+                  </span>
+                </span>
+              </div>
+            ))}
+          </div>
+        </>
+      ) : null}
     </article>
-  );
-}
-
-function StatCard({
-  label,
-  value,
-  hint,
-  tone,
-}: {
-  label: string;
-  value: string;
-  hint: string;
-  tone: "success" | "muted";
-}) {
-  return (
-    <div
-      style={{
-        background: "var(--paper-1)",
-        border: "1px solid var(--border)",
-        borderRadius: 10,
-        padding: "16px 18px",
-      }}
-    >
-      <div
-        style={{
-          fontFamily: "var(--font-mono)",
-          fontSize: 11,
-          textTransform: "uppercase",
-          letterSpacing: "0.08em",
-          color: "var(--ink-4)",
-          marginBottom: 6,
-        }}
-      >
-        {label}
-      </div>
-      <div
-        style={{
-          fontFamily: "var(--font-serif)",
-          fontSize: 28,
-          fontWeight: 500,
-          color: "var(--ink-1)",
-        }}
-      >
-        {value}
-      </div>
-      <div
-        style={{
-          fontSize: 12,
-          color: tone === "success" ? "var(--success)" : "var(--ink-3)",
-          marginTop: 4,
-        }}
-      >
-        {tone === "success" && "● "}
-        {hint}
-      </div>
-    </div>
   );
 }
 

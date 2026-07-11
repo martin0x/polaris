@@ -494,6 +494,14 @@ body {
   text-underline-offset: 2px;
   transition: color var(--dur-fast) var(--ease-out);
 }
+/* Anchor-shaped buttons inside prose keep button styling, not link styling.
+   Only the variants that exist as anchors are listed — extend when needed. */
+.prose a.btn, .doc a.btn {
+  text-decoration: none;
+}
+.prose a.btn-secondary, .doc a.btn-secondary {
+  color: var(--ink-1);
+}
 .prose a:hover, .doc a:hover, .link:hover { color: var(--link-hover); }
 
 .prose code, .doc code, .compose .ProseMirror code, .mono-inline {
@@ -840,6 +848,8 @@ body {
   font-family: var(--font-sans);
   font-size: var(--fs-sm);
   font-weight: 450;
+  /* Anchor-shaped buttons must not inherit the .doc link underline. */
+  text-decoration: none;
   padding: 9px 18px;
   border-radius: var(--r-md);
   border: 1px solid transparent;
@@ -1008,6 +1018,49 @@ kbd, .kbd {
   padding: 8px 0;
   font-size: 13.5px;
   align-items: center;
+}
+
+/* Dashboard day-start surface --------------------------------------------- */
+/* The daily line sits directly under the H1; negative pull matches the old
+   caption spacing so the header block stays one unit. */
+.daily-line {
+  margin-top: calc(-1 * var(--sp-2));
+  margin-bottom: var(--sp-6);
+}
+/* One card per system; collapses to a single column on phones (media block
+   at the end of the file). */
+.dash-cards {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--sp-4);
+  margin-bottom: var(--sp-10);
+}
+.dash-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+  padding: var(--sp-4) var(--sp-5);
+}
+.dash-card-stat {
+  margin: 0;
+  font-family: var(--font-serif);
+  font-size: var(--fs-xl);
+  color: var(--ink-1);
+}
+.dash-card-stat-caption {
+  font-family: var(--font-sans);
+  font-size: var(--fs-sm);
+  color: var(--fg-muted);
+}
+.dash-card-detail {
+  margin: 0;
+  font-size: var(--fs-sm);
+  color: var(--ink-2);
+}
+/* Actions sit on the card's bottom edge regardless of detail-line count. */
+.dash-card-actions {
+  margin-top: auto;
+  padding-top: var(--sp-2);
 }
 
 /* Subtle scrollbars ------------------------------------------------------- */
@@ -1404,6 +1457,7 @@ kbd, .kbd {
   /* Dashboard metric rows: the system tag column goes; date and value
      tighten so the metric name keeps the room. */
   .metric-row { grid-template-columns: 64px 1fr 90px; }
+  .dash-cards { grid-template-columns: 1fr; }
   .metric-row .metric-system { display: none; }
 
   /* Rows that carry several action buttons (e.g. the types manager) wrap
