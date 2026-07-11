@@ -1132,6 +1132,62 @@ kbd, .kbd {
   color: var(--fg);
 }
 
+/* Topics index — a shelf of cards rather than a bare list. Cards carry the
+   name in display serif plus a mono meta line (count, recency). */
+/* .doc's prose list rules out-specify a bare class — mirror their
+   selectors to zero the markers and padding back out. */
+.doc ul.topic-grid {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--sp-4);
+}
+.doc .topic-grid li {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.topic-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-1);
+  height: 100%;
+  background: var(--bg-raised);
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  box-shadow: var(--shadow-xs);
+  padding: var(--sp-4) var(--sp-5);
+  transition: background var(--dur-fast) var(--ease-out);
+}
+/* Cards are anchors inside .doc — keep them ink, not link-styled. */
+.doc a.topic-card {
+  color: var(--fg);
+  text-decoration: none;
+}
+.topic-card:hover {
+  background: var(--bg-hover);
+}
+.topic-card-name {
+  font-family: var(--font-serif);
+  font-size: var(--fs-lg);
+  color: var(--ink-1);
+}
+.topic-card-desc {
+  font-size: var(--fs-sm);
+  color: var(--ink-2);
+}
+.topic-card-meta {
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  color: var(--fg-muted);
+  margin-top: var(--sp-1);
+}
+.topic-card.archived .topic-card-name {
+  color: var(--ink-3);
+}
+
 /* Tab strip used by the journal sub-nav. */
 .tab-strip {
   display: flex;
@@ -1458,6 +1514,7 @@ kbd, .kbd {
      tighten so the metric name keeps the room. */
   .metric-row { grid-template-columns: 64px 1fr 90px; }
   .dash-cards { grid-template-columns: 1fr; }
+  .doc ul.topic-grid { grid-template-columns: 1fr; }
   .metric-row .metric-system { display: none; }
 
   /* Rows that carry several action buttons (e.g. the types manager) wrap
