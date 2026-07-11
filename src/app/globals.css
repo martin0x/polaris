@@ -1037,6 +1037,13 @@ kbd, .kbd {
 .entry-card:hover {
   background: var(--paper-2);
 }
+/* Entry bodies reuse .doc for prose styling. Inside this flex column the
+   wrapper's `margin: 0 auto` would win over stretch and center-shrink the
+   body — pin it back to full width. */
+.entry-card .doc {
+  margin: 0;
+  width: 100%;
+}
 .entry-card.flash {
   background: var(--accent-wash);
 }
