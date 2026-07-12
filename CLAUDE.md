@@ -17,9 +17,9 @@ overrides on any defaults from training data.
   `var(--ink-2)`, `var(--accent)`, `var(--sp-4)`, `var(--r-md)`,
   `var(--shadow-sm)`, `var(--font-serif|sans|mono)`. Don't inline `#faf7ef` or
   `16px`.
-- **Fonts.** Display/H1–H3 → `var(--font-serif)` (Source Serif 4). UI body,
-  buttons, H4+ → `var(--font-sans)` (Inter). Code, kbd, timestamps, numerics
-  → `var(--font-mono)` (JetBrains Mono). `h1` is the terracotta
+- **Fonts.** Display/H1–H3 → `var(--font-serif)` (Fraunces). UI body,
+  buttons, H4+ → `var(--font-sans)` (Plus Jakarta Sans). Code, kbd,
+  timestamps, numerics → `var(--font-mono)` (IBM Plex Mono). `h1` is the terracotta
   `var(--heading)`; `h2+` return to ink.
 - **Sentence case everywhere** except proper nouns and the wordmark. No
   exclamation points, no marketing adjectives, no emoji in chrome.

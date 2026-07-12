@@ -1,24 +1,31 @@
 import type { Metadata } from "next";
-import { Source_Serif_4, Inter, JetBrains_Mono } from "next/font/google";
+import { Fraunces, Plus_Jakarta_Sans, IBM_Plex_Mono } from "next/font/google";
 import { getOptionalSession } from "@/platform/auth/session";
 import { PaletteProvider } from "@/platform/palette/client/PaletteProvider";
 import "./globals.css";
 
-const sourceSerif = Source_Serif_4({
+// The Fraunces type stack (chosen July 2026 over IBM Plex, Newsreader, and
+// Literata trios — see docs/design/decisions/). Italic loads too: entry
+// blockquotes are italic serif and must not be synthesized.
+const fraunces = Fraunces({
   subsets: ["latin"],
-  variable: "--font-source-serif",
+  style: ["normal", "italic"],
+  axes: ["opsz"],
+  variable: "--font-fraunces",
   display: "swap",
 });
 
-const inter = Inter({
+const jakarta = Plus_Jakarta_Sans({
   subsets: ["latin"],
-  variable: "--font-inter",
+  variable: "--font-jakarta",
   display: "swap",
 });
 
-const jetbrainsMono = JetBrains_Mono({
+// IBM Plex Mono is a static family — weights must be listed explicitly.
+const plexMono = IBM_Plex_Mono({
   subsets: ["latin"],
-  variable: "--font-jetbrains",
+  weight: ["400", "500", "600"],
+  variable: "--font-plex-mono",
   display: "swap",
 });
 
@@ -43,7 +50,7 @@ export default async function RootLayout({
   return (
     <html
       lang="en"
-      className={`${sourceSerif.variable} ${inter.variable} ${jetbrainsMono.variable}`}
+      className={`${fraunces.variable} ${jakarta.variable} ${plexMono.variable}`}
     >
       <body className="antialiased">
         {session?.user ? (

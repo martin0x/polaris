@@ -32,9 +32,9 @@ override your training data.
    `var(--accent)` / `var(--sp-4)`, not `#faf7ef` / `#4a4439` / `#3c2ea3` / `16px`.
 
 2. **Typography follows the scale.**
-   - Display headings (`h1` / `h2` / `h3`) use `var(--font-serif)` (Source Serif 4).
-   - UI text (`h4+`, body, buttons, nav) uses `var(--font-sans)` (Inter).
-   - Code, kbd, timestamps, tabular numbers use `var(--font-mono)` (JetBrains Mono).
+   - Display headings (`h1` / `h2` / `h3`) use `var(--font-serif)` (Fraunces).
+   - UI text (`h4+`, body, buttons, nav) uses `var(--font-sans)` (Plus Jakarta Sans).
+   - Code, kbd, timestamps, tabular numbers use `var(--font-mono)` (IBM Plex Mono).
    - `h1` is the terracotta `var(--heading)` color. `h2+` return to ink.
 
 3. **Sentence case everywhere.** Buttons, menu items, section headers — sentence

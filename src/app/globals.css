@@ -81,15 +81,16 @@
   --selection:     #dcd4ff;
 
   /* --- Typography — families -------------------------------------------- */
-  /* Next.js next/font injects --font-source-serif, --font-inter, --font-jetbrains */
+  /* Next.js next/font injects --font-fraunces, --font-jakarta,
+     --font-plex-mono (Fraunces stack, July 2026 — see design decisions). */
   --font-serif:
-    var(--font-source-serif, "Source Serif 4"),
+    var(--font-fraunces, "Fraunces"),
     "Iowan Old Style", "Charter", Georgia, serif;
   --font-sans:
-    var(--font-inter, "Inter"),
+    var(--font-jakarta, "Plus Jakarta Sans"),
     ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   --font-mono:
-    var(--font-jetbrains, "JetBrains Mono"),
+    var(--font-plex-mono, "IBM Plex Mono"),
     ui-monospace, "SF Mono", Menlo, Consolas, monospace;
 
   /* --- Typography — scale (1.2 modular, body 14.5px medium density) ----- */

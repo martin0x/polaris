@@ -25,9 +25,9 @@ This system was designed from scratch against **three stated inspirations** — 
 | **Mood** | Crisp, utilitarian, developer-owned — a library you live in |
 | **Primary surface** | Light (warm paper `#fbf9f4`); dark (`#1c1b20`) is secondary |
 | **Accent** | Obsidian purple `#7c6cf0` |
-| **Display face** | Source Serif 4 (humanist) |
-| **UI face** | Inter (sans) |
-| **Mono face** | JetBrains Mono |
+| **Display face** | Fraunces (warm old-style; v1 was Source Serif 4) |
+| **UI face** | Plus Jakarta Sans (v1 was Inter) |
+| **Mono face** | IBM Plex Mono (v1 was JetBrains Mono) |
 | **Density** | Medium (Notion-like) |
 | **Illustration** | None — subtle iconography only |
 
@@ -110,9 +110,9 @@ Polaris looks like a **warm paper notebook rendered by a command-line tool**. Ev
 - **Dark mode is secondary.** Same hues, shifted onto a neutral near-black with slight violet cast (`#1c1b20`). Not pure black.
 
 ### Type
-- **Display = Source Serif 4** (humanist serif, warm, readable at large sizes). Used for H1–H3 and blockquotes.
-- **UI = Inter** — headings H4+, body, buttons, labels, form controls.
-- **Mono = JetBrains Mono** — code, kbd chips, shortcuts, any tabular data.
+- **Display = Fraunces** (warm old-style serif with real character at display sizes; loads with its optical-size axis and true italics). Used for H1–H3 and blockquotes. *Adopted July 2026 — see `decisions/`; v1 used Source Serif 4.*
+- **UI = Plus Jakarta Sans** — headings H4+, body, buttons, labels, form controls. Rounder and warmer than the v1 Inter.
+- **Mono = IBM Plex Mono** — code, kbd chips, shortcuts, any tabular data. Replaced the v1 JetBrains Mono.
 - H1 is the **warm terracotta** from Obsidian (`--heading: #8a5a3a`), not neutral ink. H2+ return to ink.
 - Scale is a light 1.2 ratio (see `--fs-*`). Body is 14.5px (medium density).
 - `text-wrap: pretty` on prose. Tight tracking on display, normal on body.
@@ -238,8 +238,14 @@ These fonts are loaded from **Google Fonts** (no local `.ttf` files bundled). If
 
 | Role | Using | Alternatives considered |
 |---|---|---|
-| Display serif | **Source Serif 4** (Google Fonts) | iA Quattro, Charter, Iowan Old Style |
-| UI sans | **Inter** (Google Fonts) | IBM Plex Sans, SF Pro |
-| Mono | **JetBrains Mono** (Google Fonts) | Berkeley Mono, iA Mono, Cascadia |
+| Display serif | **Fraunces** (Google Fonts, via next/font) | Source Serif 4 (v1), IBM Plex Serif, Newsreader, Literata |
+| UI sans | **Plus Jakarta Sans** (Google Fonts, via next/font) | Inter (v1), IBM Plex Sans, Albert Sans, Karla |
+| Mono | **IBM Plex Mono** (Google Fonts, via next/font) | JetBrains Mono (v1), Spline Sans Mono |
 
-Source Serif 4 is the closest humanist match to Anthropic's editorial feel available on Google Fonts. Inter is a neutral choice; swap for something more distinctive if you want more character. All three are sitting on the CDN — no local font files yet.
+The v1 stack (Source Serif 4 / Inter / JetBrains Mono) shipped with the note
+that Inter was "a neutral choice; swap for something more distinctive."
+July 2026 did exactly that: four full trios were rendered on live screens and
+compared side by side (see `decisions/`), and the Fraunces stack won for
+being the warmest and most distinctive while staying inside the paper+ink
+mood. Fonts load through `next/font` in `src/app/layout.tsx` — no CDN
+`@import`; still no local font files.
