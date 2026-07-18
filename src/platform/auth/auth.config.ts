@@ -1,5 +1,6 @@
 import type { NextAuthConfig } from "next-auth";
 import Google from "next-auth/providers/google";
+import { isEmailAllowed } from "./allowlist";
 
 export const authConfig: NextAuthConfig = {
   session: { strategy: "jwt" },
@@ -14,7 +15,7 @@ export const authConfig: NextAuthConfig = {
   },
   callbacks: {
     signIn({ user }) {
-      return user.email === process.env.ALLOWED_EMAIL;
+      return isEmailAllowed(user.email, process.env.ALLOWED_EMAILS);
     },
   },
 };

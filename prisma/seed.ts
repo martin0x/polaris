@@ -1,6 +1,7 @@
 import "dotenv/config";
 import { PrismaClient } from "../src/generated/prisma/client";
 import { PrismaPg } from "@prisma/adapter-pg";
+import { parseAllowlist } from "../src/platform/auth/allowlist";
 
 function createClient(): PrismaClient {
   const url = process.env.DATABASE_URL;
@@ -19,12 +20,12 @@ const prisma = createClient();
 async function main() {
   console.log("Seeding database...");
 
-  const email = process.env.ALLOWED_EMAIL;
-  if (email) {
+  const emails = parseAllowlist(process.env.ALLOWED_EMAILS);
+  for (const email of emails) {
     await prisma.user.upsert({
       where: { email },
       update: {},
-      create: { email, name: "Raymart" },
+      create: { email },
     });
     console.log(`Seeded user: ${email}`);
   }
