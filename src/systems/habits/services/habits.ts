@@ -31,23 +31,23 @@ export async function createHabit(name: string): Promise<Habit> {
 
 /** Rename habit + topic in one transaction; a topic-name clash rolls both back. */
 export async function renameHabit(id: string, name: string): Promise<Habit> {
-  try {
-    return await prisma.$transaction(async (tx) => {
-      const habit = await tx.habit.findUniqueOrThrow({ where: { id } });
-      if (habit.journalTopicId) {
-        const topic = await tx.journalTopic.findUnique({ where: { id: habit.journalTopicId } });
-        if (topic && topic.name !== name) {
+  return prisma.$transaction(async (tx) => {
+    const habit = await tx.habit.findUniqueOrThrow({ where: { id } });
+    if (habit.journalTopicId) {
+      const topic = await tx.journalTopic.findUnique({ where: { id: habit.journalTopicId } });
+      if (topic && topic.name !== name) {
+        try {
           await tx.journalTopic.update({ where: { id: topic.id }, data: { name } });
+        } catch (err) {
+          if (err instanceof Prisma.PrismaClientKnownRequestError && err.code === "P2002") {
+            throw new TopicNameCollisionError(name);
+          }
+          throw err;
         }
       }
-      return tx.habit.update({ where: { id }, data: { name } });
-    });
-  } catch (err) {
-    if (err instanceof Prisma.PrismaClientKnownRequestError && err.code === "P2002") {
-      throw new TopicNameCollisionError(name);
     }
-    throw err;
-  }
+    return tx.habit.update({ where: { id }, data: { name } });
+  });
 }
 
 export async function setQuote(id: string, quote: string | null): Promise<Habit> {

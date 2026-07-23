@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeAll, beforeEach } from "vitest";
 import { prisma } from "@/platform/db/client";
+import { Prisma } from "@/generated/prisma/client";
 import { requireTestDatabase, withCleanHabitTables } from "@/test/db";
 import { createTopic } from "@/systems/journal/services/topics";
 import {
@@ -43,6 +44,15 @@ describe("habits service", () => {
     await expect(renameHabit(habit.id, "Taken")).rejects.toBeInstanceOf(TopicNameCollisionError);
     const fresh = await prisma.habit.findUnique({ where: { id: habit.id } });
     expect(fresh?.name).toBe("Mine");
+  });
+
+  it("orphaned-habit rename collision is a habit error, not a topic error", async () => {
+    await createHabit("Live");
+    const orphan = await createHabit("Orphan");
+    await prisma.habit.update({ where: { id: orphan.id }, data: { journalTopicId: null } });
+    const err = await renameHabit(orphan.id, "Live").catch((e) => e);
+    expect(err).toBeInstanceOf(Prisma.PrismaClientKnownRequestError);
+    expect(err).not.toBeInstanceOf(TopicNameCollisionError);
   });
 
   it("archive and unarchive sync the topic", async () => {
