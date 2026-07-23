@@ -186,3 +186,41 @@ model ExpenseItem {
   @@index([activityId])
   @@map("expense_items")
 }
+
+// ── Habits ────────────────────────────────────────────────────────────────
+
+enum HabitTickStatus {
+  PARTIAL
+  COMPLETE
+}
+
+model Habit {
+  id             String      @id @default(cuid())
+  name           String      @unique
+  quote          String?     @db.Text
+  position       Int
+  /// Journal topic linked to this habit — plain string, no cross-system FK.
+  journalTopicId String?     @unique
+  archived       Boolean     @default(false)
+  archivedAt     DateTime?
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
+  ticks          HabitTick[]
+
+  @@index([archived])
+  @@map("habits")
+}
+
+model HabitTick {
+  id        String          @id @default(cuid())
+  habitId   String
+  habit     Habit           @relation(fields: [habitId], references: [id])
+  date      DateTime        @db.Date
+  status    HabitTickStatus
+  createdAt DateTime        @default(now())
+  updatedAt DateTime        @updatedAt
+
+  @@unique([habitId, date])
+  @@index([date])
+  @@map("habit_ticks")
+}
