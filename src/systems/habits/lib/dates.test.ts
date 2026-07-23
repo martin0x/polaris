@@ -9,6 +9,9 @@ describe("dates", () => {
     expect(isDateString("2026-07-23")).toBe(true);
     expect(isDateString("2026-7-23")).toBe(false);
     expect(isDateString("garbage")).toBe(false);
+    expect(isDateString("2026-02-30")).toBe(false);
+    expect(isDateString("2026-04-31")).toBe(false);
+    expect(isDateString("2024-02-29")).toBe(true); // leap day
   });
 
   it("round-trips through UTC", () => {
