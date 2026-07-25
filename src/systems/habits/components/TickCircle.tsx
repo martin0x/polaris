@@ -4,7 +4,7 @@ import { useRef, useState } from "react";
 
 export type TickState = "off" | "partial" | "complete";
 
-const HOLD_MS = 450;
+const HOLD_MS = 450; // keep in sync with --dur-hold in globals.css
 
 interface TickCircleProps {
   state: TickState;
@@ -17,6 +17,7 @@ export function TickCircle({ state, disabled, label, onChange }: TickCircleProps
   const [holding, setHolding] = useState(false);
   const holdTimer = useRef<number | null>(null);
   const firedHold = useRef(false);
+  const pressed = useRef(false);
 
   const clearHold = () => {
     if (holdTimer.current !== null) {
@@ -24,10 +25,12 @@ export function TickCircle({ state, disabled, label, onChange }: TickCircleProps
       holdTimer.current = null;
     }
     setHolding(false);
+    pressed.current = false;
   };
 
   const onPointerDown = (e: React.PointerEvent) => {
-    if (disabled) return;
+    if (disabled || e.button !== 0) return;
+    pressed.current = true;
     e.preventDefault();
     firedHold.current = false;
     if (state !== "complete") {
@@ -42,7 +45,8 @@ export function TickCircle({ state, disabled, label, onChange }: TickCircleProps
   };
 
   const onPointerUp = () => {
-    if (disabled) return;
+    if (disabled || !pressed.current) return;
+    pressed.current = false;
     const wasHolding = holdTimer.current !== null;
     clearHold();
     if (firedHold.current) return; // the hold already completed this press

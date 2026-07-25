@@ -157,6 +157,7 @@
   --dur-fast: 120ms;
   --dur-med:  200ms;
   --dur-slow: 320ms;
+  --dur-hold: 450ms; /* habit tick press-and-hold threshold — keep in sync with HOLD_MS in TickCircle.tsx */
 
   /* --- Z-index ---------------------------------------------------------- */
   --z-base:    0;
@@ -1595,10 +1596,10 @@ kbd, .kbd {
   fill: none; stroke: var(--success); stroke-width: 2;
   stroke-dasharray: 56.5; stroke-dashoffset: 56.5;
   transform: rotate(-90deg); transform-origin: center;
-  animation: tick-hold 450ms linear forwards;
+  animation: tick-hold var(--dur-hold) linear forwards;
 }
 .tick-partial svg { animation: tick-pop var(--dur-fast) var(--ease-out); }
-.tick-complete svg { animation: tick-burst 300ms var(--ease-spring); }
+.tick-complete svg { animation: tick-burst var(--dur-slow) var(--ease-spring); }
 
 @keyframes tick-hold { to { stroke-dashoffset: 0; } }
 @keyframes tick-pop { 50% { transform: scale(1.15); } }

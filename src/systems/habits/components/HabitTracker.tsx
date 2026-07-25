@@ -20,6 +20,7 @@ function stateOf(status: "PARTIAL" | "COMPLETE" | undefined): TickState {
 
 export function HabitTracker({ initialWeek }: { initialWeek: WeekData }) {
   const cache = useRef<Map<string, WeekData>>(new Map([[initialWeek.monday, initialWeek]]));
+  const tickSeq = useRef<Map<string, number>>(new Map());
   const [week, setWeek] = useState<WeekData>(initialWeek);
   const [error, setError] = useState<string | null>(null);
   const today = localTodayString();
@@ -47,7 +48,10 @@ export function HabitTracker({ initialWeek }: { initialWeek: WeekData }) {
   const handleTick = (habitId: string, date: string, next: TickState) => {
     const prev = stateOf(ticks.get(tickKey(habitId, date)));
     if (prev === next) return;
-    playSound(next === "off" ? "off" : next);
+    const key = tickKey(habitId, date);
+    const seq = (tickSeq.current.get(key) ?? 0) + 1;
+    tickSeq.current.set(key, seq);
+    playSound(next);
     mutateTick(habitId, date, next);
     setError(null);
     const url = `/api/systems/habits/habits/${habitId}/ticks/${date}`;
@@ -64,6 +68,7 @@ export function HabitTracker({ initialWeek }: { initialWeek: WeekData }) {
         if (!res.ok) throw new Error(String(res.status));
       })
       .catch(() => {
+        if (tickSeq.current.get(key) !== seq) return; // superseded by a newer toggle
         mutateTick(habitId, date, prev);
         setError("Could not save that tick — reverted. Check your connection.");
       });
