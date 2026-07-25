@@ -16,6 +16,16 @@ interface WeekHeaderProps {
 
 export function WeekHeader({ monday, onNavigate }: WeekHeaderProps) {
   const [open, setOpen] = useState(false);
+  const wrapRef = useRef<HTMLSpanElement>(null);
+
+  useEffect(() => {
+    if (!open) return;
+    const onDown = (e: MouseEvent) => {
+      if (wrapRef.current && !wrapRef.current.contains(e.target as Node)) setOpen(false);
+    };
+    document.addEventListener("mousedown", onDown);
+    return () => document.removeEventListener("mousedown", onDown);
+  }, [open]);
 
   return (
     <header className="habit-head">
@@ -25,7 +35,7 @@ export function WeekHeader({ monday, onNavigate }: WeekHeaderProps) {
       >
         <Icon name="chevron-left" size={16} />
       </button>
-      <span className="habit-range-wrap">
+      <span className="habit-range-wrap" ref={wrapRef}>
         <button
           type="button" className="habit-range" aria-expanded={open}
           onClick={() => setOpen((v) => !v)}
@@ -36,7 +46,6 @@ export function WeekHeader({ monday, onNavigate }: WeekHeaderProps) {
           <MonthPopover
             anchor={monday}
             onPick={(d) => { setOpen(false); onNavigate(d); }}
-            onClose={() => setOpen(false)}
           />
         )}
       </span>
@@ -51,23 +60,13 @@ export function WeekHeader({ monday, onNavigate }: WeekHeaderProps) {
 }
 
 function MonthPopover({
-  anchor, onPick, onClose,
+  anchor, onPick,
 }: {
   anchor: string;
   onPick: (dateStr: string) => void;
-  onClose: () => void;
 }) {
-  const ref = useRef<HTMLDivElement>(null);
   const [first, setFirst] = useState(`${anchor.slice(0, 7)}-01`);
   const today = localTodayString();
-
-  useEffect(() => {
-    const onDown = (e: MouseEvent) => {
-      if (ref.current && !ref.current.contains(e.target as Node)) onClose();
-    };
-    document.addEventListener("mousedown", onDown);
-    return () => document.removeEventListener("mousedown", onDown);
-  }, [onClose]);
 
   const d = toUtcDate(first);
   const title = `${MONTH_NAMES[d.getUTCMonth()]} ${d.getUTCFullYear()}`;
@@ -76,13 +75,13 @@ function MonthPopover({
   const month = first.slice(0, 7);
 
   const shiftMonth = (n: number) => {
-    const next = new Date(toUtcDate(first));
+    const next = toUtcDate(first);
     next.setUTCMonth(next.getUTCMonth() + n);
     setFirst(next.toISOString().slice(0, 8) + "01");
   };
 
   return (
-    <div className="habit-popover" ref={ref} role="dialog" aria-label="Jump to week">
+    <div className="habit-popover" role="dialog" aria-label="Jump to week">
       <div className="habit-popover-head">
         <button type="button" className="btn btn-ghost habit-nav" aria-label="Previous month" onClick={() => shiftMonth(-1)}>
           <Icon name="chevron-left" size={14} />

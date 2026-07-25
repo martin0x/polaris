@@ -22,6 +22,7 @@ function stateOf(status: "PARTIAL" | "COMPLETE" | undefined): TickState {
 export function HabitTracker({ initialWeek }: { initialWeek: WeekData }) {
   const cache = useRef<Map<string, WeekData>>(new Map([[initialWeek.monday, initialWeek]]));
   const tickSeq = useRef<Map<string, number>>(new Map());
+  const navSeq = useRef(0);
   const [week, setWeek] = useState<WeekData>(initialWeek);
   const [error, setError] = useState<string | null>(null);
 
@@ -41,7 +42,9 @@ export function HabitTracker({ initialWeek }: { initialWeek: WeekData }) {
 
   const goToWeek = useCallback(async (target: string) => {
     const monday = mondayOf(target);
+    const seq = ++navSeq.current;
     const data = await fetchWeek(monday);
+    if (navSeq.current !== seq) return; // superseded by a newer navigation
     if (!data) {
       setError("Could not load that week. Check your connection.");
       return;
