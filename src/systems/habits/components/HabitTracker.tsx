@@ -1,11 +1,15 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import type { WeekData } from "../services/ticks";
 import { addDays, localTodayString, mondayOf, weekDates } from "../lib/dates";
 import { initSounds, playSound } from "../lib/sounds";
 import { TickCircle, type TickState } from "./TickCircle";
 import { WeekHeader } from "./WeekHeader";
+import { AddHabitRow } from "./AddHabitRow";
+import { RowMenu } from "./RowMenu";
+import { ArchivedDisclosure } from "./ArchivedDisclosure";
 
 const DAY_INITIALS = ["M", "T", "W", "T", "F", "S", "S"];
 
@@ -54,6 +58,99 @@ export function HabitTracker({ initialWeek }: { initialWeek: WeekData }) {
     void fetchWeek(addDays(monday, -7));
     void fetchWeek(addDays(monday, 7));
   }, [fetchWeek]);
+
+  const searchParams = useSearchParams();
+  const [editingId, setEditingId] = useState<string | null>(null);
+
+  const errorOf = async (res: Response | null, fallback: string): Promise<string> => {
+    if (!res) return `${fallback} Check your connection.`;
+    const body = (await res.json().catch(() => null)) as { error?: unknown } | null;
+    return typeof body?.error === "string" ? body.error : fallback;
+  };
+
+  const refresh = useCallback(async () => {
+    cache.current.clear();
+    try {
+      const res = await fetch(`/api/systems/habits/week?start=${week.monday}`);
+      if (!res.ok) throw new Error(String(res.status));
+      const data: WeekData = await res.json();
+      cache.current.set(data.monday, data);
+      setWeek(data);
+    } catch {
+      setError("Could not refresh — reload the page.");
+    }
+  }, [week.monday]);
+
+  const addHabit = async (name: string): Promise<boolean> => {
+    const res = await fetch("/api/systems/habits/habits", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ name }),
+    }).catch(() => null);
+    if (!res || !res.ok) {
+      setError(await errorOf(res, "Could not add the habit."));
+      return false;
+    }
+    setError(null);
+    await refresh();
+    return true;
+  };
+
+  const saveRename = async (id: string, rawName: string) => {
+    setEditingId(null);
+    const habit = week.habits.find((h) => h.id === id);
+    const name = rawName.trim();
+    if (!habit || !name || name === habit.name) return;
+    const res = await fetch(`/api/systems/habits/habits/${id}`, {
+      method: "PATCH",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ name }),
+    }).catch(() => null);
+    if (!res || !res.ok) {
+      setError(await errorOf(res, "Could not rename the habit."));
+      return;
+    }
+    setError(null);
+    await refresh();
+  };
+
+  const moveHabit = async (id: string, dir: -1 | 1) => {
+    const idx = week.habits.findIndex((h) => h.id === id);
+    const target = idx + dir;
+    if (idx < 0 || target < 0 || target >= week.habits.length) return;
+    const ids = week.habits.map((h) => h.id);
+    [ids[idx], ids[target]] = [ids[target], ids[idx]];
+    setWeek((w) => {
+      const habits = [...w.habits];
+      const [moved] = habits.splice(idx, 1);
+      habits.splice(target, 0, moved);
+      const next = { ...w, habits };
+      cache.current.set(w.monday, next);
+      return next;
+    });
+    const res = await fetch("/api/systems/habits/reorder", {
+      method: "PATCH",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ ids }),
+    }).catch(() => null);
+    if (!res || !res.ok) {
+      setError("Could not save the order — reloading.");
+      await refresh();
+    }
+  };
+
+  const setArchived = async (id: string, archive: boolean) => {
+    const res = await fetch(
+      `/api/systems/habits/habits/${id}/${archive ? "archive" : "unarchive"}`,
+      { method: "POST" }
+    ).catch(() => null);
+    if (!res || !res.ok) {
+      setError(await errorOf(res, archive ? "Could not archive the habit." : "Could not unarchive the habit."));
+      return;
+    }
+    setError(null);
+    await refresh();
+  };
 
   useEffect(() => {
     void fetchWeek(addDays(initialWeek.monday, -7));
@@ -112,40 +209,73 @@ export function HabitTracker({ initialWeek }: { initialWeek: WeekData }) {
   };
 
   return (
-    <section className="paper-card habit-card" onPointerDownCapture={initSounds}>
-      <WeekHeader monday={week.monday} onNavigate={goToWeek} />
-      <div className="habit-grid" role="table" aria-label="Habit tracker">
-        <div className="habit-grid-row habit-grid-head" role="row">
-          <span className="habit-name" />
-          {dates.map((d, i) => (
-            <span key={d} className={`habit-day${d === today ? " is-today" : ""}`}>
-              {DAY_INITIALS[i]}
-            </span>
-          ))}
-        </div>
-        {week.habits.map((h) => (
-          <div key={h.id} className="habit-grid-row" role="row">
-            <span className="habit-name">{h.name}</span>
-            {dates.map((d) => (
-              <span key={d} className={`habit-cell${d === today ? " is-today" : ""}`}>
-                <TickCircle
-                  state={stateOf(ticks.get(tickKey(h.id, d)))}
-                  disabled={d > today}
-                  label={`${h.name} — ${d}`}
-                  onChange={(next) => handleTick(h.id, d, next)}
-                />
+    <>
+      <section className="paper-card habit-card" onPointerDownCapture={initSounds}>
+        <WeekHeader monday={week.monday} onNavigate={goToWeek} />
+        <div className="habit-grid" role="table" aria-label="Habit tracker">
+          <div className="habit-grid-row habit-grid-head" role="row">
+            <span className="habit-name" />
+            {dates.map((d, i) => (
+              <span key={d} className={`habit-day${d === today ? " is-today" : ""}`}>
+                {DAY_INITIALS[i]}
               </span>
             ))}
           </div>
-        ))}
-      </div>
-      {week.habits.length === 0 && (
-        <div className="habit-empty">
-          <p>No habits yet.</p>
-          <p className="caption">Add one below to start tracking.</p>
+          {week.habits.map((h) => (
+            <div key={h.id} className="habit-grid-row" role="row">
+              <span className="habit-name">
+                {editingId === h.id ? (
+                  <input
+                    className="habit-rename-input"
+                    defaultValue={h.name}
+                    autoFocus
+                    aria-label={`Rename ${h.name}`}
+                    onBlur={(e) => void saveRename(h.id, e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") void saveRename(h.id, e.currentTarget.value);
+                      if (e.key === "Escape") setEditingId(null);
+                    }}
+                  />
+                ) : (
+                  <>
+                    <span className="habit-name-text">{h.name}</span>
+                    <RowMenu
+                      canMoveUp={week.habits[0]?.id !== h.id}
+                      canMoveDown={week.habits[week.habits.length - 1]?.id !== h.id}
+                      onRename={() => setEditingId(h.id)}
+                      onMoveUp={() => void moveHabit(h.id, -1)}
+                      onMoveDown={() => void moveHabit(h.id, 1)}
+                      onArchive={() => void setArchived(h.id, true)}
+                    />
+                  </>
+                )}
+              </span>
+              {dates.map((d) => (
+                <span key={d} className={`habit-cell${d === today ? " is-today" : ""}`}>
+                  <TickCircle
+                    state={stateOf(ticks.get(tickKey(h.id, d)))}
+                    disabled={d > today}
+                    label={`${h.name} — ${d}`}
+                    onChange={(next) => handleTick(h.id, d, next)}
+                  />
+                </span>
+              ))}
+            </div>
+          ))}
         </div>
-      )}
-      {error && <p className="habit-error">{error}</p>}
-    </section>
+        <AddHabitRow autoFocus={searchParams.get("new") === "1"} onAdd={addHabit} />
+        {week.habits.length === 0 && (
+          <div className="habit-empty">
+            <p>No habits yet.</p>
+            <p className="caption">Add one below to start tracking.</p>
+          </div>
+        )}
+        {error && <p className="habit-error">{error}</p>}
+      </section>
+      <ArchivedDisclosure
+        archived={week.archivedHabits}
+        onUnarchive={(id) => void setArchived(id, false)}
+      />
+    </>
   );
 }
