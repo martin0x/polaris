@@ -1609,3 +1609,27 @@ kbd, .kbd {
   .tick svg, .tick-partial svg, .tick-complete svg { animation: none; transition: none; }
   .tick-hold-ring { animation: none; stroke-dashoffset: 0; }
 }
+
+/* Week header + month popover */
+.habit-nav { padding: var(--sp-1); min-width: 0; }
+.habit-range-wrap { position: relative; }
+button.habit-range { background: none; border: none; cursor: pointer; padding: var(--sp-1) var(--sp-2); border-radius: var(--r-md); }
+button.habit-range:hover { background: var(--bg-hover); }
+
+.habit-popover {
+  position: absolute; top: calc(100% + var(--sp-1)); left: 50%; transform: translateX(-50%);
+  z-index: 30; min-width: 240px;
+  background: var(--bg-raised); border: 1px solid var(--border);
+  border-radius: var(--r-lg); box-shadow: var(--shadow-md); padding: var(--sp-3);
+}
+.habit-popover-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: var(--sp-2); }
+.habit-popover-title { font-size: var(--fs-sm); font-weight: 600; }
+.habit-popover-grid { display: grid; grid-template-columns: repeat(7, 28px); gap: 2px; }
+.habit-popover-dow { text-align: center; font-family: var(--font-mono); font-size: var(--fs-xs); color: var(--fg-faint); }
+.habit-popover-day {
+  height: 26px; background: none; border: none; cursor: pointer;
+  border-radius: var(--r-md); font-family: var(--font-mono); font-size: var(--fs-xs); color: var(--fg);
+}
+.habit-popover-day:hover { background: var(--bg-hover); }
+.habit-popover-day.is-outside { color: var(--fg-faint); }
+.habit-popover-day.is-today { box-shadow: inset 0 0 0 1px var(--accent); }

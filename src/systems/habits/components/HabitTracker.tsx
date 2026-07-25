@@ -1,10 +1,11 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import type { WeekData } from "../services/ticks";
-import { formatWeekRange, localTodayString, weekDates } from "../lib/dates";
+import { addDays, localTodayString, mondayOf, weekDates } from "../lib/dates";
 import { initSounds, playSound } from "../lib/sounds";
 import { TickCircle, type TickState } from "./TickCircle";
+import { WeekHeader } from "./WeekHeader";
 
 const DAY_INITIALS = ["M", "T", "W", "T", "F", "S", "S"];
 
@@ -23,6 +24,39 @@ export function HabitTracker({ initialWeek }: { initialWeek: WeekData }) {
   const tickSeq = useRef<Map<string, number>>(new Map());
   const [week, setWeek] = useState<WeekData>(initialWeek);
   const [error, setError] = useState<string | null>(null);
+
+  const fetchWeek = useCallback(async (monday: string): Promise<WeekData | null> => {
+    const cached = cache.current.get(monday);
+    if (cached) return cached;
+    try {
+      const res = await fetch(`/api/systems/habits/week?start=${monday}`);
+      if (!res.ok) return null;
+      const data: WeekData = await res.json();
+      cache.current.set(monday, data);
+      return data;
+    } catch {
+      return null;
+    }
+  }, []);
+
+  const goToWeek = useCallback(async (target: string) => {
+    const monday = mondayOf(target);
+    const data = await fetchWeek(monday);
+    if (!data) {
+      setError("Could not load that week. Check your connection.");
+      return;
+    }
+    setError(null);
+    setWeek(data);
+    void fetchWeek(addDays(monday, -7));
+    void fetchWeek(addDays(monday, 7));
+  }, [fetchWeek]);
+
+  useEffect(() => {
+    void fetchWeek(addDays(initialWeek.monday, -7));
+    void fetchWeek(addDays(initialWeek.monday, 7));
+  }, [fetchWeek, initialWeek.monday]);
+
   const today = localTodayString();
   const dates = weekDates(week.monday);
   const ticks = new Map(week.ticks.map((t) => [tickKey(t.habitId, t.date), t.status]));
@@ -76,9 +110,7 @@ export function HabitTracker({ initialWeek }: { initialWeek: WeekData }) {
 
   return (
     <section className="paper-card habit-card" onPointerDownCapture={initSounds}>
-      <header className="habit-head">
-        <span className="habit-range">{formatWeekRange(week.monday)}</span>
-      </header>
+      <WeekHeader monday={week.monday} onNavigate={goToWeek} />
       <div className="habit-grid" role="table" aria-label="Habit tracker">
         <div className="habit-grid-row habit-grid-head" role="row">
           <span className="habit-name" />
