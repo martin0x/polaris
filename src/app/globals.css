@@ -1528,3 +1528,83 @@ kbd, .kbd {
 @media (hover: none) {
   .entry-card .actions { display: flex; }
 }
+
+/* ── Habits system ─────────────────────────────────────────────────────── */
+
+.habit-card { padding: var(--sp-4); }
+
+.habit-head {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--sp-2);
+  padding-bottom: var(--sp-3);
+  border-bottom: 1px solid var(--border);
+  margin-bottom: var(--sp-3);
+}
+
+.habit-range { font-family: var(--font-mono); font-size: var(--fs-sm); color: var(--fg-muted); }
+
+.habit-grid-row {
+  display: grid;
+  grid-template-columns: minmax(160px, 1fr) repeat(7, 44px);
+  align-items: center;
+  min-height: 36px;
+}
+
+.habit-grid-head { min-height: 24px; }
+
+.habit-day {
+  text-align: center;
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  color: var(--fg-faint);
+}
+
+.habit-day.is-today { color: var(--accent); }
+
+.habit-name { font-size: var(--fs-md); color: var(--fg); padding-right: var(--sp-2); }
+
+.habit-cell { display: flex; justify-content: center; }
+.habit-cell.is-today { background: var(--bg-hover); border-radius: var(--r-md); }
+
+.habit-empty { padding: var(--sp-6) 0 var(--sp-2); text-align: center; }
+.habit-error { color: var(--danger); font-size: var(--fs-sm); margin-top: var(--sp-2); }
+
+/* Tick circles */
+.tick {
+  width: 28px; height: 28px;
+  display: inline-flex; align-items: center; justify-content: center;
+  background: none; border: none; padding: 0;
+  border-radius: var(--r-full);
+  color: var(--success);
+  cursor: pointer;
+  touch-action: none;
+}
+.tick:hover:not(:disabled) { background: var(--bg-hover); }
+.tick:disabled { cursor: default; }
+.tick svg { transition: transform var(--dur-fast) var(--ease-out); }
+.tick-ring { fill: none; stroke: var(--border-strong); stroke-width: 1; }
+.tick:disabled .tick-ring { stroke: var(--border); }
+.tick-half, .tick-disc { fill: var(--success); }
+.tick-check {
+  fill: none; stroke: var(--paper-0);
+  stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round;
+}
+.tick-hold-ring {
+  fill: none; stroke: var(--success); stroke-width: 2;
+  stroke-dasharray: 56.5; stroke-dashoffset: 56.5;
+  transform: rotate(-90deg); transform-origin: center;
+  animation: tick-hold 450ms linear forwards;
+}
+.tick-partial svg { animation: tick-pop var(--dur-fast) var(--ease-out); }
+.tick-complete svg { animation: tick-burst 300ms var(--ease-spring); }
+
+@keyframes tick-hold { to { stroke-dashoffset: 0; } }
+@keyframes tick-pop { 50% { transform: scale(1.15); } }
+@keyframes tick-burst { 0% { transform: scale(0.8); } 60% { transform: scale(1.18); } 100% { transform: scale(1); } }
+
+@media (prefers-reduced-motion: reduce) {
+  .tick svg, .tick-partial svg, .tick-complete svg { animation: none; transition: none; }
+  .tick-hold-ring { animation: none; stroke-dashoffset: 0; }
+}
