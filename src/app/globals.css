@@ -1592,6 +1592,7 @@ kbd, .kbd {
   opacity: 0; /* revealed on row hover below — visibility, not interactive state */
 }
 .habit-grid-row:hover .habit-menu-btn, .habit-menu[open] .habit-menu-btn { opacity: 1; }
+.habit-menu-btn:focus-visible { opacity: 1; box-shadow: var(--ring); outline: none; }
 .habit-menu-btn:hover { background: var(--bg-hover); color: var(--fg); }
 .habit-menu-btn::-webkit-details-marker { display: none; }
 .habit-menu-list {
