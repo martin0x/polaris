@@ -50,6 +50,21 @@ describe("habits routes", () => {
     expect(res.status).toBe(400);
   });
 
+  it("GET /week with a calendar-invalid start 400s", async () => {
+    const res = await getWeekRoute(
+      req("GET", undefined, "http://localhost/api/systems/habits/week?start=2026-13-01"), {}
+    );
+    expect(res.status).toBe(400);
+  });
+
+  it("PUT tick with a calendar-invalid date 400s", async () => {
+    const habit = await makeHabit();
+    const res = await putTick(
+      req("PUT", { status: "PARTIAL" }), { id: habit.id, date: "2026-02-30" }
+    );
+    expect(res.status).toBe(400);
+  });
+
   it("PUT tick rejects future dates with 400", async () => {
     const habit = await makeHabit();
     const res = await putTick(

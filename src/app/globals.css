@@ -1528,6 +1528,7 @@ kbd, .kbd {
    visible from the start. */
 @media (hover: none) {
   .entry-card .actions { display: flex; }
+  .habit-menu-btn { opacity: 1; }
 }
 
 /* ── Habits system ─────────────────────────────────────────────────────── */

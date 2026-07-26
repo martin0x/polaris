@@ -18,6 +18,7 @@ export function TickCircle({ state, disabled, label, onChange }: TickCircleProps
   const holdTimer = useRef<number | null>(null);
   const firedHold = useRef(false);
   const pressed = useRef(false);
+  const pressStart = useRef(0);
 
   const clearHold = () => {
     if (holdTimer.current !== null) {
@@ -31,6 +32,7 @@ export function TickCircle({ state, disabled, label, onChange }: TickCircleProps
   const onPointerDown = (e: React.PointerEvent) => {
     if (disabled || e.button !== 0) return;
     pressed.current = true;
+    pressStart.current = Date.now();
     e.preventDefault();
     firedHold.current = false;
     if (state !== "complete") {
@@ -50,6 +52,7 @@ export function TickCircle({ state, disabled, label, onChange }: TickCircleProps
     const wasHolding = holdTimer.current !== null;
     clearHold();
     if (firedHold.current) return; // the hold already completed this press
+    if (state === "complete" && Date.now() - pressStart.current >= HOLD_MS) return; // hold on complete does nothing
     if (state === "off" && wasHolding) onChange("partial");
     else if (state !== "off") onChange("off");
   };

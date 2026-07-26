@@ -32,6 +32,7 @@ export function HabitTracker({ initialWeek }: { initialWeek: WeekData }) {
   const navSeq = useRef(0);
   const [week, setWeek] = useState<WeekData>(initialWeek);
   const [error, setError] = useState<string | null>(null);
+  const [details, setDetails] = useState<Record<string, HabitDetail>>({});
 
   const fetchWeek = useCallback(async (monday: string): Promise<WeekData | null> => {
     const cached = cache.current.get(monday);
@@ -73,13 +74,17 @@ export function HabitTracker({ initialWeek }: { initialWeek: WeekData }) {
 
   const refresh = useCallback(async () => {
     cache.current.clear();
+    const seq = ++navSeq.current;
     try {
       const res = await fetch(`/api/systems/habits/week?start=${week.monday}`);
+      if (navSeq.current !== seq) return; // superseded by a newer navigation
       if (!res.ok) throw new Error(String(res.status));
       const data: WeekData = await res.json();
       cache.current.set(data.monday, data);
       setWeek(data);
+      setDetails({});
     } catch {
+      if (navSeq.current !== seq) return;
       setError("Could not refresh — reload the page.");
     }
   }, [week.monday]);
@@ -156,7 +161,6 @@ export function HabitTracker({ initialWeek }: { initialWeek: WeekData }) {
   };
 
   const [expandedId, setExpandedId] = useState<string | null>(null);
-  const [details, setDetails] = useState<Record<string, HabitDetail>>({});
 
   const detailKey = (habitId: string) => `${habitId}|${week.monday}`;
 
@@ -240,6 +244,11 @@ export function HabitTracker({ initialWeek }: { initialWeek: WeekData }) {
     tickSeq.current.set(key, seq);
     playSound(next);
     mutateTick(habitId, date, next);
+    setDetails((d) => {
+      const next = { ...d };
+      for (const k of Object.keys(next)) if (k.startsWith(`${habitId}|`)) delete next[k];
+      return next;
+    });
     setError(null);
     const url = `/api/systems/habits/habits/${habitId}/ticks/${date}`;
     const request =
@@ -343,13 +352,13 @@ export function HabitTracker({ initialWeek }: { initialWeek: WeekData }) {
             </div>
           ))}
         </div>
-        <AddHabitRow autoFocus={searchParams.get("new") === "1"} onAdd={addHabit} />
         {week.habits.length === 0 && (
           <div className="habit-empty">
             <p>No habits yet.</p>
             <p className="caption">Add one below to start tracking.</p>
           </div>
         )}
+        <AddHabitRow autoFocus={searchParams.get("new") === "1"} onAdd={addHabit} />
         {error && <p className="habit-error">{error}</p>}
       </section>
       <ArchivedDisclosure

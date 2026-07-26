@@ -22,13 +22,11 @@ export const habitsLayer: PaletteLayer = {
       drillable: false,
     }));
     if (!trimmed) {
-      items.unshift({
-        id: "add-habit",
-        label: "Add habit",
-        icon: "plus" as const,
-        href: "/habits?new=1",
-        drillable: false,
-      });
+      items.unshift(
+        { id: "nav-tracker", label: "Tracker", icon: "repeat" as const, href: "/habits", drillable: false },
+        { id: "nav-charts", label: "Charts", icon: "calendar" as const, href: "/habits/charts", drillable: false },
+        { id: "add-habit", label: "Add habit", icon: "plus" as const, href: "/habits?new=1", drillable: false },
+      );
     }
     return items;
   },
