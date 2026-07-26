@@ -1,10 +1,12 @@
 import { describe, it, expect, beforeAll, beforeEach } from "vitest";
 import { NextRequest } from "next/server";
+import { prisma } from "@/platform/db/client";
 import { requireTestDatabase, withCleanHabitTables } from "@/test/db";
 import { addDays, todayString } from "../lib/dates";
 import { createHabit as createHabitRoute, updateHabit, reorderRoute, archiveRoute, unarchiveRoute, recreateTopicRoute } from "./habits";
 import { getWeekRoute, putTick, deleteTick } from "./ticks";
 import { getDetailRoute } from "./detail";
+import { createLogRoute } from "./logs";
 
 function req(method: string, body?: unknown, url = "http://localhost/api/systems/habits/x") {
   return new NextRequest(url, {
@@ -18,10 +20,10 @@ describe("habits routes", () => {
   beforeAll(() => requireTestDatabase());
   beforeEach(() => withCleanHabitTables());
 
-  async function makeHabit(name = "Run") {
+  async function makeHabit(name = "Run"): Promise<{ id: string; name: string; journalTopicId: string | null }> {
     const res = await createHabitRoute(req("POST", { name }), {});
     expect(res.status).toBe(201);
-    return (await res.json()).habit as { id: string; name: string };
+    return (await res.json()).habit as { id: string; name: string; journalTopicId: string | null };
   }
 
   it("POST /habits creates; duplicate name 409s", async () => {
@@ -118,5 +120,46 @@ describe("habits routes", () => {
       req("GET", undefined, `http://localhost/x?week=${today}`), { id: "nope" }
     );
     expect(gone.status).toBe(404);
+  });
+
+  it("POST log creates a journal entry for that day", async () => {
+    const habit = await makeHabit();
+    const res = await createLogRoute(
+      req("POST", { date: todayString(), body: "Logged from the tracker" }),
+      { id: habit.id }
+    );
+    expect(res.status).toBe(201);
+    const { entry } = await res.json();
+    expect(entry.excerpt).toBe("Logged from the tracker");
+  });
+
+  it("POST log rejects future dates with 400", async () => {
+    const habit = await makeHabit();
+    const res = await createLogRoute(
+      req("POST", { date: addDays(todayString(), 1), body: "Nope" }),
+      { id: habit.id }
+    );
+    expect(res.status).toBe(400);
+  });
+
+  it("POST log on an archived topic 409s", async () => {
+    const habit = await makeHabit();
+    await prisma.journalTopic.update({
+      where: { id: habit.journalTopicId! },
+      data: { archived: true },
+    });
+    const res = await createLogRoute(
+      req("POST", { date: todayString(), body: "Nope" }),
+      { id: habit.id }
+    );
+    expect(res.status).toBe(409);
+  });
+
+  it("POST log for an unknown habit 404s", async () => {
+    const res = await createLogRoute(
+      req("POST", { date: todayString(), body: "Nope" }),
+      { id: "missing" }
+    );
+    expect(res.status).toBe(404);
   });
 });

@@ -27,3 +27,9 @@ export const tickBodySchema = z.object({
 
 export const weekQuerySchema = z.object({ start: dateStringSchema });
 export const detailQuerySchema = z.object({ week: dateStringSchema });
+
+export const createLogSchema = z.object({
+  date: dateStringSchema,
+  title: z.string().trim().min(1).max(200).optional(),
+  body: z.string().min(1),
+});
