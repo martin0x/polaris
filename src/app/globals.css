@@ -1717,8 +1717,14 @@ button.habit-range:hover { background: var(--bg-hover); }
   margin-bottom: var(--sp-2);
 }
 .habit-diamond-cell { display: flex; justify-content: center; gap: 2px; }
-.habit-diamond { color: var(--link); display: inline-flex; border-radius: var(--r-xs); }
-.habit-diamond:hover { color: var(--link-hover); }
+.habit-diamond {
+  background: none; border: none; cursor: pointer;
+  display: inline-flex; padding: 2px; border-radius: var(--r-xs);
+}
+.habit-diamond:hover { background: var(--bg-hover); }
+.habit-diamond:focus-visible { outline: none; box-shadow: var(--ring); }
+.habit-diamond-outline { fill: none; stroke: var(--fg-faint); stroke-width: 1.5; }
+.habit-diamond-fill { fill: var(--accent); }
 
 .habit-topic-note {
   font-size: var(--fs-sm); color: var(--fg-muted);
@@ -1788,4 +1794,31 @@ button.habit-range:hover { background: var(--bg-hover); }
 @media (prefers-reduced-motion: reduce) {
   .habit-dropdown { animation: none; }
   .habit-expand { transition: none; }
+}
+
+/* Flyout — right-edge panel primitive (first used by the habit log compose) */
+.flyout {
+  position: fixed; top: 36px; /* matches the titlebar row height */
+  right: 0; bottom: 0; z-index: 40;
+  width: min(380px, 90vw);
+  background: var(--paper-1);
+  border-left: 1px solid var(--border);
+  box-shadow: var(--shadow-lg);
+  padding: var(--sp-4);
+  display: flex; flex-direction: column; gap: var(--sp-3);
+  overflow-y: auto;
+  animation: flyout-in var(--dur-med) var(--ease-out);
+}
+@keyframes flyout-in { from { transform: translateX(100%); } to { transform: none; } }
+.flyout-head { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--sp-2); }
+.flyout-title-wrap { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.flyout-title { font-family: var(--font-serif); font-size: var(--fs-lg); font-weight: 500; }
+.flyout-sub { font-family: var(--font-mono); font-size: var(--fs-xs); color: var(--fg-muted); }
+.flyout-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: var(--sp-1); }
+.flyout-list a { color: var(--link); font-size: var(--fs-sm); }
+.flyout-list a:hover { color: var(--link-hover); }
+.flyout-form { display: flex; flex-direction: column; gap: var(--sp-2); }
+
+@media (prefers-reduced-motion: reduce) {
+  .flyout { animation: none; }
 }

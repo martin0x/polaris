@@ -2,17 +2,9 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { Icon } from "@/app/_components/Icon";
 import type { HabitDetail } from "../services/detail";
 import type { HabitDto } from "../services/ticks";
-import { addDays, localTodayString, mondayOf } from "../lib/dates";
-
-/** Group an ISO timestamp into the browser's local calendar day. */
-function localDayOf(iso: string): string {
-  const d = new Date(iso);
-  const p = (n: number) => String(n).padStart(2, "0");
-  return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}`;
-}
+import { addDays, formatDayShort, localDayOf, localTodayString, mondayOf } from "../lib/dates";
 
 interface RowDropdownProps {
   habit: HabitDto;
@@ -20,9 +12,12 @@ interface RowDropdownProps {
   detail: HabitDetail | null;
   onSaveQuote: (quote: string) => void;
   onRecreateTopic: () => void;
+  onOpenLog: (date: string, trigger: HTMLElement) => void;
 }
 
-export function RowDropdown({ habit, dates, detail, onSaveQuote, onRecreateTopic }: RowDropdownProps) {
+export function RowDropdown({
+  habit, dates, detail, onSaveQuote, onRecreateTopic, onOpenLog,
+}: RowDropdownProps) {
   if (!detail) {
     return (
       <div className="habit-dropdown">
@@ -37,27 +32,38 @@ export function RowDropdown({ habit, dates, detail, onSaveQuote, onRecreateTopic
     const day = localDayOf(e.createdAt);
     byDay.set(day, [...(byDay.get(day) ?? []), e]);
   }
+  const today = localTodayString();
 
   return (
     <div className="habit-dropdown">
       {detail.topicState === "ok" && (
         <div className="habit-diamonds" aria-label="Journal logs this week">
           <span />
-          {dates.map((d) => (
-            <span key={d} className="habit-diamond-cell">
-              {(byDay.get(d) ?? []).map((e) => (
-                <Link
-                  key={e.id}
-                  href={`${topicHref}#entry-${e.id}`}
+          {dates.map((d) => {
+            const logs = byDay.get(d) ?? [];
+            if (d > today) return <span key={d} className="habit-diamond-cell" />;
+            const label = logs.length
+              ? `${logs[0].title ?? logs[0].excerpt}${logs.length > 1 ? ` +${logs.length - 1} more` : ""}`
+              : `Log ${habit.name} — ${formatDayShort(d)}`;
+            return (
+              <span key={d} className="habit-diamond-cell">
+                <button
+                  type="button"
                   className="habit-diamond"
-                  title={e.title ?? e.excerpt}
-                  aria-label={`Open log: ${e.title ?? e.excerpt}`}
+                  title={label}
+                  aria-label={label}
+                  onClick={(e) => onOpenLog(d, e.currentTarget)}
                 >
-                  <Icon name="diamond" size={14} />
-                </Link>
-              ))}
-            </span>
-          ))}
+                  <svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true">
+                    <path
+                      d="M7 1.5 12.5 7 7 12.5 1.5 7Z"
+                      className={logs.length ? "habit-diamond-fill" : "habit-diamond-outline"}
+                    />
+                  </svg>
+                </button>
+              </span>
+            );
+          })}
           <span />
         </div>
       )}

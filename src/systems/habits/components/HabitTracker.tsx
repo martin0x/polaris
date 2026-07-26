@@ -4,7 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import type { WeekData } from "../services/ticks";
 import type { HabitDetail } from "../services/detail";
-import { addDays, localTodayString, mondayOf, weekDates } from "../lib/dates";
+import { addDays, localDayOf, localTodayString, mondayOf, weekDates } from "../lib/dates";
 import { initSounds, playSound } from "../lib/sounds";
 import { Icon } from "@/app/_components/Icon";
 import { TickCircle, type TickState } from "./TickCircle";
@@ -13,6 +13,7 @@ import { AddHabitForm } from "./AddHabitForm";
 import { RowMenu } from "./RowMenu";
 import { ArchivedDisclosure } from "./ArchivedDisclosure";
 import { RowDropdown } from "./RowDropdown";
+import { LogFlyout, type LogTarget } from "./LogFlyout";
 
 const DAY_INITIALS = ["M", "T", "W", "T", "F", "S", "S"];
 
@@ -169,6 +170,45 @@ export function HabitTracker({ initialWeek }: { initialWeek: WeekData }) {
   };
 
   const [expandedId, setExpandedId] = useState<string | null>(null);
+
+  const [logTarget, setLogTarget] = useState<LogTarget | null>(null);
+  const logTrigger = useRef<HTMLElement | null>(null);
+
+  const openLog = (habitId: string, habitName: string, date: string, trigger: HTMLElement) => {
+    logTrigger.current = trigger;
+    setLogTarget({
+      habitId,
+      habitName,
+      topicName: details[detailKey(habitId)]?.topicName ?? habitName,
+      date,
+    });
+  };
+
+  const closeLog = useCallback(() => {
+    setLogTarget(null);
+    logTrigger.current?.focus();
+    logTrigger.current = null;
+  }, []);
+
+  const createLogEntry = async (title: string, body: string): Promise<string | null> => {
+    if (!logTarget) return null;
+    const res = await fetch(`/api/systems/habits/habits/${logTarget.habitId}/logs`, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ date: logTarget.date, ...(title ? { title } : {}), body }),
+    }).catch(() => null);
+    if (!res || !res.ok) return errorOf(res, "Could not save the log.");
+    const { entry } = (await res.json()) as { entry: HabitDetail["entries"][number] };
+    const key = detailKey(logTarget.habitId);
+    // Patch the new log in optimistically so the diamond fills immediately…
+    setDetails((d) =>
+      d[key] ? { ...d, [key]: { ...d[key], entries: [...d[key].entries, entry] } } : d
+    );
+    // …then let the server copy confirm it.
+    void prefetchDetail(logTarget.habitId, { force: true });
+    closeLog();
+    return null;
+  };
 
   const detailKey = (habitId: string) => `${habitId}|${week.monday}`;
 
@@ -365,6 +405,7 @@ export function HabitTracker({ initialWeek }: { initialWeek: WeekData }) {
                   detail={details[detailKey(h.id)] ?? null}
                   onSaveQuote={(q) => void saveQuote(h.id, q)}
                   onRecreateTopic={() => void recreateTopic(h.id)}
+                  onOpenLog={(date, trigger) => openLog(h.id, h.name, date, trigger)}
                 />
               )}
             </div>
@@ -383,6 +424,16 @@ export function HabitTracker({ initialWeek }: { initialWeek: WeekData }) {
         archived={week.archivedHabits}
         onUnarchive={(id) => void setArchived(id, false)}
       />
+      {logTarget && (
+        <LogFlyout
+          target={logTarget}
+          logs={(details[detailKey(logTarget.habitId)]?.entries ?? []).filter(
+            (e) => localDayOf(e.createdAt) === logTarget.date
+          )}
+          onClose={closeLog}
+          onCreate={createLogEntry}
+        />
+      )}
     </>
   );
 }

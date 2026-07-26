@@ -88,3 +88,10 @@ export function noonInTz(s: string, tz: string = process.env.POLARIS_TZ ?? "Asia
   const noonUtc = new Date(`${s}T12:00:00Z`);
   return new Date(noonUtc.getTime() - tzOffsetMs(noonUtc, tz));
 }
+
+/** Group an ISO timestamp into the browser's local calendar day. */
+export function localDayOf(iso: string): string {
+  const d = new Date(iso);
+  const p = (n: number) => String(n).padStart(2, "0");
+  return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}`;
+}
