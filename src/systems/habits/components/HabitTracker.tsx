@@ -9,7 +9,7 @@ import { initSounds, playSound } from "../lib/sounds";
 import { Icon } from "@/app/_components/Icon";
 import { TickCircle, type TickState } from "./TickCircle";
 import { WeekHeader } from "./WeekHeader";
-import { AddHabitRow } from "./AddHabitRow";
+import { AddHabitForm } from "./AddHabitForm";
 import { RowMenu } from "./RowMenu";
 import { ArchivedDisclosure } from "./ArchivedDisclosure";
 import { RowDropdown } from "./RowDropdown";
@@ -89,11 +89,11 @@ export function HabitTracker({ initialWeek }: { initialWeek: WeekData }) {
     }
   }, [week.monday]);
 
-  const addHabit = async (name: string): Promise<boolean> => {
+  const addHabit = async (name: string, quote: string): Promise<boolean> => {
     const res = await fetch("/api/systems/habits/habits", {
       method: "POST",
       headers: { "content-type": "application/json" },
-      body: JSON.stringify({ name }),
+      body: JSON.stringify(quote ? { name, quote } : { name }),
     }).catch(() => null);
     if (!res || !res.ok) {
       setError(await errorOf(res, "Could not add the habit."));
@@ -360,7 +360,7 @@ export function HabitTracker({ initialWeek }: { initialWeek: WeekData }) {
             <p className="caption">Add one below to start tracking.</p>
           </div>
         )}
-        <AddHabitRow autoFocus={searchParams.get("new") === "1"} onAdd={addHabit} />
+        <AddHabitForm startOpen={searchParams.get("new") === "1"} onAdd={addHabit} />
         {error && <p className="habit-error">{error}</p>}
       </section>
       <ArchivedDisclosure
