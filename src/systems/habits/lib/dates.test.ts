@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import {
-  addDays, formatWeekRange, isDateString, mondayOf, toDateString,
+  addDays, formatDayShort, formatWeekRange, isDateString, mondayOf, toDateString,
   todayString, toUtcDate, weekDates,
 } from "./dates";
 
@@ -53,5 +53,9 @@ describe("dates", () => {
     expect(formatWeekRange("2026-07-20")).toBe("Jul 20–26, 2026");
     expect(formatWeekRange("2026-06-29")).toBe("Jun 29 – Jul 5, 2026");
     expect(formatWeekRange("2025-12-29")).toBe("Dec 29, 2025 – Jan 4, 2026");
+  });
+
+  it("formats a short day label", () => {
+    expect(formatDayShort("2026-07-20")).toBe("Jul 20");
   });
 });

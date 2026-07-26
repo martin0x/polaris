@@ -48,6 +48,11 @@ export function localTodayString(): string {
   return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}`;
 }
 
+export function formatDayShort(s: string): string {
+  const d = toUtcDate(s);
+  return `${MONTHS[d.getUTCMonth()]} ${d.getUTCDate()}`;
+}
+
 /** En-dash ranges per the design system: Jul 20–26, 2026 / Jun 29 – Jul 5, 2026. */
 export function formatWeekRange(monday: string): string {
   const a = toUtcDate(monday);

@@ -1745,6 +1745,35 @@ button.habit-range:hover { background: var(--bg-hover); }
 
 .habit-summary p { margin: var(--sp-1) 0 0; font-size: var(--fs-sm); }
 
+/* Charts tab */
+.habit-chart-block { margin-top: var(--sp-8); }
+.habit-chart-block .caption { margin-bottom: var(--sp-3); }
+
+.habit-streak-tiles {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: var(--sp-3);
+}
+.habit-streak-tile { padding: var(--sp-3); }
+.habit-streak-current {
+  font-family: var(--font-mono); font-size: var(--fs-2xl); font-weight: 600;
+  margin: var(--sp-1) 0 0;
+}
+
+.habit-dow-heatmap {
+  display: grid; grid-template-columns: minmax(120px, max-content) repeat(7, 32px);
+  gap: 3px; align-items: center;
+}
+.habit-dow-label, .habit-dow-name { font-family: var(--font-mono); font-size: var(--fs-xs); color: var(--fg-faint); }
+.habit-dow-label { text-align: center; }
+.habit-dow-name { color: var(--fg); padding-right: var(--sp-2); }
+.habit-dow-cell { height: 24px; border-radius: var(--r-xs); }
+
+.habit-cal-heatmap {
+  display: grid; grid-template-rows: repeat(7, 12px);
+  grid-auto-flow: column; grid-auto-columns: 12px; gap: 3px;
+}
+.habit-cal-cell { border-radius: var(--r-xs); }
+.habit-cal-cell.is-blank { background: transparent; }
+
 @media (prefers-reduced-motion: reduce) {
   .habit-dropdown { animation: none; }
   .habit-expand { transition: none; }
