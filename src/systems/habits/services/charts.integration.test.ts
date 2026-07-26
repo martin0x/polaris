@@ -32,8 +32,13 @@ describe("charts service", () => {
     expect(data.calendar.at(-2)!.intensity).toBe(0.5);
     // this week's bar includes 1 complete + 0.5 partial credit of 7 days
     const last = data.weeks.at(-1)!;
+    const sameWeek = mondayOf(addDays(today, -1)) === mondayOf(today);
     expect(last.complete).toBe(Math.round((1 / 7) * 100));
-    expect(last.partial).toBe(Math.round((0.5 / 7) * 100));
+    expect(last.partial).toBe(sameWeek ? Math.round((0.5 / 7) * 100) : 0);
+    if (!sameWeek) {
+      // when today is a Monday, yesterday's partial tick falls in the previous week's bar
+      expect(data.weeks.at(-2)!.partial).toBe(Math.round((0.5 / 7) * 100));
+    }
   });
 
   it("counts backdated ticks from before the habit's creation day", async () => {
