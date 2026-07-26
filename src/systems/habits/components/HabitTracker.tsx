@@ -287,7 +287,10 @@ export function HabitTracker({ initialWeek }: { initialWeek: WeekData }) {
                     className={`habit-expand${expandedId === h.id ? " is-open" : ""}`}
                     aria-expanded={expandedId === h.id}
                     aria-label={`Details for ${h.name}`}
-                    onClick={() => setExpandedId(expandedId === h.id ? null : h.id)}
+                    onClick={() => {
+                      void prefetchDetail(h.id);
+                      setExpandedId(expandedId === h.id ? null : h.id);
+                    }}
                   >
                     <Icon name="chevron-right" size={14} />
                   </button>
