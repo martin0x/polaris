@@ -21,11 +21,11 @@ async function linkOrCreateTopic(name: string): Promise<string> {
   return topic.id;
 }
 
-export async function createHabit(name: string): Promise<Habit> {
+export async function createHabit(name: string, quote?: string | null): Promise<Habit> {
   const journalTopicId = await linkOrCreateTopic(name);
   const max = await prisma.habit.aggregate({ _max: { position: true } });
   return prisma.habit.create({
-    data: { name, position: (max._max.position ?? 0) + 1, journalTopicId },
+    data: { name, quote: quote || null, position: (max._max.position ?? 0) + 1, journalTopicId },
   });
 }
 

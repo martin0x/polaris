@@ -27,7 +27,7 @@ export const createHabit: RouteHandler = async (req) => {
     throw err;
   }
   try {
-    const habit = await createHabitService(parsed.name);
+    const habit = await createHabitService(parsed.name, parsed.quote);
     return NextResponse.json({ habit }, { status: 201 });
   } catch (err) {
     if (err instanceof Prisma.PrismaClientKnownRequestError && err.code === "P2002") {

@@ -162,4 +162,25 @@ describe("habits routes", () => {
     );
     expect(res.status).toBe(404);
   });
+
+  it("POST /habits stores an optional quote", async () => {
+    const res = await createHabitRoute(
+      req("POST", { name: "Read", quote: "Books before bed" }), {}
+    );
+    expect(res.status).toBe(201);
+    expect((await res.json()).habit.quote).toBe("Books before bed");
+  });
+
+  it("POST /habits treats an empty quote as absent", async () => {
+    const res = await createHabitRoute(req("POST", { name: "Read", quote: "  " }), {});
+    expect(res.status).toBe(201);
+    expect((await res.json()).habit.quote).toBeNull();
+  });
+
+  it("POST /habits rejects an over-long quote", async () => {
+    const res = await createHabitRoute(
+      req("POST", { name: "Read", quote: "x".repeat(501) }), {}
+    );
+    expect(res.status).toBe(400);
+  });
 });

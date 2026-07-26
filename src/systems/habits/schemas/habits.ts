@@ -8,6 +8,7 @@ export const dateStringSchema = z
 
 export const createHabitSchema = z.object({
   name: z.string().trim().min(1).max(80),
+  quote: z.string().trim().max(500).optional(),
 });
 
 export const updateHabitSchema = z
