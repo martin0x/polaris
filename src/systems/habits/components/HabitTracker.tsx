@@ -279,9 +279,11 @@ export function HabitTracker({ initialWeek }: { initialWeek: WeekData }) {
             <span className="habit-name" />
             {dates.map((d, i) => (
               <span key={d} className={`habit-day${d === today ? " is-today" : ""}`}>
-                {DAY_INITIALS[i]}
+                <span>{DAY_INITIALS[i]}</span>
+                <span className="habit-day-num">{Number(d.slice(8))}</span>
               </span>
             ))}
+            <span />
           </div>
           {week.habits.map((h) => (
             <div
@@ -316,17 +318,7 @@ export function HabitTracker({ initialWeek }: { initialWeek: WeekData }) {
                       }}
                     />
                   ) : (
-                    <>
-                      <span className="habit-name-text">{h.name}</span>
-                      <RowMenu
-                        canMoveUp={week.habits[0]?.id !== h.id}
-                        canMoveDown={week.habits[week.habits.length - 1]?.id !== h.id}
-                        onRename={() => setEditingId(h.id)}
-                        onMoveUp={() => void moveHabit(h.id, -1)}
-                        onMoveDown={() => void moveHabit(h.id, 1)}
-                        onArchive={() => void setArchived(h.id, true)}
-                      />
-                    </>
+                    <span className="habit-name-text">{h.name}</span>
                   )}
                 </span>
                 {dates.map((d) => (
@@ -339,6 +331,16 @@ export function HabitTracker({ initialWeek }: { initialWeek: WeekData }) {
                     />
                   </span>
                 ))}
+                <span className="habit-menu-cell">
+                  <RowMenu
+                    canMoveUp={week.habits[0]?.id !== h.id}
+                    canMoveDown={week.habits[week.habits.length - 1]?.id !== h.id}
+                    onRename={() => setEditingId(h.id)}
+                    onMoveUp={() => void moveHabit(h.id, -1)}
+                    onMoveDown={() => void moveHabit(h.id, 1)}
+                    onArchive={() => void setArchived(h.id, true)}
+                  />
+                </span>
               </div>
               {expandedId === h.id && (
                 <RowDropdown

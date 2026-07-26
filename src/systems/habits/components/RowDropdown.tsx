@@ -58,6 +58,7 @@ export function RowDropdown({ habit, dates, detail, onSaveQuote, onRecreateTopic
               ))}
             </span>
           ))}
+          <span />
         </div>
       )}
       {detail.topicState === "archived" && (
