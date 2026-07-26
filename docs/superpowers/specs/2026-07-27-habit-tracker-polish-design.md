@@ -91,8 +91,10 @@ treated as absent. `createHabit` service sets it on the new row.
   Archived/missing topic states keep their current note rows instead.
 - States:
   - **No logs:** outline diamond, `var(--fg-faint)`.
-  - **Has logs:** `var(--link)` colored; tooltip = first log's title/excerpt,
-    plus "+N more" when several.
+  - **Has logs:** **filled** diamond in `var(--accent)` (Obsidian purple).
+    Drawn as a small custom SVG shape — like `TickCircle`'s filled disc —
+    because Lucide icons are never filled. Tooltip = first log's
+    title/excerpt, plus "+N more" when several.
   - **Future day:** cell renders empty (no diamond).
   - Days before the habit's `createdOn` still get a diamond — ticks allow
     backdating to any past day, and logs follow the same rule.
@@ -141,10 +143,12 @@ treated as absent. `createHabit` service sets it on the new row.
   `createdAt?: Date`, passed through to Prisma. The journal's public API
   schema (`createEntrySchema`) is unchanged — backdating is reachable only
   through service-layer callers.
-- Client: on success the flyout closes, the habit's detail force-refetches
-  (same path as §1), the diamond fills in. On failure the flyout stays open
-  with an inline error line ("Could not save the log. Check your
-  connection." or the server's message).
+- Client: on success the flyout closes and the diamond flips to its filled
+  accent state **immediately** — the created entry is patched into the
+  cached detail optimistically while the habit's detail force-refetches in
+  the background (same path as §1). On failure the flyout stays open with
+  an inline error line ("Could not save the log. Check your connection."
+  or the server's message).
 
 ## Out of scope
 
