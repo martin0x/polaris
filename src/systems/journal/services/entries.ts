@@ -10,6 +10,9 @@ export interface CreateEntryInput {
   topicId: string;
   title?: string | null;
   body: string;
+  /** Service-layer only — lets system callers (habit logs) backdate an entry.
+   * Deliberately NOT exposed through the journal's public API schema. */
+  createdAt?: Date;
 }
 
 export async function createEntry(
@@ -22,6 +25,7 @@ export async function createEntry(
       title: input.title ?? null,
       body: input.body,
       tags,
+      ...(input.createdAt ? { createdAt: input.createdAt } : {}),
     },
     include: { topic: true },
   });

@@ -17,7 +17,7 @@ export interface HabitDetail {
   summary: null; // reserved for the AI-summary increment
 }
 
-function excerptOf(body: string): string {
+export function excerptOf(body: string): string {
   const line = body.split("\n", 1)[0].trim();
   return line.length > 60 ? `${line.slice(0, 59)}…` : line;
 }

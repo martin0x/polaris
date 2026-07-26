@@ -115,4 +115,11 @@ describe("entries service", () => {
       firstPage[1].createdAt.getTime()
     );
   });
+
+  it("honors an explicit createdAt override", async () => {
+    const topic = await seedTopic("Backdated");
+    const when = new Date("2026-07-01T04:00:00.000Z");
+    const entry = await createEntry({ topicId: topic.id, body: "old", createdAt: when });
+    expect(entry.createdAt.toISOString()).toBe(when.toISOString());
+  });
 });
