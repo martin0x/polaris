@@ -29,6 +29,7 @@ function stateOf(status: "PARTIAL" | "COMPLETE" | undefined): TickState {
 export function HabitTracker({ initialWeek }: { initialWeek: WeekData }) {
   const cache = useRef<Map<string, WeekData>>(new Map([[initialWeek.monday, initialWeek]]));
   const tickSeq = useRef<Map<string, number>>(new Map());
+  const detailSeq = useRef<Map<string, number>>(new Map());
   const navSeq = useRef(0);
   const [week, setWeek] = useState<WeekData>(initialWeek);
   const [error, setError] = useState<string | null>(null);
@@ -164,16 +165,19 @@ export function HabitTracker({ initialWeek }: { initialWeek: WeekData }) {
 
   const detailKey = (habitId: string) => `${habitId}|${week.monday}`;
 
-  const prefetchDetail = async (habitId: string) => {
+  const prefetchDetail = async (habitId: string, opts?: { force?: boolean }) => {
     const key = detailKey(habitId);
-    if (details[key]) return;
+    if (!opts?.force && details[key]) return;
+    const seq = (detailSeq.current.get(key) ?? 0) + 1;
+    detailSeq.current.set(key, seq);
     try {
       const res = await fetch(`/api/systems/habits/habits/${habitId}/detail?week=${week.monday}`);
       if (!res.ok) return;
       const data: HabitDetail = await res.json();
+      if (detailSeq.current.get(key) !== seq) return; // superseded by a newer fetch
       setDetails((d) => ({ ...d, [key]: data }));
     } catch {
-      // detail loads lazily; expansion shows the loading state until a retry
+      // detail loads lazily; the stale copy (or loading state) stays until a retry
     }
   };
 
@@ -245,10 +249,14 @@ export function HabitTracker({ initialWeek }: { initialWeek: WeekData }) {
     playSound(next);
     mutateTick(habitId, date, next);
     setDetails((d) => {
+      const keep = expandedId === habitId ? detailKey(habitId) : null;
       const next = { ...d };
-      for (const k of Object.keys(next)) if (k.startsWith(`${habitId}|`)) delete next[k];
+      for (const k of Object.keys(next)) {
+        if (k.startsWith(`${habitId}|`) && k !== keep) delete next[k];
+      }
       return next;
     });
+    if (expandedId === habitId) void prefetchDetail(habitId, { force: true });
     setError(null);
     const url = `/api/systems/habits/habits/${habitId}/ticks/${date}`;
     const request =
