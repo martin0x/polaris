@@ -49,7 +49,7 @@ export function AddHabitForm({ startOpen, onAdd }: AddHabitFormProps) {
     <form
       className="habit-add-form"
       onSubmit={(e) => { e.preventDefault(); void submit(); }}
-      onKeyDown={(e) => { if (e.key === "Escape") cancel(); }}
+      onKeyDown={(e) => { if (e.key === "Escape" && !busy) cancel(); }}
     >
       <input
         ref={nameRef}
@@ -73,7 +73,7 @@ export function AddHabitForm({ startOpen, onAdd }: AddHabitFormProps) {
         <button type="submit" className="btn btn-primary" disabled={busy || !name.trim()}>
           Add habit
         </button>
-        <button type="button" className="btn btn-ghost" onClick={cancel}>
+        <button type="button" className="btn btn-ghost" onClick={cancel} disabled={busy}>
           Cancel
         </button>
       </div>
