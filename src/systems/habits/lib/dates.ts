@@ -66,3 +66,25 @@ export function formatWeekRange(monday: string): string {
   }
   return `${ma} ${a.getUTCDate()}–${b.getUTCDate()}, ${b.getUTCFullYear()}`;
 }
+
+function tzOffsetMs(at: Date, tz: string): number {
+  const parts = new Intl.DateTimeFormat("en-US", {
+    timeZone: tz, hour12: false,
+    year: "numeric", month: "2-digit", day: "2-digit",
+    hour: "2-digit", minute: "2-digit", second: "2-digit",
+  }).formatToParts(at);
+  const p: Record<string, string> = {};
+  for (const { type, value } of parts) p[type] = value;
+  const asUtc = Date.UTC(
+    Number(p.year), Number(p.month) - 1, Number(p.day),
+    Number(p.hour === "24" ? "0" : p.hour), Number(p.minute), Number(p.second)
+  );
+  return asUtc - at.getTime();
+}
+
+/** UTC instant of 12:00 in `tz` on the given day — noon keeps a backdated
+ * entry on the intended calendar day for any viewer timezone within ±12h. */
+export function noonInTz(s: string, tz: string = process.env.POLARIS_TZ ?? "Asia/Manila"): Date {
+  const noonUtc = new Date(`${s}T12:00:00Z`);
+  return new Date(noonUtc.getTime() - tzOffsetMs(noonUtc, tz));
+}

@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
 import {
   addDays, formatDayShort, formatWeekRange, isDateString, mondayOf, toDateString,
-  todayString, toUtcDate, weekDates,
+  todayString, toUtcDate, weekDates, noonInTz,
 } from "./dates";
 
 describe("dates", () => {
@@ -57,5 +57,29 @@ describe("dates", () => {
 
   it("formats a short day label", () => {
     expect(formatDayShort("2026-07-20")).toBe("Jul 20");
+  });
+});
+
+describe("noonInTz", () => {
+  it("pins Manila noon at 04:00 UTC", () => {
+    expect(noonInTz("2026-07-22", "Asia/Manila").toISOString()).toBe(
+      "2026-07-22T04:00:00.000Z"
+    );
+  });
+
+  it("returns an instant that formats back to the same day in the target tz", () => {
+    const zones = ["Asia/Manila", "UTC", "Pacific/Kiritimati", "Pacific/Midway", "America/New_York"];
+    for (const tz of zones) {
+      const d = noonInTz("2026-07-22", tz);
+      const day = new Intl.DateTimeFormat("en-CA", {
+        timeZone: tz, year: "numeric", month: "2-digit", day: "2-digit",
+      }).format(d);
+      expect(day).toBe("2026-07-22");
+    }
+  });
+
+  it("handles a northern-winter date across DST zones", () => {
+    const d = noonInTz("2026-01-15", "America/New_York");
+    expect(d.toISOString()).toBe("2026-01-15T17:00:00.000Z"); // EST is UTC-5
   });
 });
