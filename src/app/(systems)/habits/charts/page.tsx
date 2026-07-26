@@ -29,7 +29,7 @@ export default async function HabitsChartsPage() {
 
       <section className="habit-chart-block">
         <h2>Streaks and recovery</h2>
-        <p className="caption">One missed day doesn't break a habit — two in a row is the signal.</p>
+        <p className="caption">One missed day doesn&apos;t break a habit — two in a row is the signal.</p>
         <StreakTiles streaks={data.streaks} />
       </section>
 
