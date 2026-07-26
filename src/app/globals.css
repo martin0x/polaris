@@ -1799,7 +1799,7 @@ button.habit-range:hover { background: var(--bg-hover); }
 /* Flyout — right-edge panel primitive (first used by the habit log compose) */
 .flyout {
   position: fixed; top: 36px; /* matches the titlebar row height */
-  right: 0; bottom: 0; z-index: 40;
+  right: 0; bottom: 0; z-index: var(--z-overlay);
   width: min(380px, 90vw);
   background: var(--paper-1);
   border-left: 1px solid var(--border);

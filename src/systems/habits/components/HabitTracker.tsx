@@ -36,6 +36,17 @@ export function HabitTracker({ initialWeek }: { initialWeek: WeekData }) {
   const [error, setError] = useState<string | null>(null);
   const [details, setDetails] = useState<Record<string, HabitDetail>>({});
 
+  const [logTarget, setLogTarget] = useState<LogTarget | null>(null);
+  const logTrigger = useRef<HTMLElement | null>(null);
+
+  /** Week navigation and cache invalidation swap the detail cache key out from
+   * under an open flyout — drop it without the focus-return since the
+   * trigger element may no longer be on screen. */
+  const dropLog = useCallback(() => {
+    setLogTarget(null);
+    logTrigger.current = null;
+  }, []);
+
   const fetchWeek = useCallback(async (monday: string): Promise<WeekData | null> => {
     const cached = cache.current.get(monday);
     if (cached) return cached;
@@ -61,9 +72,10 @@ export function HabitTracker({ initialWeek }: { initialWeek: WeekData }) {
     }
     setError(null);
     setWeek(data);
+    dropLog();
     void fetchWeek(addDays(monday, -7));
     void fetchWeek(addDays(monday, 7));
-  }, [fetchWeek]);
+  }, [fetchWeek, dropLog]);
 
   const searchParams = useSearchParams();
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -92,11 +104,12 @@ export function HabitTracker({ initialWeek }: { initialWeek: WeekData }) {
       setWeek(data);
       invalidateDetailFetches();
       setDetails({});
+      dropLog();
     } catch {
       if (navSeq.current !== seq) return;
       setError("Could not refresh — reload the page.");
     }
-  }, [week.monday]);
+  }, [week.monday, dropLog]);
 
   const addHabit = async (name: string, quote: string): Promise<boolean> => {
     const res = await fetch("/api/systems/habits/habits", {
@@ -170,9 +183,6 @@ export function HabitTracker({ initialWeek }: { initialWeek: WeekData }) {
   };
 
   const [expandedId, setExpandedId] = useState<string | null>(null);
-
-  const [logTarget, setLogTarget] = useState<LogTarget | null>(null);
-  const logTrigger = useRef<HTMLElement | null>(null);
 
   const openLog = (habitId: string, habitName: string, date: string, trigger: HTMLElement) => {
     logTrigger.current = trigger;
@@ -258,6 +268,7 @@ export function HabitTracker({ initialWeek }: { initialWeek: WeekData }) {
     setError(null);
     invalidateDetailFetches();
     setDetails({});
+    dropLog();
     await refresh();
   };
 
@@ -426,6 +437,7 @@ export function HabitTracker({ initialWeek }: { initialWeek: WeekData }) {
       />
       {logTarget && (
         <LogFlyout
+          key={`${logTarget.habitId}|${logTarget.date}`}
           target={logTarget}
           logs={(details[detailKey(logTarget.habitId)]?.entries ?? []).filter(
             (e) => localDayOf(e.createdAt) === logTarget.date

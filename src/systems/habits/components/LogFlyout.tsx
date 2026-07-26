@@ -29,16 +29,13 @@ export function LogFlyout({ target, logs, onClose, onCreate }: LogFlyoutProps) {
   const panelRef = useRef<HTMLElement>(null);
   const titleRef = useRef<HTMLInputElement>(null);
 
+  // The call site keys this component on `${target.habitId}|${target.date}`,
+  // so a retarget fully remounts it — title/body/error reset via the
+  // useState initializers above, and this effect only needs to run once
+  // per mount to focus the title input.
   useEffect(() => {
-    // Retargeting the flyout to a new day/habit is a discrete, prop-driven
-    // event (not a render-triggered loop), so this reset is not a cascading
-    // render (see ComposeBox for the precedent).
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setTitle("");
-    setBody("");
-    setError(null);
     titleRef.current?.focus();
-  }, [target.habitId, target.date]);
+  }, []);
 
   useEffect(() => {
     const onDown = (e: MouseEvent) => {
