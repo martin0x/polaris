@@ -3,13 +3,16 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import type { WeekData } from "../services/ticks";
+import type { HabitDetail } from "../services/detail";
 import { addDays, localTodayString, mondayOf, weekDates } from "../lib/dates";
 import { initSounds, playSound } from "../lib/sounds";
+import { Icon } from "@/app/_components/Icon";
 import { TickCircle, type TickState } from "./TickCircle";
 import { WeekHeader } from "./WeekHeader";
 import { AddHabitRow } from "./AddHabitRow";
 import { RowMenu } from "./RowMenu";
 import { ArchivedDisclosure } from "./ArchivedDisclosure";
+import { RowDropdown } from "./RowDropdown";
 
 const DAY_INITIALS = ["M", "T", "W", "T", "F", "S", "S"];
 
@@ -152,6 +155,56 @@ export function HabitTracker({ initialWeek }: { initialWeek: WeekData }) {
     await refresh();
   };
 
+  const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [details, setDetails] = useState<Record<string, HabitDetail>>({});
+
+  const detailKey = (habitId: string) => `${habitId}|${week.monday}`;
+
+  const prefetchDetail = async (habitId: string) => {
+    const key = detailKey(habitId);
+    if (details[key]) return;
+    try {
+      const res = await fetch(`/api/systems/habits/habits/${habitId}/detail?week=${week.monday}`);
+      if (!res.ok) return;
+      const data: HabitDetail = await res.json();
+      setDetails((d) => ({ ...d, [key]: data }));
+    } catch {
+      // detail loads lazily; expansion shows the loading state until a retry
+    }
+  };
+
+  const saveQuote = async (habitId: string, quote: string) => {
+    const res = await fetch(`/api/systems/habits/habits/${habitId}`, {
+      method: "PATCH",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ quote }),
+    }).catch(() => null);
+    if (!res || !res.ok) {
+      setError("Could not save the quote.");
+      return;
+    }
+    setError(null);
+    setWeek((w) => {
+      const habits = w.habits.map((h) => (h.id === habitId ? { ...h, quote: quote || null } : h));
+      const next = { ...w, habits };
+      cache.current.set(w.monday, next);
+      return next;
+    });
+  };
+
+  const recreateTopic = async (habitId: string) => {
+    const res = await fetch(`/api/systems/habits/habits/${habitId}/recreate-topic`, {
+      method: "POST",
+    }).catch(() => null);
+    if (!res || !res.ok) {
+      setError("Could not recreate the topic.");
+      return;
+    }
+    setError(null);
+    setDetails({});
+    await refresh();
+  };
+
   useEffect(() => {
     void fetchWeek(addDays(initialWeek.monday, -7));
     void fetchWeek(addDays(initialWeek.monday, 7));
@@ -222,44 +275,68 @@ export function HabitTracker({ initialWeek }: { initialWeek: WeekData }) {
             ))}
           </div>
           {week.habits.map((h) => (
-            <div key={h.id} className="habit-grid-row" role="row">
-              <span className="habit-name">
-                {editingId === h.id ? (
-                  <input
-                    className="habit-rename-input"
-                    defaultValue={h.name}
-                    autoFocus
-                    aria-label={`Rename ${h.name}`}
-                    onBlur={(e) => void saveRename(h.id, e.target.value)}
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter") void saveRename(h.id, e.currentTarget.value);
-                      if (e.key === "Escape") setEditingId(null);
-                    }}
-                  />
-                ) : (
-                  <>
-                    <span className="habit-name-text">{h.name}</span>
-                    <RowMenu
-                      canMoveUp={week.habits[0]?.id !== h.id}
-                      canMoveDown={week.habits[week.habits.length - 1]?.id !== h.id}
-                      onRename={() => setEditingId(h.id)}
-                      onMoveUp={() => void moveHabit(h.id, -1)}
-                      onMoveDown={() => void moveHabit(h.id, 1)}
-                      onArchive={() => void setArchived(h.id, true)}
+            <div
+              key={h.id}
+              className="habit-row-wrap"
+              onPointerEnter={() => void prefetchDetail(h.id)}
+            >
+              <div className="habit-grid-row" role="row">
+                <span className="habit-name">
+                  <button
+                    type="button"
+                    className={`habit-expand${expandedId === h.id ? " is-open" : ""}`}
+                    aria-expanded={expandedId === h.id}
+                    aria-label={`Details for ${h.name}`}
+                    onClick={() => setExpandedId(expandedId === h.id ? null : h.id)}
+                  >
+                    <Icon name="chevron-right" size={14} />
+                  </button>
+                  {editingId === h.id ? (
+                    <input
+                      className="habit-rename-input"
+                      defaultValue={h.name}
+                      autoFocus
+                      aria-label={`Rename ${h.name}`}
+                      onBlur={(e) => void saveRename(h.id, e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") void saveRename(h.id, e.currentTarget.value);
+                        if (e.key === "Escape") setEditingId(null);
+                      }}
                     />
-                  </>
-                )}
-              </span>
-              {dates.map((d) => (
-                <span key={d} className={`habit-cell${d === today ? " is-today" : ""}`}>
-                  <TickCircle
-                    state={stateOf(ticks.get(tickKey(h.id, d)))}
-                    disabled={d > today}
-                    label={`${h.name} — ${d}`}
-                    onChange={(next) => handleTick(h.id, d, next)}
-                  />
+                  ) : (
+                    <>
+                      <span className="habit-name-text">{h.name}</span>
+                      <RowMenu
+                        canMoveUp={week.habits[0]?.id !== h.id}
+                        canMoveDown={week.habits[week.habits.length - 1]?.id !== h.id}
+                        onRename={() => setEditingId(h.id)}
+                        onMoveUp={() => void moveHabit(h.id, -1)}
+                        onMoveDown={() => void moveHabit(h.id, 1)}
+                        onArchive={() => void setArchived(h.id, true)}
+                      />
+                    </>
+                  )}
                 </span>
-              ))}
+                {dates.map((d) => (
+                  <span key={d} className={`habit-cell${d === today ? " is-today" : ""}`}>
+                    <TickCircle
+                      state={stateOf(ticks.get(tickKey(h.id, d)))}
+                      disabled={d > today}
+                      label={`${h.name} — ${d}`}
+                      onChange={(next) => handleTick(h.id, d, next)}
+                    />
+                  </span>
+                ))}
+              </div>
+              {expandedId === h.id && (
+                <RowDropdown
+                  habit={h}
+                  dates={dates}
+                  detail={details[detailKey(h.id)] ?? null}
+                  onSaveQuote={(q) => void saveQuote(h.id, q)}
+                  onRecreateTopic={() => void recreateTopic(h.id)}
+                />
+              )}
             </div>
           ))}
         </div>
