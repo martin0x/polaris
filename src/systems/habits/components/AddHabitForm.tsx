@@ -56,6 +56,9 @@ export function AddHabitForm({ startOpen, onAdd }: AddHabitFormProps) {
         className="habit-add-input"
         placeholder="Habit name"
         aria-label="Habit name"
+        required
+        aria-required="true"
+        maxLength={80}
         value={name}
         disabled={busy}
         onChange={(e) => setName(e.target.value)}
@@ -65,6 +68,7 @@ export function AddHabitForm({ startOpen, onAdd }: AddHabitFormProps) {
         placeholder="Quote, goal, or tip (optional)"
         aria-label="Quote, goal, or tip (optional)"
         rows={2}
+        maxLength={500}
         value={quote}
         disabled={busy}
         onChange={(e) => setQuote(e.target.value)}

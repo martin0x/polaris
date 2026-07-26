@@ -315,7 +315,6 @@ export function HabitTracker({ initialWeek }: { initialWeek: WeekData }) {
       }
       return next;
     });
-    if (expandedId === habitId) void prefetchDetail(habitId, { force: true });
     setError(null);
     const url = `/api/systems/habits/habits/${habitId}/ticks/${date}`;
     const request =
@@ -334,6 +333,9 @@ export function HabitTracker({ initialWeek }: { initialWeek: WeekData }) {
         if (tickSeq.current.get(key) !== seq) return; // superseded by a newer toggle
         mutateTick(habitId, date, prev);
         setError("Could not save that tick — reverted. Check your connection.");
+      })
+      .finally(() => {
+        if (expandedId === habitId) void prefetchDetail(habitId, { force: true });
       });
   };
 

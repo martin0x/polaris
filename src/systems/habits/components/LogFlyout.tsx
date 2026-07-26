@@ -39,9 +39,11 @@ export function LogFlyout({ target, logs, onClose, onCreate }: LogFlyoutProps) {
 
   useEffect(() => {
     const onDown = (e: MouseEvent) => {
+      if (busy) return;
       if (panelRef.current && !panelRef.current.contains(e.target as Node)) onClose();
     };
     const onKey = (e: KeyboardEvent) => {
+      if (busy) return;
       if (e.key === "Escape") onClose();
     };
     document.addEventListener("mousedown", onDown);
@@ -50,7 +52,7 @@ export function LogFlyout({ target, logs, onClose, onCreate }: LogFlyoutProps) {
       document.removeEventListener("mousedown", onDown);
       document.removeEventListener("keydown", onKey);
     };
-  }, [onClose]);
+  }, [onClose, busy]);
 
   const submit = async () => {
     if (!body.trim() || busy) return;
