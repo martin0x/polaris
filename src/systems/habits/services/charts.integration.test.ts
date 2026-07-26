@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeAll, beforeEach } from "vitest";
 import { requireTestDatabase, withCleanHabitTables } from "@/test/db";
-import { addDays, todayString } from "../lib/dates";
+import { addDays, mondayOf, todayString } from "../lib/dates";
 import { createHabit } from "./habits";
 import { upsertTick } from "./ticks";
 import { getChartsData } from "./charts";
@@ -34,5 +34,18 @@ describe("charts service", () => {
     const last = data.weeks.at(-1)!;
     expect(last.complete).toBe(Math.round((1 / 7) * 100));
     expect(last.partial).toBe(Math.round((0.5 / 7) * 100));
+  });
+
+  it("counts backdated ticks from before the habit's creation day", async () => {
+    const habit = await createHabit("Backfill");
+    const today = todayString();
+    const prevMonday = addDays(mondayOf(today), -7);
+    await upsertTick(habit.id, prevMonday, "COMPLETE");
+
+    const data = await getChartsData();
+    const prevWeek = data.weeks.at(-2)!;
+    expect(prevWeek.complete).toBeGreaterThan(0);
+    const cal = data.calendar.find((c) => c.date === prevMonday)!;
+    expect(cal.intensity).toBeGreaterThan(0);
   });
 });

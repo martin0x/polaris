@@ -33,18 +33,25 @@ export async function getChartsData(): Promise<ChartsData> {
     m.set(toDateString(t.date), t.status);
     byHabit.set(t.habitId, m);
   }
-  const windows = habits.map((h) => ({
-    id: h.id,
-    name: h.name,
-    archived: h.archived,
-    createdOn: toDateString(h.createdAt),
-    archivedOn: h.archivedAt ? toDateString(h.archivedAt) : null,
-    ticks: byHabit.get(h.id) ?? new Map<string, TickStatus>(),
-  }));
+  const windows = habits.map((h) => {
+    const ticks = byHabit.get(h.id) ?? new Map<string, TickStatus>();
+    // Effective start: ticks may be backdated before the habit's creation day —
+    // the habit "exists" for charting from whichever comes first.
+    let startOn = toDateString(h.createdAt);
+    for (const d of ticks.keys()) if (d < startOn) startOn = d;
+    return {
+      id: h.id,
+      name: h.name,
+      archived: h.archived,
+      startOn,
+      archivedOn: h.archivedAt ? toDateString(h.archivedAt) : null,
+      ticks,
+    };
+  });
 
   const weeks: ChartsData["weeks"] = [];
   for (let m = firstMonday; m <= thisMonday; m = addDays(m, 7)) {
-    const eligible = windows.filter((h) => isEligibleWeek(h.createdOn, h.archivedOn, m));
+    const eligible = windows.filter((h) => isEligibleWeek(h.startOn, h.archivedOn, m));
     let complete = 0;
     let partial = 0;
     for (const h of eligible) {
@@ -69,23 +76,23 @@ export async function getChartsData(): Promise<ChartsData> {
     current: currentStreak(h.ticks, today),
     longest: longestStreak(h.ticks),
     lapses90: countLapses(
-      h.ticks, maxDate(addDays(today, -89), h.createdOn), addDays(today, -1)
+      h.ticks, maxDate(addDays(today, -89), h.startOn), addDays(today, -1)
     ),
   }));
 
   const weekday = active.map((h) => ({
     id: h.id,
     name: h.name,
-    means: dayOfWeekMeans(h.ticks, maxDate(addDays(today, -89), h.createdOn), today),
+    means: dayOfWeekMeans(h.ticks, maxDate(addDays(today, -89), h.startOn), today),
   }));
 
   const calendar: ChartsData["calendar"] = [];
   for (let d = calStart; d <= today; d = addDays(d, 1)) {
-    // A habit counts for the day if it existed by then, or — for a tick that
-    // predates its recorded creation timestamp — if real data was logged for
-    // that day anyway; recorded activity should never be silently dropped.
+    // A habit counts for the day if it existed by then, using its effective
+    // start (earliest of creation day or earliest backdated tick) — recorded
+    // activity should never be silently dropped.
     const existing = windows.filter(
-      (h) => (h.createdOn <= d || h.ticks.has(d)) && (h.archivedOn === null || h.archivedOn >= d)
+      (h) => h.startOn <= d && (h.archivedOn === null || h.archivedOn >= d)
     );
     const sum = existing.reduce((acc, h) => acc + creditOf(h.ticks.get(d)), 0);
     calendar.push({ date: d, intensity: existing.length ? sum / existing.length : 0 });
