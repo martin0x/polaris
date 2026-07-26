@@ -73,6 +73,12 @@ export function HabitTracker({ initialWeek }: { initialWeek: WeekData }) {
     return typeof body?.error === "string" ? body.error : fallback;
   };
 
+  const invalidateDetailFetches = () => {
+    for (const k of detailSeq.current.keys()) {
+      detailSeq.current.set(k, (detailSeq.current.get(k) ?? 0) + 1);
+    }
+  };
+
   const refresh = useCallback(async () => {
     cache.current.clear();
     const seq = ++navSeq.current;
@@ -83,6 +89,7 @@ export function HabitTracker({ initialWeek }: { initialWeek: WeekData }) {
       const data: WeekData = await res.json();
       cache.current.set(data.monday, data);
       setWeek(data);
+      invalidateDetailFetches();
       setDetails({});
     } catch {
       if (navSeq.current !== seq) return;
@@ -209,6 +216,7 @@ export function HabitTracker({ initialWeek }: { initialWeek: WeekData }) {
       return;
     }
     setError(null);
+    invalidateDetailFetches();
     setDetails({});
     await refresh();
   };
