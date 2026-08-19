@@ -9,6 +9,7 @@
  */
 
 import type * as auth from "../auth.js";
+import type * as feedback from "../feedback.js";
 import type * as http from "../http.js";
 import type * as lib_allowlist from "../lib/allowlist.js";
 import type * as lib_users from "../lib/users.js";
@@ -23,6 +24,7 @@ import type {
 
 declare const fullApi: ApiFromModules<{
   auth: typeof auth;
+  feedback: typeof feedback;
   http: typeof http;
   "lib/allowlist": typeof lib_allowlist;
   "lib/users": typeof lib_users;
