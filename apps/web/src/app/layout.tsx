@@ -1,6 +1,10 @@
 import type { Metadata } from "next";
 import { Fraunces, Plus_Jakarta_Sans, IBM_Plex_Mono } from "next/font/google";
-import { getOptionalSession } from "@/platform/auth/session";
+import {
+  ConvexAuthNextjsServerProvider,
+  isAuthenticatedNextjs,
+} from "@convex-dev/auth/nextjs/server";
+import ConvexClientProvider from "@/app/_components/ConvexClientProvider";
 import { PaletteProvider } from "@/platform/palette/client/PaletteProvider";
 import "./globals.css";
 
@@ -46,19 +50,23 @@ export default async function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const session = await getOptionalSession();
+  const isAuthenticated = await isAuthenticatedNextjs();
   return (
-    <html
-      lang="en"
-      className={`${fraunces.variable} ${jakarta.variable} ${plexMono.variable}`}
-    >
-      <body className="antialiased">
-        {session?.user ? (
-          <PaletteProvider>{children}</PaletteProvider>
-        ) : (
-          children
-        )}
-      </body>
-    </html>
+    <ConvexAuthNextjsServerProvider>
+      <html
+        lang="en"
+        className={`${fraunces.variable} ${jakarta.variable} ${plexMono.variable}`}
+      >
+        <body className="antialiased">
+          <ConvexClientProvider>
+            {isAuthenticated ? (
+              <PaletteProvider>{children}</PaletteProvider>
+            ) : (
+              children
+            )}
+          </ConvexClientProvider>
+        </body>
+      </html>
+    </ConvexAuthNextjsServerProvider>
   );
 }

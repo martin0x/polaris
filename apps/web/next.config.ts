@@ -2,7 +2,7 @@ import path from "path";
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  transpilePackages: ["@polaris/core"],
+  transpilePackages: ["@polaris/core", "@polaris/backend"],
   outputFileTracingRoot: path.join(__dirname, "../.."),
 };
 

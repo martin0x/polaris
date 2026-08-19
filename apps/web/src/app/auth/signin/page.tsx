@@ -1,4 +1,4 @@
-import { signIn } from "@/platform/auth/config";
+import SignInButton from "./SignInButton";
 
 export default function SignInPage() {
   return (
@@ -38,16 +38,7 @@ export default function SignInPage() {
         >
           A personal operating system.
         </p>
-        <form
-          action={async () => {
-            "use server";
-            await signIn("google", { redirectTo: "/" });
-          }}
-        >
-          <button type="submit" className="btn btn-primary">
-            Sign in with Google
-          </button>
-        </form>
+        <SignInButton />
         <p
           className="caption"
           style={{
