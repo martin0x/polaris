@@ -10,7 +10,7 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
-import { formatCentavos } from "../lib/money";
+import { formatCentavos } from "@polaris/core/money";
 
 export interface TrendsChartProps {
   months: Array<{ key: string; label: string }>;

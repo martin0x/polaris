@@ -4,7 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import type { WeekData } from "../services/ticks";
 import type { HabitDetail } from "../services/detail";
-import { addDays, localDayOf, localTodayString, mondayOf, weekDates } from "../lib/dates";
+import { addDays, localDayOf, localTodayString, mondayOf, weekDates } from "@polaris/core/dates";
 import { initSounds, playSound } from "../lib/sounds";
 import { Icon } from "@/app/_components/Icon";
 import { TickCircle, type TickState } from "./TickCircle";

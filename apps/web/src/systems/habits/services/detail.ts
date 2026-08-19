@@ -1,5 +1,5 @@
 import { prisma } from "@/platform/db/client";
-import { addDays, mondayOf, toDateString, toUtcDate, todayString } from "../lib/dates";
+import { addDays, mondayOf, toDateString, toUtcDate, todayString } from "@polaris/core/dates";
 import type { TickDto } from "./ticks";
 
 export interface DetailEntry {

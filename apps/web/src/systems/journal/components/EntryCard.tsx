@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import type { JournalEntryWithTopic } from "../services/entries";
-import { relativeTime } from "../lib/format";
+import { relativeTime } from "@polaris/core/format";
 import { ComposeBox } from "./ComposeBox";
 import { EntryActions } from "./EntryActions";
 import { MarkdownContent } from "./MarkdownContent";

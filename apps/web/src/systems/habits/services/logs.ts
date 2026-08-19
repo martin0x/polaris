@@ -1,6 +1,6 @@
 import { prisma } from "@/platform/db/client";
 import { createEntry } from "@/systems/journal/services/entries";
-import { noonInTz, todayString } from "../lib/dates";
+import { noonInTz, todayString } from "@polaris/core/dates";
 import { FutureDateError } from "./ticks";
 import { excerptOf, type DetailEntry } from "./detail";
 

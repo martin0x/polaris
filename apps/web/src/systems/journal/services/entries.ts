@@ -1,6 +1,6 @@
 import { Prisma } from "@/generated/prisma/client";
 import { prisma } from "@/platform/db/client";
-import { extractTags, wordCount } from "./parser";
+import { extractTags, wordCount } from "@polaris/core/parser";
 
 export type JournalEntryWithTopic = Prisma.JournalEntryGetPayload<{
   include: { topic: true };

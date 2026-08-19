@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeAll, beforeEach } from "vitest";
 import { prisma } from "@/platform/db/client";
 import { requireTestDatabase, withCleanHabitTables } from "@/test/db";
-import { addDays, todayString } from "../lib/dates";
+import { addDays, todayString } from "@polaris/core/dates";
 import { archiveHabit, createHabit } from "./habits";
 import { upsertTick } from "./ticks";
 import { getHabitDetail } from "./detail";

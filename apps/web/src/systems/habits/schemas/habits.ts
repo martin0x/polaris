@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { isDateString } from "../lib/dates";
+import { isDateString } from "@polaris/core/dates";
 
 export const dateStringSchema = z
   .string()

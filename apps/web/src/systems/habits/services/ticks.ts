@@ -1,6 +1,6 @@
 import { prisma } from "@/platform/db/client";
 import type { HabitTickStatus } from "@/generated/prisma/client";
-import { mondayOf, weekDates, toUtcDate, toDateString, todayString } from "../lib/dates";
+import { mondayOf, weekDates, toUtcDate, toDateString, todayString } from "@polaris/core/dates";
 
 export class FutureDateError extends Error {
   constructor(date: string) {

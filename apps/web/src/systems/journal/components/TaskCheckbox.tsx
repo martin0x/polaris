@@ -2,7 +2,7 @@
 
 import { useState, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
-import { toggleTaskAtLine } from "../lib/tasks";
+import { toggleTaskAtLine } from "@polaris/core/tasks";
 
 interface TaskCheckboxProps {
   entryId: string;

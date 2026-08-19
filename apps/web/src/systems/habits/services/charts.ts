@@ -1,9 +1,9 @@
 import { prisma } from "@/platform/db/client";
-import { addDays, formatDayShort, mondayOf, toDateString, toUtcDate, todayString } from "../lib/dates";
+import { addDays, formatDayShort, mondayOf, toDateString, toUtcDate, todayString } from "@polaris/core/dates";
 import {
   countLapses, creditOf, currentStreak, dayOfWeekMeans, isEligibleWeek,
   longestStreak, type TickStatus,
-} from "../lib/stats";
+} from "@polaris/core/stats";
 
 export interface ChartsData {
   weeks: Array<{ label: string; complete: number; partial: number }>;

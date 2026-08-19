@@ -1,7 +1,7 @@
 import type { PaletteLayer } from "@/platform/palette/types";
 import { prisma } from "@/platform/db/client";
 import { searchEntries } from "./services/search";
-import { firstLine, relativeTime } from "./lib/format";
+import { firstLine, relativeTime } from "@polaris/core/format";
 
 export const topicsLayer: PaletteLayer = {
   name: "topics",

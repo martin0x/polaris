@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { Icon } from "@/app/_components/Icon";
-import { formatCentavos } from "../lib/money";
+import { formatCentavos } from "@polaris/core/money";
 
 export interface ActivityRow {
   id: string;

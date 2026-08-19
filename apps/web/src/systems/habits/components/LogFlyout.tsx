@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { Icon } from "@/app/_components/Icon";
 import type { DetailEntry } from "../services/detail";
-import { formatDayShort } from "../lib/dates";
+import { formatDayShort } from "@polaris/core/dates";
 
 export interface LogTarget {
   habitId: string;

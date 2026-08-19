@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
-import { parsePesoInput } from "../lib/money";
+import { parsePesoInput } from "@polaris/core/money";
 
 interface ItemComposerProps {
   onAdd: (name: string, amountCentavos: number) => void;

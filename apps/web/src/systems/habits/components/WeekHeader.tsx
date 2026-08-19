@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { Icon } from "@/app/_components/Icon";
-import { addDays, formatWeekRange, localTodayString, mondayOf, toUtcDate } from "../lib/dates";
+import { addDays, formatWeekRange, localTodayString, mondayOf, toUtcDate } from "@polaris/core/dates";
 
 const MONTH_NAMES = [
   "January", "February", "March", "April", "May", "June",

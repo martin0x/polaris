@@ -2,7 +2,7 @@ import { cache } from "react";
 import Link from "next/link";
 import { prisma } from "@/platform/db/client";
 import type { SystemDashboard } from "../types";
-import { todayString, toUtcDate } from "./lib/dates";
+import { todayString, toUtcDate } from "@polaris/core/dates";
 
 const load = cache(async () => {
   const today = todayString();

@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeAll, beforeEach } from "vitest";
 import { requireTestDatabase, withCleanHabitTables } from "@/test/db";
-import { addDays, mondayOf, todayString } from "../lib/dates";
+import { addDays, mondayOf, todayString } from "@polaris/core/dates";
 import { createHabit } from "./habits";
 import { upsertTick } from "./ticks";
 import { getChartsData } from "./charts";

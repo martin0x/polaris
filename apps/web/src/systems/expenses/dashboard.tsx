@@ -3,8 +3,8 @@ import Link from "next/link";
 import { prisma } from "@/platform/db/client";
 import type { SystemDashboard } from "../types";
 import { StartButtons } from "./components/StartButtons";
-import { formatCentavos } from "./lib/money";
-import { MANILA_TZ, manilaMonthKey, manilaMonthStart } from "./lib/months";
+import { formatCentavos } from "@polaris/core/money";
+import { MANILA_TZ, manilaMonthKey, manilaMonthStart } from "@polaris/core/months";
 import { listTypes } from "./services/types";
 
 interface TodayActivity {

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { formatCentavos, parsePesoInput } from "../lib/money";
+import { formatCentavos, parsePesoInput } from "@polaris/core/money";
 
 export interface CaptureItem {
   id: string;

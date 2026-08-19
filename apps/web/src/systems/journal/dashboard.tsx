@@ -2,7 +2,7 @@ import { cache } from "react";
 import Link from "next/link";
 import { prisma } from "@/platform/db/client";
 import type { SystemDashboard } from "../types";
-import { firstLine, relativeTime } from "./lib/format";
+import { firstLine, relativeTime } from "@polaris/core/format";
 
 /** Day boundaries mirror the journal's Today page: server-local midnight. */
 const load = cache(async () => {

@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { listTopics } from "@/systems/journal/services/topics";
-import { relativeTime } from "@/systems/journal/lib/format";
+import { relativeTime } from "@polaris/core/format";
 import { prisma } from "@/platform/db/client";
 
 export default async function TopicsIndexPage({

@@ -1,4 +1,4 @@
-import { toUtcDate } from "../../lib/dates";
+import { toUtcDate } from "@polaris/core/dates";
 
 function cellColor(intensity: number): string {
   const step = Math.round(intensity * 4) / 4;

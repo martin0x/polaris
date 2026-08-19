@@ -1,5 +1,5 @@
 import { getWeek } from "@/systems/habits/services/ticks";
-import { todayString } from "@/systems/habits/lib/dates";
+import { todayString } from "@polaris/core/dates";
 import { HabitTracker } from "@/systems/habits/components/HabitTracker";
 
 export default async function HabitsPage() {

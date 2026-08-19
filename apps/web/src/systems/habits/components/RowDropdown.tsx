@@ -4,7 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import type { HabitDetail } from "../services/detail";
 import type { HabitDto } from "../services/ticks";
-import { addDays, formatDayShort, localDayOf, localTodayString, mondayOf } from "../lib/dates";
+import { addDays, formatDayShort, localDayOf, localTodayString, mondayOf } from "@polaris/core/dates";
 
 interface RowDropdownProps {
   habit: HabitDto;

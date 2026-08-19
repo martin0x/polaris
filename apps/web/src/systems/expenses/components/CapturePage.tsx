@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import { formatCentavos } from "../lib/money";
+import { formatCentavos } from "@polaris/core/money";
 import { SyncQueue, type QueueOp } from "../lib/syncQueue";
 import { ItemComposer } from "./ItemComposer";
 import { ItemRow, type CaptureItem } from "./ItemRow";

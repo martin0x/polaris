@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { searchEntries } from "@/systems/journal/services/search";
-import { highlight } from "@/systems/journal/services/highlight";
+import { highlight } from "@polaris/core/highlight";
 import { TopicChip } from "@/systems/journal/components/TopicChip";
 import { TagChip } from "@/systems/journal/components/TagChip";
 

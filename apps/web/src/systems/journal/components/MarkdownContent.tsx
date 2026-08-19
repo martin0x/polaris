@@ -3,7 +3,7 @@ import Link from "next/link";
 import ReactMarkdown, { type Components } from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { TaskCheckbox } from "./TaskCheckbox";
-import { findTaskLines } from "../lib/tasks";
+import { findTaskLines } from "@polaris/core/tasks";
 
 // Stricter than the parser's tag regex: only treat `#tag` as a substitution
 // candidate if the boundary is start-of-string or whitespace. This prevents

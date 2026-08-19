@@ -1,5 +1,5 @@
 import { prisma } from "@/platform/db/client";
-import { lastNMonthKeys, manilaMonthStart, type MonthBucket } from "../lib/months";
+import { lastNMonthKeys, manilaMonthStart, type MonthBucket } from "@polaris/core/months";
 
 export interface MonthTotal {
   month: string; // "2026-06"

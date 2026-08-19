@@ -1,4 +1,4 @@
-import { formatCentavos } from "../lib/money";
+import { formatCentavos } from "@polaris/core/money";
 
 export interface TypeStatsRow {
   typeId: string;
