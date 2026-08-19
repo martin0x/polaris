@@ -1,6 +1,8 @@
 # Polaris replatform
 
-**Status:** ratified 2026-08-13 · **Sequencing:** expenses → journal → habits
+**Status:** ratified 2026-08-13 · **Sequencing:** expenses → journal → habits ·
+**Branch:** `replatform` — the development branch for all replatform phases;
+phase work lands here and merges to `main` at each phase's exit
 
 Move the backend to Convex, add a full-parity Expo mobile app, and formalize
 Bun as the toolchain — system by system, without losing a row of data or a
