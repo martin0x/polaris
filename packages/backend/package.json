@@ -1,0 +1,17 @@
+{
+  "name": "@polaris/backend",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "convex dev",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "convex": "^1.44.0"
+  },
+  "devDependencies": {
+    "@edge-runtime/vm": "^5.0.0",
+    "convex-test": "^0.0.55",
+    "vitest": "^4.1.11"
+  }
+}
