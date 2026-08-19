@@ -17,7 +17,8 @@ token of the design system.
 
 Next.js 16 on Vercel, Prisma 7 over Postgres (Neon in production, Docker
 locally), NextAuth v5 with Google sign-in gated by an email allowlist, a
-local/S3 storage driver, and a Vercel cron. Three live systems — journal,
+local/S3 storage driver (built, but not yet consumed by any system), and a
+Vercel cron. Three live systems — journal,
 expenses, habits — sit on a platform layer (auth, db, storage, feedback,
 command palette) and register through manifests with hand-rolled REST route
 tables. Roughly 12k lines of TypeScript; Bun is already the package manager.
@@ -98,7 +99,7 @@ usable.
 | Phase | Scope | Size |
 | --- | --- | --- |
 | 0 | Monorepo foundations — Bun workspaces, core package, Convex project scaffold | M |
-| 1 | Auth swap and platform spine — Convex Auth, feedback module, storage module | L |
+| 1 | Auth swap and platform spine — Convex Auth, feedback module | L |
 | 2 | Expenses on Convex — the pilot that proves the playbook | M |
 | 3 | Journal on Convex — search, tags, cron, soft delete | L |
 | 4 | Habits on Convex — cross-system contract formalized | M |
@@ -110,8 +111,11 @@ usable.
 
 Restructure into Bun workspaces with zero behavior change: the Next app moves
 to `apps/web`, the framework-free `lib/` modules (dates, stats, money, months,
-format, tasks, parser) move to `packages/core`, and `packages/backend` is
-scaffolded with `bunx convex dev` wired to dev and prod deployments. CI, path
+format, tasks — plus journal's pure `parser` and `highlight`, which live under
+`services/` today) move to `packages/core` — the browser-coupled libs
+(`sounds`, `sort-preference`, `syncQueue`) stay in the web app — and
+`packages/backend` is scaffolded with `bunx convex dev` wired to dev and prod
+deployments. CI, path
 aliases, and Vercel config updated.
 
 **Exit:** the deployed app is byte-for-byte the same product; tests green;
@@ -124,13 +128,15 @@ replaces NextAuth, with `allowlist.ts` ported verbatim into the user-creation
 callback. The web middleware swaps to Convex's, the sign-in page keeps its
 design, and the legacy REST catch-all switches its gate from NextAuth session
 to Convex token validation so old routes stay protected during the strangler
-window. Auth tables carry no history worth migrating — one re-login and the
-Google integration re-connects.
+window. Auth tables carry no history worth migrating — one re-login and
+Google sign-in re-links.
 
-Two platform modules stand up now because every system depends on them: the
-**feedback module** (metrics, reflections, iterations — its historical rows
-are the first, low-stakes data import and the rehearsal for the real ones) and
-the **file storage module**.
+One platform module stands up now because expense and journal services call it
+inline: the **feedback module** (metrics, reflections, iterations — its
+historical rows are the first, low-stakes data import and the rehearsal for
+the real ones). The **file storage module** deliberately waits: the local/S3
+driver has no consumers today, so Convex file storage stands up with its first
+real consumer (mobile camera capture, phase 7).
 
 **Spike, timeboxed:** Convex Auth on a throwaway Expo screen before committing
 everywhere. If it fights back, the fallback is Clerk with the allowlist
@@ -156,10 +162,12 @@ with what was learned.
 The largest tables and the hardest features. A search index on entry body
 replaces tsvector, with an acceptance pass against the real corpus and real
 queries before flipping. Tags move to an `entryTags` join table. The nightly
-compute-active-topics job moves to `crons.ts`; the cron route and
-`CRON_SECRET` die. The Tiptap editor is untouched — it already speaks markdown
-and simply posts through mutations. Import order: topics, then entries with
-topic ids remapped.
+compute-active-topics job moves to `crons.ts`, deliberately retimed from
+23:00 UTC (07:00 Manila) to 15:00 UTC so the daily sample lands at 23:00
+Manila — harmless, since the job reads a rolling 7-day window; the cron route
+and `CRON_SECRET` die. The Tiptap editor is untouched — it already speaks
+markdown and simply posts through mutations. Import order: topics (remapping
+`parentId` self-references), then entries with topic ids remapped.
 
 **Exit:** journal fully on Convex; search accepted on real data; no Vercel
 cron remains.
@@ -180,8 +188,10 @@ week plus an optimistic tick mutation. "Today" becomes fully client-owned
 Delete the catch-all API route, `matchRoute`, the route-error helpers, Prisma
 and its generated client, the Docker Postgres, Neon, and `db-clone-prod.sh`.
 The command palette resolver re-points its system layers at Convex queries.
-Stored blobs copy from S3/local into Convex storage and the driver abstraction
-goes. Backups replace the clone script with a scheduled `bunx convex export`
+The storage driver abstraction and its serve routes go — nothing consumes
+them; if any stray blobs exist in S3, copy them into Convex storage first. The
+never-registered integrations registry and its empty `PlatformIntegration`
+table go with them. Backups replace the clone script with a scheduled `bunx convex export`
 snapshot — data ownership stays intact, and Convex's open-source self-host
 option remains the documented escape hatch.
 
@@ -211,13 +221,15 @@ Staged internally, shipped when the parity checklist is green:
   in for sounds), expense capture with camera into Convex storage, journal
   browsing and markdown-first composing.
 - **Hard parity items** — charts hand-rolled in react-native-svg (the
-  heatmaps, streak tiles, and trend lines are bespoke enough that matching the
-  web design directly beats theming a chart library); the rich editor via a
+  heatmaps and streak tiles are already bespoke on web, and the two recharts
+  trend lines are simple enough to redraw — matching the web design directly
+  beats theming a chart library); the rich editor via a
   **10tap-editor spike** (Tiptap on React Native — riskiest single item;
   fallback is a markdown composer, and since entries are markdown at rest the
   data is identical either way); a search screen standing in for the ⌘K
   palette on the same resolver; trends, settings, dashboard.
-- **Ship** — parity audit against the feature inventory, EAS dev builds,
+- **Ship** — parity audit against the feature inventory (written at the start
+  of this phase from the system manifests and web screens), EAS dev builds,
   TestFlight, icon and splash from the Polaris glyph.
 
 **Exit:** every feature-inventory row checked off on a device.
@@ -281,7 +293,7 @@ declaration), the design system CSS, the component tree, and the docs.
 | Rich editor on React Native | 10tap-editor spike early in the mobile phase; markdown composer fallback loses no data | Phase 7 |
 | Offline capture: Convex's queue doesn't survive a page reload, unlike `SyncQueue`'s localStorage replay | Accept on web (rare case; mobile app becomes the real capture surface); a thin localStorage journal is the escape hatch if it bites | Phase 2 |
 | Vendor dependence contradicts "Polaris is mine" | Scheduled `convex export` backups; self-hosted Convex documented as the exit | Phase 5 onward |
-| Next 16 (canary) compatibility with Convex's Next integration | Verify versions against the in-repo Next docs before phase 1 lands | Phase 1 |
+| Next 16 compatibility with Convex's Next.js integration (this repo runs 16.2.4, newer than most integrations test against) | Verify versions against the in-repo Next docs before phase 1 lands | Phase 1 |
 
 ## 09 · Out of scope, on the backlog
 
