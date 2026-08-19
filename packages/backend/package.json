@@ -6,7 +6,15 @@
     "dev": "convex dev",
     "test": "vitest run"
   },
+  "exports": {
+    "./convex/_generated/api": {
+      "types": "./convex/_generated/api.d.ts",
+      "default": "./convex/_generated/api.js"
+    }
+  },
   "dependencies": {
+    "@auth/core": "0.41.1",
+    "@convex-dev/auth": "0.0.95",
     "convex": "^1.44.0"
   },
   "devDependencies": {

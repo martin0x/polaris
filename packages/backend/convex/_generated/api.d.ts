@@ -8,6 +8,10 @@
  * @module
  */
 
+import type * as auth from "../auth.js";
+import type * as http from "../http.js";
+import type * as lib_allowlist from "../lib/allowlist.js";
+import type * as lib_users from "../lib/users.js";
 import type * as ping from "../ping.js";
 
 import type {
@@ -17,6 +21,10 @@ import type {
 } from "convex/server";
 
 declare const fullApi: ApiFromModules<{
+  auth: typeof auth;
+  http: typeof http;
+  "lib/allowlist": typeof lib_allowlist;
+  "lib/users": typeof lib_users;
   ping: typeof ping;
 }>;
 
