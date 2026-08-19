@@ -1,0 +1,18 @@
+# next.js
+/.next/
+/out/
+/build/
+next-env.d.ts
+
+# testing
+/coverage
+
+# prisma
+/src/generated/prisma
+prisma/*.db
+
+# Uploads (local storage)
+uploads/
+
+# vercel
+.vercel
