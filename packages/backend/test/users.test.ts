@@ -2,6 +2,7 @@ import { convexTest } from "convex-test";
 import { beforeEach, expect, test } from "vitest";
 import schema from "../convex/schema";
 import { upsertAllowlistedUser } from "../convex/lib/users";
+import { api } from "../convex/_generated/api";
 
 const modules = import.meta.glob("../convex/**/*.*s");
 
@@ -65,4 +66,21 @@ test("patches the existing user when existingUserId is provided", async () => {
   expect(result).toBe(existing);
   const user = await t.run(async (ctx) => ctx.db.get(existing));
   expect(user?.image).toBe("https://img");
+});
+
+test("viewer returns null when unauthenticated", async () => {
+  const t = convexTest(schema, modules);
+  expect(await t.query(api.users.viewer, {})).toBeNull();
+});
+
+test("viewer returns the signed-in user's email and name", async () => {
+  const t = convexTest(schema, modules);
+  const userId = await t.run(async (ctx) =>
+    ctx.db.insert("users", { email: "ray@example.com", name: "Ray" }),
+  );
+  const asUser = t.withIdentity({ subject: `${userId}|session1` });
+  expect(await asUser.query(api.users.viewer, {})).toEqual({
+    email: "ray@example.com",
+    name: "Ray",
+  });
 });

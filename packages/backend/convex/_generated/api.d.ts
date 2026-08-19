@@ -13,6 +13,7 @@ import type * as http from "../http.js";
 import type * as lib_allowlist from "../lib/allowlist.js";
 import type * as lib_users from "../lib/users.js";
 import type * as ping from "../ping.js";
+import type * as users from "../users.js";
 
 import type {
   ApiFromModules,
@@ -26,6 +27,7 @@ declare const fullApi: ApiFromModules<{
   "lib/allowlist": typeof lib_allowlist;
   "lib/users": typeof lib_users;
   ping: typeof ping;
+  users: typeof users;
 }>;
 
 /**
