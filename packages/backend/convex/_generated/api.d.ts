@@ -13,6 +13,7 @@ import type * as feedback from "../feedback.js";
 import type * as http from "../http.js";
 import type * as lib_allowlist from "../lib/allowlist.js";
 import type * as lib_users from "../lib/users.js";
+import type * as migrations from "../migrations.js";
 import type * as ping from "../ping.js";
 import type * as users from "../users.js";
 
@@ -28,6 +29,7 @@ declare const fullApi: ApiFromModules<{
   http: typeof http;
   "lib/allowlist": typeof lib_allowlist;
   "lib/users": typeof lib_users;
+  migrations: typeof migrations;
   ping: typeof ping;
   users: typeof users;
 }>;
