@@ -21,6 +21,19 @@ test("recordMetric rejects a bad service key", async () => {
   ).rejects.toThrow();
 });
 
+test("recordMetric fails closed when CRON_SECRET is unset", async () => {
+  delete process.env.CRON_SECRET;
+  const t = convexTest(schema, modules);
+  await expect(
+    t.mutation(api.feedback.recordMetric, {
+      system: "journal",
+      name: "entry_created",
+      value: 1,
+      serviceKey: "test-secret",
+    }),
+  ).rejects.toThrow();
+});
+
 test("recordMetric inserts with a numeric recordedAt", async () => {
   const t = convexTest(schema, modules);
   await t.mutation(api.feedback.recordMetric, {
