@@ -14,6 +14,21 @@ const files: Array<[string, string]> = [
   ["system-iterations.jsonl", "migrations:importSystemIterations"],
 ];
 
+// convex run pretty-prints the result (JSON.stringify(result, null, 2));
+// log lines may precede it. Parse the trailing JSON block.
+function parseConvexRunResult(stdout: string): unknown {
+  const lines = stdout.trim().split("\n");
+  try {
+    return JSON.parse(lines[lines.length - 1]);
+  } catch {
+    const start = lines.lastIndexOf("{");
+    if (start === -1) {
+      throw new Error(`No JSON result in convex run output:\n${stdout}`);
+    }
+    return JSON.parse(lines.slice(start).join("\n"));
+  }
+}
+
 for (const [file, fn] of files) {
   const path = `${dir}/${file}`;
   const text = await Bun.file(path).text().catch(() => "");
@@ -29,7 +44,10 @@ for (const [file, fn] of files) {
       console.error(proc.stderr.toString());
       throw new Error(`${fn} batch at offset ${i} failed`);
     }
-    const result = JSON.parse(proc.stdout.toString().trim().split("\n").at(-1)!);
+    const result = parseConvexRunResult(proc.stdout.toString()) as {
+      inserted: number;
+      updated: number;
+    };
     inserted += result.inserted;
     updated += result.updated;
   }

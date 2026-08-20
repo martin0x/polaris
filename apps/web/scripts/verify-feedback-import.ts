@@ -16,6 +16,21 @@ for (const m of metrics) {
 }
 await prisma.$disconnect();
 
+// convex run pretty-prints the result (JSON.stringify(result, null, 2));
+// log lines may precede it. Parse the trailing JSON block.
+function parseConvexRunResult(stdout: string): unknown {
+  const lines = stdout.trim().split("\n");
+  try {
+    return JSON.parse(lines[lines.length - 1]);
+  } catch {
+    const start = lines.lastIndexOf("{");
+    if (start === -1) {
+      throw new Error(`No JSON result in convex run output:\n${stdout}`);
+    }
+    return JSON.parse(lines.slice(start).join("\n"));
+  }
+}
+
 const args = ["convex", "run", "migrations:feedbackStats", "{}"];
 if (prod) args.push("--prod");
 const proc = Bun.spawnSync(["bunx", ...args], {
@@ -25,7 +40,12 @@ if (proc.exitCode !== 0) {
   console.error(proc.stderr.toString());
   process.exit(1);
 }
-const stats = JSON.parse(proc.stdout.toString().trim().split("\n").at(-1)!);
+const stats = parseConvexRunResult(proc.stdout.toString()) as {
+  metricCount: number;
+  reflectionCount: number;
+  iterationCount: number;
+  metricsBySystemName: Record<string, { count: number; sum: number }>;
+};
 
 let failed = false;
 function check(label: string, want: number, got: number): void {
