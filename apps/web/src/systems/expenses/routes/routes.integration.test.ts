@@ -2,12 +2,14 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { NextRequest } from "next/server";
 import { requireTestDatabase, withCleanExpenseTables } from "@/test/db";
 
-// activities.ts pulls in @/platform/feedback, which imports
-// @convex-dev/auth/nextjs/server. That package's compiled output imports
-// "next/server" without an extension, which Node's ESM resolver can't
-// resolve outside Next's own bundler — mock it so the module graph loads.
-vi.mock("@convex-dev/auth/nextjs/server", () => ({
-  convexAuthNextjsToken: vi.fn(),
+// activities.ts pulls in @/platform/feedback, which now calls Convex
+// (fetchMutation/convexAuthNextjsToken) instead of Prisma. Mock the whole
+// module: it also sidesteps a Node-ESM resolution gap in
+// @convex-dev/auth/nextjs/server's compiled output ("next/server" imported
+// without an extension), and — unlike mocking only that package — it keeps
+// these tests from ever making a real network call to Convex.
+vi.mock("@/platform/feedback", () => ({
+  feedback: { recordMetric: vi.fn().mockResolvedValue(undefined) },
 }));
 
 import { createType as createTypeService } from "../services/types";

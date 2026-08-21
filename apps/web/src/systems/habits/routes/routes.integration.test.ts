@@ -4,12 +4,14 @@ import { prisma } from "@/platform/db/client";
 import { requireTestDatabase, withCleanHabitTables } from "@/test/db";
 import { addDays, todayString } from "@polaris/core/dates";
 
-// createLogRoute pulls in @/platform/feedback, which imports
-// @convex-dev/auth/nextjs/server. That package's compiled output imports
-// "next/server" without an extension, which Node's ESM resolver can't
-// resolve outside Next's own bundler — mock it so the module graph loads.
-vi.mock("@convex-dev/auth/nextjs/server", () => ({
-  convexAuthNextjsToken: vi.fn(),
+// createLogRoute pulls in @/platform/feedback, which now calls Convex
+// (fetchMutation/convexAuthNextjsToken) instead of Prisma. Mock the whole
+// module: it also sidesteps a Node-ESM resolution gap in
+// @convex-dev/auth/nextjs/server's compiled output ("next/server" imported
+// without an extension), and — unlike mocking only that package — it keeps
+// these tests from ever making a real network call to Convex.
+vi.mock("@/platform/feedback", () => ({
+  feedback: { recordMetric: vi.fn().mockResolvedValue(undefined) },
 }));
 
 import { createHabit as createHabitRoute, updateHabit, reorderRoute, archiveRoute, unarchiveRoute, recreateTopicRoute } from "./habits";
