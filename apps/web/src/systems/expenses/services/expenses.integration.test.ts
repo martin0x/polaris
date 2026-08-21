@@ -1,5 +1,14 @@
-import { beforeEach, describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { requireTestDatabase, withCleanExpenseTables } from "@/test/db";
+
+// activities.ts pulls in @/platform/feedback, which imports
+// @convex-dev/auth/nextjs/server. That package's compiled output imports
+// "next/server" without an extension, which Node's ESM resolver can't
+// resolve outside Next's own bundler — mock it so the module graph loads.
+vi.mock("@convex-dev/auth/nextjs/server", () => ({
+  convexAuthNextjsToken: vi.fn(),
+}));
+
 import { createType, listTypes, updateType } from "./types";
 import {
   deleteActivity,

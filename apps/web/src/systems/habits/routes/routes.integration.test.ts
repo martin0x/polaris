@@ -1,8 +1,17 @@
-import { describe, it, expect, beforeAll, beforeEach } from "vitest";
+import { describe, it, expect, beforeAll, beforeEach, vi } from "vitest";
 import { NextRequest } from "next/server";
 import { prisma } from "@/platform/db/client";
 import { requireTestDatabase, withCleanHabitTables } from "@/test/db";
 import { addDays, todayString } from "@polaris/core/dates";
+
+// createLogRoute pulls in @/platform/feedback, which imports
+// @convex-dev/auth/nextjs/server. That package's compiled output imports
+// "next/server" without an extension, which Node's ESM resolver can't
+// resolve outside Next's own bundler — mock it so the module graph loads.
+vi.mock("@convex-dev/auth/nextjs/server", () => ({
+  convexAuthNextjsToken: vi.fn(),
+}));
+
 import { createHabit as createHabitRoute, updateHabit, reorderRoute, archiveRoute, unarchiveRoute, recreateTopicRoute } from "./habits";
 import { getWeekRoute, putTick, deleteTick } from "./ticks";
 import { getDetailRoute } from "./detail";

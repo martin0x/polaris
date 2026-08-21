@@ -1,9 +1,14 @@
-import { describe, it, expect, beforeAll, beforeEach } from "vitest";
+import { describe, it, expect, beforeAll, beforeEach, vi } from "vitest";
 import { NextRequest } from "next/server";
-import { prisma } from "@/platform/db/client";
 import { requireTestDatabase, withCleanJournalTables } from "@/test/db";
 import { createEntry as createEntryRoute, listEntries, updateEntry, deleteEntry } from "./entries";
 import { createTopic } from "../services/topics";
+
+vi.mock("@/platform/feedback", () => ({
+  feedback: { recordMetric: vi.fn().mockResolvedValue(undefined) },
+}));
+import { feedback } from "@/platform/feedback";
+const mockedRecordMetric = vi.mocked(feedback.recordMetric);
 
 function jsonRequest(method: string, body: unknown): NextRequest {
   return new NextRequest("http://localhost/api/systems/journal/entries", {
@@ -22,7 +27,7 @@ function listRequest(query = ""): NextRequest {
 describe("entries routes", () => {
   beforeAll(() => requireTestDatabase());
   beforeEach(async () => {
-    await prisma.systemMetric.deleteMany({ where: { system: "journal" } });
+    mockedRecordMetric.mockClear();
     await withCleanJournalTables();
   });
 
@@ -37,11 +42,8 @@ describe("entries routes", () => {
     const json = await res.json();
     expect(json.entry.tags).toEqual(["milestone"]);
 
-    const metrics = await prisma.systemMetric.findMany({
-      where: { system: "journal" },
-      orderBy: { name: "asc" },
-    });
-    expect(metrics.map((m) => m.name).sort()).toEqual(["entry_created", "words_per_entry"]);
+    expect(mockedRecordMetric).toHaveBeenCalledWith("journal", "entry_created", 1);
+    expect(mockedRecordMetric).toHaveBeenCalledWith("journal", "words_per_entry", 2);
   });
 
   it("POST /entries returns 400 for invalid body", async () => {
@@ -66,11 +68,10 @@ describe("entries routes", () => {
     );
     expect(res.status).toBe(200);
 
-    const metricRows = await prisma.systemMetric.findMany({
-      where: { system: "journal", name: "words_per_entry" },
-      orderBy: { recordedAt: "asc" },
-    });
-    expect(metricRows.map((m) => m.value)).toEqual([2, 6]);
+    const wordsPerEntryCalls = mockedRecordMetric.mock.calls
+      .filter(([, name]) => name === "words_per_entry")
+      .map(([, , value]) => value);
+    expect(wordsPerEntryCalls).toEqual([2, 6]);
   });
 
   it("DELETE /entries/:id soft-deletes and is idempotent", async () => {

@@ -1,14 +1,20 @@
-import { describe, it, expect, beforeAll, beforeEach } from "vitest";
+import { describe, it, expect, beforeAll, beforeEach, vi } from "vitest";
 import { prisma } from "@/platform/db/client";
 import { requireTestDatabase, withCleanJournalTables } from "@/test/db";
 import { createTopic } from "./topics";
 import { createEntry } from "./entries";
 import { computeActiveTopics } from "./computeActiveTopics";
 
+vi.mock("@/platform/feedback", () => ({
+  feedback: { recordMetric: vi.fn().mockResolvedValue(undefined) },
+}));
+import { feedback } from "@/platform/feedback";
+const mockedRecordMetric = vi.mocked(feedback.recordMetric);
+
 describe("computeActiveTopics", () => {
   beforeAll(() => requireTestDatabase());
   beforeEach(async () => {
-    await prisma.systemMetric.deleteMany({ where: { system: "journal" } });
+    mockedRecordMetric.mockClear();
     await withCleanJournalTables();
   });
 
@@ -28,10 +34,7 @@ describe("computeActiveTopics", () => {
 
     await computeActiveTopics();
 
-    const metric = await prisma.systemMetric.findFirst({
-      where: { system: "journal", name: "active_topic_count" },
-    });
-    expect(metric?.value).toBe(2);
+    expect(mockedRecordMetric).toHaveBeenCalledWith("journal", "active_topic_count", 2);
   });
 
   it("ignores soft-deleted entries", async () => {
@@ -44,9 +47,6 @@ describe("computeActiveTopics", () => {
 
     await computeActiveTopics();
 
-    const metric = await prisma.systemMetric.findFirst({
-      where: { system: "journal", name: "active_topic_count" },
-    });
-    expect(metric?.value).toBe(0);
+    expect(mockedRecordMetric).toHaveBeenCalledWith("journal", "active_topic_count", 0);
   });
 });

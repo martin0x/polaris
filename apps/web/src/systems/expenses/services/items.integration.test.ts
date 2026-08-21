@@ -5,9 +5,18 @@ import { startActivity } from "./activities";
 import { ItemConflictError, deleteItem, upsertItem } from "./items";
 import { prisma } from "@/platform/db/client";
 
+vi.mock("@/platform/feedback", () => ({
+  feedback: { recordMetric: vi.fn().mockResolvedValue(undefined) },
+}));
+import { feedback } from "@/platform/feedback";
+const mockedRecordMetric = vi.mocked(feedback.recordMetric);
+
 requireTestDatabase();
 
-beforeEach(withCleanExpenseTables);
+beforeEach(async () => {
+  mockedRecordMetric.mockClear();
+  await withCleanExpenseTables();
+});
 
 let typeCounter = 0;
 async function fixture() {
@@ -51,12 +60,12 @@ describe("upsertItem", () => {
     const a = await fixture();
     await upsertItem(a.id, "client-id-1", { name: "Eggs", amountCentavos: 21500, position: 0 });
     // fire-and-forget: give the async metric write a moment
-    await vi.waitFor(async () => {
-      const rows = await prisma.systemMetric.findMany({
-        where: { system: "expenses", name: "activity_total_centavos" },
-      });
-      expect(rows.length).toBeGreaterThan(0);
-      expect(rows[rows.length - 1].value).toBe(21500);
+    await vi.waitFor(() => {
+      const calls = mockedRecordMetric.mock.calls.filter(
+        ([, name]) => name === "activity_total_centavos"
+      );
+      expect(calls.length).toBeGreaterThan(0);
+      expect(calls[calls.length - 1]).toEqual(["expenses", "activity_total_centavos", 21500]);
     });
   });
 
