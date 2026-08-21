@@ -78,14 +78,25 @@ Generate a fresh signing key pair rather than reusing the dev deployment's:
 ```bash
 cd "$(git rev-parse --show-toplevel)/packages/backend"
 KEYS=$(bun scripts/generate-auth-keys.ts)
-bunx convex env set JWT_PRIVATE_KEY "$(echo "$KEYS" | sed -n '1p')" --prod
-bunx convex env set JWKS "$(echo "$KEYS" | sed -n '2p')" --prod
+bunx convex env set --prod JWT_PRIVATE_KEY -- "$(echo "$KEYS" | sed -n '1p')"
+bunx convex env set --prod JWKS -- "$(echo "$KEYS" | sed -n '2p')"
 unset KEYS
 ```
 
-Set the remaining scalar vars the same way: `AUTH_GOOGLE_ID`,
+Set the remaining scalar vars with the same `--` guard: `AUTH_GOOGLE_ID`,
 `AUTH_GOOGLE_SECRET`, `CRON_SECRET` (must be the **same value** already set
 as `CRON_SECRET` on Vercel — this is the shared feedback-writer service key).
+
+For example:
+
+```bash
+bunx convex env set --prod AUTH_GOOGLE_ID -- "<value>"
+bunx convex env set --prod AUTH_GOOGLE_SECRET -- "<value>"
+bunx convex env set --prod CRON_SECRET -- "<value>"
+bunx convex env set --prod SITE_URL -- "<prod-url>"
+```
+
+The `--` stops the CLI from parsing values that could start with a dash as options.
 
 **USER:** add the prod redirect URI in Google Cloud Console — Credentials →
 the OAuth client → Authorized redirect URIs:
