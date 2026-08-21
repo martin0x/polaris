@@ -1,5 +1,5 @@
 import { NextRequest } from "next/server";
-import { auth } from "@/platform/auth/config";
+import { isAuthenticatedNextjs } from "@convex-dev/auth/nextjs/server";
 import { matchRoute } from "@/platform/api/router";
 import { notFound, unauthorized } from "@/platform/api/errors";
 import { manifests } from "@/systems";
@@ -11,8 +11,7 @@ async function handleRequest(
   req: NextRequest,
   { params }: { params: Promise<{ system: string; path: string[] }> }
 ) {
-  const session = await auth();
-  if (!session?.user) return unauthorized();
+  if (!(await isAuthenticatedNextjs())) return unauthorized();
 
   const { system: systemName, path } = await params;
   const manifest = registry.get(systemName);

@@ -4,11 +4,11 @@ import { requireTestDatabase, withCleanJournalTables } from "@/test/db";
 import { createTopic } from "@/systems/journal/services/topics";
 import { createEntry } from "@/systems/journal/services/entries";
 
-vi.mock("@/platform/auth/config", () => ({
-  auth: vi.fn(),
+vi.mock("@convex-dev/auth/nextjs/server", () => ({
+  isAuthenticatedNextjs: vi.fn(),
 }));
 
-import { auth } from "@/platform/auth/config";
+import { isAuthenticatedNextjs } from "@convex-dev/auth/nextjs/server";
 import { POST } from "./route";
 
 function jsonRequest(body: unknown): NextRequest {
@@ -19,29 +19,28 @@ function jsonRequest(body: unknown): NextRequest {
   });
 }
 
-const mockedAuth = vi.mocked(auth);
+const mockedIsAuthenticated = vi.mocked(isAuthenticatedNextjs);
 
 describe("POST /api/platform/palette/search", () => {
   beforeAll(() => requireTestDatabase());
   beforeEach(async () => {
-    mockedAuth.mockReset();
+    mockedIsAuthenticated.mockReset();
+    mockedIsAuthenticated.mockResolvedValue(true);
     await withCleanJournalTables();
   });
 
   it("returns 401 when there is no session", async () => {
-    mockedAuth.mockResolvedValueOnce(null as never);
+    mockedIsAuthenticated.mockResolvedValueOnce(false);
     const res = await POST(jsonRequest({ query: "" }));
     expect(res.status).toBe(401);
   });
 
   it("returns 400 when body is missing the query field", async () => {
-    mockedAuth.mockResolvedValueOnce({ user: { email: "test@example.com" } } as never);
     const res = await POST(jsonRequest({}));
     expect(res.status).toBe(400);
   });
 
   it("happy path: top-level empty query lists matched systems with layers", async () => {
-    mockedAuth.mockResolvedValueOnce({ user: { email: "test@example.com" } } as never);
     const res = await POST(jsonRequest({ query: "" }));
     expect(res.status).toBe(200);
     const json = await res.json();
@@ -57,7 +56,6 @@ describe("POST /api/platform/palette/search", () => {
   });
 
   it("happy path: top-level query with topic + entry returns layered results", async () => {
-    mockedAuth.mockResolvedValue({ user: { email: "test@example.com" } } as never);
     const topic = await createTopic({ name: "Polaris" });
     await createEntry({ topicId: topic.id, body: "polaris ship note" });
 
@@ -84,7 +82,6 @@ describe("POST /api/platform/palette/search", () => {
   });
 
   it("scoped query: routes to a specific layer with parentId", async () => {
-    mockedAuth.mockResolvedValue({ user: { email: "test@example.com" } } as never);
     const polaris = await createTopic({ name: "Polaris" });
     const otherTopic = await createTopic({ name: "Other" });
     await createEntry({ topicId: polaris.id, body: "deploy ship note" });

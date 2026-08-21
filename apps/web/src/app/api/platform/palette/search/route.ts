@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { auth } from "@/platform/auth/config";
+import { isAuthenticatedNextjs } from "@convex-dev/auth/nextjs/server";
 import { unauthorized, badRequest } from "@/platform/api/errors";
 import { manifests } from "@/systems";
 import { buildPaletteRegistry } from "@/platform/palette/registry";
@@ -19,8 +19,7 @@ function isScope(value: unknown): value is PaletteScope {
 }
 
 export async function POST(req: NextRequest) {
-  const session = await auth();
-  if (!session?.user) return unauthorized();
+  if (!(await isAuthenticatedNextjs())) return unauthorized();
 
   const body = await req.json().catch(() => null);
   if (

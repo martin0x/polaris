@@ -1,11 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
-import { auth } from "@/platform/auth/config";
+import { isAuthenticatedNextjs } from "@convex-dev/auth/nextjs/server";
 import { getStorage } from "@/platform/storage";
 import { unauthorized, badRequest } from "@/platform/api/errors";
 
 export async function POST(req: NextRequest) {
-  const session = await auth();
-  if (!session?.user) return unauthorized();
+  if (!(await isAuthenticatedNextjs())) return unauthorized();
 
   const formData = await req.formData();
   const file = formData.get("file") as File | null;

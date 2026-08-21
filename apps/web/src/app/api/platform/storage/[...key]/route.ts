@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { auth } from "@/platform/auth/config";
+import { isAuthenticatedNextjs } from "@convex-dev/auth/nextjs/server";
 import { getStorage } from "@/platform/storage";
 import { unauthorized, notFound } from "@/platform/api/errors";
 
@@ -7,8 +7,7 @@ export async function GET(
   _req: NextRequest,
   { params }: { params: Promise<{ key: string[] }> }
 ) {
-  const session = await auth();
-  if (!session?.user) return unauthorized();
+  if (!(await isAuthenticatedNextjs())) return unauthorized();
 
   const { key } = await params;
   const fullKey = key.join("/");

@@ -1,11 +1,14 @@
 import { listIntegrations } from "@/platform/integrations/registry";
-import { auth } from "@/platform/auth/config";
+import { convexAuthNextjsToken } from "@convex-dev/auth/nextjs/server";
+import { fetchQuery } from "convex/nextjs";
+import { api } from "@polaris/backend/convex/_generated/api";
 
 export default async function SettingsPage() {
-  const [integrations, session] = await Promise.all([
-    Promise.resolve(listIntegrations()),
-    auth(),
-  ]);
+  const integrations = listIntegrations();
+  const token = await convexAuthNextjsToken();
+  const viewer = token
+    ? await fetchQuery(api.users.viewer, {}, { token })
+    : null;
 
   return (
     <article className="doc">
@@ -34,7 +37,7 @@ export default async function SettingsPage() {
             Signed in
           </span>
           <span style={{ color: "var(--ink-1)", fontSize: 14 }}>
-            {session?.user?.email ?? "Not signed in"}
+            {viewer?.email ?? "Not signed in"}
           </span>
         </div>
       </div>

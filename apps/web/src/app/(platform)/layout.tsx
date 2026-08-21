@@ -1,10 +1,13 @@
-import { auth, signOut } from "@/platform/auth/config";
+import { convexAuthNextjsToken } from "@convex-dev/auth/nextjs/server";
+import { fetchQuery } from "convex/nextjs";
+import { api } from "@polaris/backend/convex/_generated/api";
+import { SignOutButton } from "@/app/_components/SignOutButton";
 import { manifests } from "@/systems";
 import { createSystemRegistry } from "@/systems/registry";
 import { TitleBar } from "@/app/_components/TitleBar";
 import { Sidebar } from "@/app/_components/Sidebar";
 import { SidebarProvider, ShellBody } from "@/app/_components/SidebarChrome";
-import { Icon, type IconName } from "@/app/_components/Icon";
+import { type IconName } from "@/app/_components/Icon";
 
 const registry = createSystemRegistry(manifests);
 
@@ -23,7 +26,10 @@ export default async function PlatformLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const session = await auth();
+  const token = await convexAuthNextjsToken();
+  const viewer = token
+    ? await fetchQuery(api.users.viewer, {}, { token })
+    : null;
   const systems = registry.navItems().map((item) => ({
     href: item.href,
     label: item.label,
@@ -32,25 +38,10 @@ export default async function PlatformLayout({
       : FALLBACK_ICON) as IconName,
   }));
 
-  const sidebarFooter = session?.user ? (
-    <form
-      action={async () => {
-        "use server";
-        await signOut({ redirectTo: "/auth/signin" });
-      }}
-      style={{ marginTop: 4 }}
-    >
-      <button
-        type="submit"
-        className="sb-item"
-        style={{ width: "100%", color: "var(--danger)" }}
-        aria-label="Sign out"
-        title="Sign out"
-      >
-        <Icon name="log-out" size={14} />
-        <span className="sb-label">Sign out</span>
-      </button>
-    </form>
+  const sidebarFooter = viewer ? (
+    <div style={{ marginTop: 4 }}>
+      <SignOutButton />
+    </div>
   ) : null;
 
   return (
@@ -59,7 +50,7 @@ export default async function PlatformLayout({
         <TitleBar
           crumbs={["Polaris"]}
           syncState="ok"
-          email={session?.user?.email}
+          email={viewer?.email}
         />
         <ShellBody>
           <Sidebar systems={systems} footer={sidebarFooter} />
