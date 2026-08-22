@@ -28,7 +28,10 @@ describe("expenses activities", () => {
     vi.useFakeTimers();
     const { t, asUser, type } = await setup();
     await asUser.mutation(api.expenses.activities.start, { typeId: type.id });
-    await t.finishInProgressScheduledFunctions();
+    // runAfter(0) under fake timers doesn't auto-transition to "in progress",
+    // so finishAllScheduledFunctions with vi.runAllTimers advances the clock
+    // and drains the entire queue.
+    await t.finishAllScheduledFunctions(vi.runAllTimers);
     vi.useRealTimers();
     const metrics = await t.run(async (ctx) => ctx.db.query("systemMetrics").collect());
     expect(metrics).toContainEqual(
