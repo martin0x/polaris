@@ -639,17 +639,23 @@ body {
   display: inline-flex;
   gap: 8px;
   align-items: center;
+  margin-left: var(--sp-2); /* breathing room after the ⌘K chip */
+}
+/* The dot sits in the same 9px slot as the spinner (7px + 1px margins), so
+   swapping between them never nudges the neighbors. */
+.titlebar .sync-status .sync-dot {
+  margin: 1px;
 }
 /* Mono to match the email beside it. The width reserves room for the longest
-   state ("unsynced", 8ch); right alignment keeps the shared "synced" letters
-   in place across state changes, so the chrome never shifts. */
+   state ("unsynced", 8ch), so the divider and email never move on a state
+   change. */
 .titlebar .sync-label {
   font-family: var(--font-mono);
   font-size: 11px;
   width: 8ch;
-  text-align: right;
 }
 .titlebar .sync-spinner {
+  box-sizing: border-box; /* no global reset — without this the ring is 12px */
   width: 9px;
   height: 9px;
   border-radius: var(--r-full);
