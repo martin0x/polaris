@@ -4,6 +4,7 @@ import { useRef, useState } from "react";
 import { usePreloadedQuery, useMutation, type Preloaded } from "convex/react";
 import { api } from "@polaris/backend/convex/_generated/api";
 import { formatCentavos } from "@polaris/core/money";
+import { useSyncStatus } from "@/app/_components/SyncStatus";
 import { ItemComposer } from "./ItemComposer";
 import { ItemRow, type CaptureItem } from "./ItemRow";
 
@@ -18,7 +19,7 @@ export function CapturePage({
 }) {
   const activity = usePreloadedQuery(preloaded);
   const [editingTitle, setEditingTitle] = useState(false);
-  const [pending, setPending] = useState(0);
+  const { track } = useSyncStatus();
   const listEndRef = useRef<HTMLDivElement>(null);
 
   const getArgs = { id: urlId }; // subscription key — optimistic updates must match it
@@ -54,16 +55,6 @@ export function CapturePage({
     }
   );
 
-  // In-flight counter for the unsynced badge. A rejected mutation rolls its
-  // optimistic write back on its own — console.error mirrors the old
-  // SyncQueue drop log.
-  function track(promise: Promise<unknown>): void {
-    setPending((n) => n + 1);
-    promise
-      .catch((err) => console.error("expenses sync: change rejected", err))
-      .finally(() => setPending((n) => n - 1));
-  }
-
   if (activity === null) return null; // deleted mid-session; RSC 404s on load
 
   const items = activity.items; // already position-sorted by the query
@@ -76,7 +67,8 @@ export function CapturePage({
   function addItem(name: string, amountCentavos: number) {
     const clientId = crypto.randomUUID();
     const position = items.length > 0 ? Math.max(...items.map((i) => i.position)) + 1 : 0;
-    track(putItem({ activityId, clientId, name, amountCentavos, position }));
+    track(putItem({ activityId, clientId, name, amountCentavos, position }),
+      `${name} — ${formatCentavos(amountCentavos)}`);
     requestAnimationFrame(() => listEndRef.current?.scrollIntoView({ block: "nearest" }));
   }
 
@@ -90,19 +82,22 @@ export function CapturePage({
         name,
         amountCentavos,
         position: existing.position,
-      })
+      }),
+      `${name} — ${formatCentavos(amountCentavos)}`
     );
   }
 
   function deleteItem(id: string) {
-    track(removeItem({ activityId, clientId: id }));
+    const target = items.find((i) => i.clientId === id);
+    track(removeItem({ activityId, clientId: id }),
+      `Delete ${target?.name ?? "item"}`);
   }
 
   async function saveTitle(raw: string) {
     setEditingTitle(false);
     const next = raw.trim() || null;
     if (next === activityTitle) return;
-    track(updateActivity({ id: activityId, title: next }));
+    track(updateActivity({ id: activityId, title: next }), "Activity title");
   }
 
   return (
@@ -145,7 +140,6 @@ export function CapturePage({
           </p>
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: "var(--sp-2)" }}>
-          {pending > 0 && <span className="exp-unsynced">{pending} unsynced</span>}
           <span className="exp-total">{formatCentavos(total)}</span>
         </div>
       </header>

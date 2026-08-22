@@ -1049,17 +1049,6 @@ kbd, .kbd {
   font-family: var(--font-mono);
   white-space: nowrap;
 }
-.exp-unsynced {
-  font-size: var(--fs-xs);
-  font-family: var(--font-mono);
-  color: var(--fg-muted);
-  background: var(--bg-sunken);
-  border: 1px solid var(--border);
-  border-radius: var(--r-full);
-  padding: 2px var(--sp-2);
-  white-space: nowrap;
-}
-
 /* Dashboard metric rows — fixed columns keep dates, tags, and values aligned
    across rows; the phone variant lives in the narrow-viewport block below. */
 .metric-row {
