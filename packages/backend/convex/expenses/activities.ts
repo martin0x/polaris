@@ -161,7 +161,22 @@ export const search = query({
   handler: async (ctx, args) => {
     await assertSignedIn(ctx);
     const needle = args.query.trim().toLowerCase();
-    if (needle.length === 0) return [];
+    if (needle.length === 0) {
+      // Empty query = scoped palette browse → newest activities (legacy
+      // parity: the old Prisma layer's `contains: ""` matched everything).
+      const newest = await ctx.db
+        .query("expenseActivities")
+        .withIndex("by_started_at")
+        .order("desc")
+        .take(10);
+      const names = new Map<Id<"expenseActivityTypes">, string>();
+      const rows = [];
+      for (const a of newest) {
+        if (!names.has(a.typeId)) names.set(a.typeId, await typeName(ctx, a.typeId));
+        rows.push({ id: a._id, title: a.title ?? null, typeName: names.get(a.typeId)!, startedAt: a.startedAt });
+      }
+      return rows;
+    }
     const recent = await ctx.db
       .query("expenseActivities")
       .withIndex("by_started_at")

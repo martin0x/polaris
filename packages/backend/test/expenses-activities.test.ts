@@ -115,10 +115,33 @@ describe("expenses activities", () => {
     const a = await asUser.mutation(api.expenses.activities.start, {
       typeId: type.id, title: "Costco run",
     });
-    await asUser.mutation(api.expenses.activities.start, { typeId: type.id });
+    const b = await asUser.mutation(api.expenses.activities.start, { typeId: type.id });
     const byTitle = await asUser.query(api.expenses.activities.search, { query: "costco" });
     expect(byTitle.map((r) => r.id)).toEqual([a]);
     const byType = await asUser.query(api.expenses.activities.search, { query: "grocer" });
     expect(byType).toHaveLength(2);
+    // Empty/whitespace query = scoped palette browse with nothing typed yet:
+    // list the newest activities instead of nothing (legacy parity with the
+    // old Prisma layer's `contains: ""` matching everything).
+    const empty = await asUser.query(api.expenses.activities.search, { query: "" });
+    expect(empty.map((r) => r.id)).toEqual([b, a]);
+    const whitespace = await asUser.query(api.expenses.activities.search, { query: "   " });
+    expect(whitespace.map((r) => r.id)).toEqual([b, a]);
+  });
+
+  it("search with an empty query caps the newest-activities list at 10", async () => {
+    const { t, asUser, type } = await setup();
+    const ids = [];
+    for (let i = 0; i < 12; i++) {
+      ids.push(await asUser.mutation(api.expenses.activities.start, { typeId: type.id }));
+    }
+    await t.run(async (ctx) => {
+      for (const [i, id] of ids.entries()) {
+        await ctx.db.patch(id, { startedAt: 1_000 + i });
+      }
+    });
+    const results = await asUser.query(api.expenses.activities.search, { query: "" });
+    expect(results).toHaveLength(10);
+    expect(results.map((r) => r.id)).toEqual([...ids].reverse().slice(0, 10));
   });
 });
