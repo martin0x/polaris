@@ -17,3 +17,15 @@ export function formatCentavos(centavos: number): string {
     })
   );
 }
+
+/** Cap on a single expense item, matching the backend validator. */
+export const MAX_AMOUNT_CENTAVOS = 100_000_000;
+
+export function validatePesoInput(
+  raw: string
+): { ok: true; centavos: number } | { ok: false; reason: "format" | "max" } {
+  const centavos = parsePesoInput(raw);
+  if (centavos === null) return { ok: false, reason: "format" };
+  if (centavos > MAX_AMOUNT_CENTAVOS) return { ok: false, reason: "max" };
+  return { ok: true, centavos };
+}

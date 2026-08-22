@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
-import { parsePesoInput } from "@polaris/core/money";
+import { validatePesoInput } from "@polaris/core/money";
 
 interface ItemComposerProps {
   onAdd: (name: string, amountCentavos: number) => void;
@@ -10,9 +10,12 @@ interface ItemComposerProps {
 export function ItemComposer({ onAdd }: ItemComposerProps) {
   const [name, setName] = useState("");
   const [price, setPrice] = useState("");
-  const [invalidPrice, setInvalidPrice] = useState(false);
+  const [submitted, setSubmitted] = useState(false);
   const nameRef = useRef<HTMLInputElement>(null);
   const priceRef = useRef<HTMLInputElement>(null);
+
+  const validation = validatePesoInput(price);
+  const invalid = (price.trim() !== "" && !validation.ok) || (submitted && !validation.ok);
 
   function handleNameKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
     if (e.key === "Enter") {
@@ -22,20 +25,19 @@ export function ItemComposer({ onAdd }: ItemComposerProps) {
   }
 
   function submit() {
-    const centavos = parsePesoInput(price);
     if (!name.trim()) {
       nameRef.current?.focus();
       return;
     }
-    if (centavos === null) {
-      setInvalidPrice(true);
+    if (!validation.ok) {
+      setSubmitted(true);
       priceRef.current?.focus();
       return;
     }
-    onAdd(name.trim(), centavos);
+    onAdd(name.trim(), validation.centavos);
     setName("");
     setPrice("");
-    setInvalidPrice(false);
+    setSubmitted(false);
     nameRef.current?.focus();
   }
 
@@ -70,10 +72,12 @@ export function ItemComposer({ onAdd }: ItemComposerProps) {
         aria-label="Price in pesos"
         enterKeyHint="done"
         autoComplete="off"
-        data-invalid={invalidPrice}
+        data-invalid={invalid}
+        aria-invalid={invalid || undefined}
+        title={!validation.ok && validation.reason === "max" ? "Amounts go up to ₱1,000,000.00" : undefined}
         onChange={(e) => {
           setPrice(e.target.value);
-          if (invalidPrice) setInvalidPrice(false);
+          setSubmitted(false);
         }}
       />
       <button type="submit" className="btn btn-primary" aria-label="Add item">

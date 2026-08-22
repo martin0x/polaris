@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { formatCentavos, parsePesoInput } from "@polaris/core/money";
+import { formatCentavos, validatePesoInput } from "@polaris/core/money";
 
 export interface CaptureItem {
   id: string;
@@ -22,13 +22,15 @@ export function ItemRow({ item, onEdit, onDelete }: ItemRowProps) {
   const [price, setPrice] = useState((item.amountCentavos / 100).toFixed(2));
   const [invalid, setInvalid] = useState(false);
 
+  const validation = validatePesoInput(price);
+  const invalidState = (price.trim() !== "" && !validation.ok) || (invalid && !validation.ok);
+
   function save() {
-    const centavos = parsePesoInput(price);
-    if (!name.trim() || centavos === null) {
+    if (!name.trim() || !validation.ok) {
       setInvalid(true);
       return;
     }
-    onEdit(item.id, name.trim(), centavos);
+    onEdit(item.id, name.trim(), validation.centavos);
     setEditing(false);
     setInvalid(false);
   }
@@ -67,8 +69,10 @@ export function ItemRow({ item, onEdit, onDelete }: ItemRowProps) {
         inputMode="decimal"
         value={price}
         aria-label="Price in pesos"
-        data-invalid={invalid}
-        style={{ flex: "0 1 90px", padding: "var(--sp-1) var(--sp-2)", border: invalid ? "1px solid var(--danger)" : "1px solid var(--border-strong)", borderRadius: "var(--r-md)", background: "var(--bg-raised)", fontFamily: "var(--font-mono)", textAlign: "right" }}
+        data-invalid={invalidState}
+        aria-invalid={invalidState || undefined}
+        title={!validation.ok && validation.reason === "max" ? "Amounts go up to ₱1,000,000.00" : undefined}
+        style={{ flex: "0 1 90px", padding: "var(--sp-1) var(--sp-2)", border: invalidState ? "1px solid var(--danger)" : "1px solid var(--border-strong)", borderRadius: "var(--r-md)", background: "var(--bg-raised)", fontFamily: "var(--font-mono)", textAlign: "right" }}
         onChange={(e) => {
           setPrice(e.target.value);
           setInvalid(false);
