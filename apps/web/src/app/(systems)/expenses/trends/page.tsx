@@ -1,5 +1,7 @@
 import Link from "next/link";
-import { getTrends } from "@/systems/expenses/services/trends";
+import { convexAuthNextjsToken } from "@convex-dev/auth/nextjs/server";
+import { fetchQuery } from "convex/nextjs";
+import { api } from "@polaris/backend/convex/_generated/api";
 import { TrendsChart } from "@/systems/expenses/components/TrendsChart";
 import { StatCards } from "@/systems/expenses/components/StatCards";
 
@@ -14,7 +16,8 @@ export default async function TrendsPage({
   const months = RANGES.includes(Number(monthsParam) as 3 | 6 | 12)
     ? (Number(monthsParam) as 3 | 6 | 12)
     : 6;
-  const trends = await getTrends(months);
+  const token = await convexAuthNextjsToken();
+  const trends = await fetchQuery(api.expenses.trends.get, { months }, { token });
 
   return (
     <article className="doc">
