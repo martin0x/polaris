@@ -44,4 +44,39 @@ export default defineSchema({
     .index("by_system", ["system"])
     .index("by_created_at", ["createdAt"])
     .index("by_legacy_id", ["legacyId"]),
+
+  // Expenses (phase 2). startedAt/createdAt/archivedAt are ms since epoch;
+  // legacyId carries the Postgres cuid (items: the client-generated uuid).
+  expenseActivityTypes: defineTable({
+    name: v.string(),
+    position: v.number(),
+    archived: v.boolean(),
+    archivedAt: v.optional(v.number()),
+    createdAt: v.number(), // kept: ordering tie-break when positions collide
+    legacyId: v.optional(v.string()),
+  })
+    .index("by_name", ["name"])
+    .index("by_legacy_id", ["legacyId"]),
+  expenseActivities: defineTable({
+    typeId: v.id("expenseActivityTypes"),
+    title: v.optional(v.string()),
+    startedAt: v.number(),
+    legacyId: v.optional(v.string()),
+  })
+    .index("by_type", ["typeId"])
+    .index("by_started_at", ["startedAt"])
+    .index("by_legacy_id", ["legacyId"]),
+  expenseItems: defineTable({
+    activityId: v.id("expenseActivities"),
+    // Client-generated uuid — the idempotent-upsert key for capture syncs.
+    // For imported rows it equals legacyId (the old Prisma primary key).
+    clientId: v.string(),
+    name: v.string(),
+    amountCentavos: v.number(),
+    position: v.number(),
+    legacyId: v.optional(v.string()),
+  })
+    .index("by_activity", ["activityId"])
+    .index("by_client_id", ["clientId"])
+    .index("by_legacy_id", ["legacyId"]),
 });
