@@ -526,7 +526,9 @@ describe("expenses activities", () => {
     vi.useFakeTimers();
     const { t, asUser, type } = await setup();
     await asUser.mutation(api.expenses.activities.start, { typeId: type.id });
-    await t.finishInProgressScheduledFunctions();
+    // Under fake timers a runAfter(0) never becomes "in progress" on its own —
+    // finishAllScheduledFunctions advances the timers and drains the queue.
+    await t.finishAllScheduledFunctions(vi.runAllTimers);
     vi.useRealTimers();
     const metrics = await t.run(async (ctx) => ctx.db.query("systemMetrics").collect());
     expect(metrics).toContainEqual(
@@ -928,7 +930,7 @@ describe("expenses items", () => {
     vi.useFakeTimers();
     const { t, asUser, activityId } = await setup();
     await asUser.mutation(api.expenses.items.put, { activityId, clientId: "u1", ...body });
-    await t.finishInProgressScheduledFunctions();
+    await t.finishAllScheduledFunctions(vi.runAllTimers);
     vi.useRealTimers();
     const metrics = await t.run(async (ctx) => ctx.db.query("systemMetrics").collect());
     expect(metrics).toContainEqual(
@@ -2299,4 +2301,4 @@ git commit -m "docs: phase 2 playbook corrections and cutover runbook"
 
 - Spec coverage: schema ✔ (Task 2), services→functions ✔ (2–5), trends-in-TS ✔ (5), capture→optimistic + SyncQueue retirement ✔ (11), playbook first real run ✔ (6–7), convex-test migration ✔ (2–6 + deletion in 12), scheduler metrics ✔ (3–4), one validation layer ✔ (validators + teardown in 12), playbook correction ✔ (13).
 - Type consistency spot-checks: `clientId` is the item key everywhere (schema, put/remove args, DTO, optimistic updates, import `clientId = legacyId`); `startedAt` is ms in every DTO and both list/capture components adapt; `api.expenses.items.put/remove` (not `putItem` on activities) is the final naming — Tasks 9/11 use it as written.
-- Known sharp edges for executors: keep React hooks above the `activity === null` early return in Task 11; `preloadedQueryResult` comes from `convex/nextjs`; convex-test scheduler tests need `vi.useFakeTimers()` before the mutation and `finishInProgressScheduledFunctions()` before asserting; `Doc`/`Id` types import from `../_generated/dataModel` (path depth: `expenses/*.ts` uses `../_generated`).
+- Known sharp edges for executors: keep React hooks above the `activity === null` early return in Task 11; `preloadedQueryResult` comes from `convex/nextjs`; convex-test scheduler tests need `vi.useFakeTimers()` before the mutation and `await t.finishAllScheduledFunctions(vi.runAllTimers)` before asserting (`finishInProgressScheduledFunctions` alone never fires a runAfter(0) under fake timers — found during Task 3); `Doc`/`Id` types import from `../_generated/dataModel` (path depth: `expenses/*.ts` uses `../_generated`).
