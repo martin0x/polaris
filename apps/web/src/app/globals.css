@@ -640,6 +640,12 @@ body {
   gap: 8px;
   align-items: center;
 }
+/* Mono because the label carries a count ("2 unsynced") — in the titlebar's
+   12px sans the digit 1 reads as an l. Sized to match the email beside it. */
+.titlebar .sync-label {
+  font-family: var(--font-mono);
+  font-size: 11px;
+}
 .titlebar .sync-spinner {
   width: 9px;
   height: 9px;
