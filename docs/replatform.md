@@ -240,7 +240,8 @@ Staged internally, shipped when the parity checklist is green:
 
 Run once per system, at its flip. Single-user scale makes the freeze window
 minutes, not hours. Corrected below with what phase 2 (expenses) actually
-proved, having now run this playbook for real for the first time.
+proved, having now run it for expenses — the first system with relations to
+remap.
 
 1. **Export** — a Bun script reads Postgres through Prisma and emits JSONL per
    table, cuids intact, dates converted to epoch ms at export time (so
