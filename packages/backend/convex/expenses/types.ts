@@ -78,7 +78,12 @@ export const update = mutation({
       if (name !== doc.name) await assertNameFree(ctx, name);
       patch.name = name;
     }
-    if (args.position !== undefined) patch.position = args.position;
+    if (args.position !== undefined) {
+      if (!Number.isInteger(args.position) || args.position < 0) {
+        throw new ConvexError("Position must be a non-negative integer");
+      }
+      patch.position = args.position;
+    }
     if (args.archived !== undefined) {
       patch.archived = args.archived;
       patch.archivedAt = args.archived ? Date.now() : undefined;

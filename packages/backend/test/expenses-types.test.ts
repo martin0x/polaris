@@ -78,6 +78,18 @@ describe("expenses types", () => {
     await expect(asUser.mutation(api.expenses.types.update, { id: created.id })).rejects.toThrow();
   });
 
+  it("update rejects a non-integer or negative position", async () => {
+    const t = convexTest(schema, modules);
+    const asUser = t.withIdentity({ subject: "user1|session1" });
+    const created = await asUser.mutation(api.expenses.types.create, { name: "A" });
+    await expect(
+      asUser.mutation(api.expenses.types.update, { id: created.id, position: -1 })
+    ).rejects.toThrow();
+    await expect(
+      asUser.mutation(api.expenses.types.update, { id: created.id, position: 1.5 })
+    ).rejects.toThrow();
+  });
+
   it("swap exchanges the positions of two types atomically", async () => {
     const t = convexTest(schema, modules);
     const asUser = t.withIdentity({ subject: "user1|session1" });

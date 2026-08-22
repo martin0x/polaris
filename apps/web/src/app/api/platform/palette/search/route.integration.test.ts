@@ -6,6 +6,15 @@ import { createEntry } from "@/systems/journal/services/entries";
 
 vi.mock("@convex-dev/auth/nextjs/server", () => ({
   isAuthenticatedNextjs: vi.fn(),
+  // Read by the expenses palette layer (systems/expenses/palette.ts); a fake
+  // token is enough since fetchQuery itself is mocked below.
+  convexAuthNextjsToken: vi.fn(async () => "test-token"),
+}));
+
+// The expenses palette layer calls Convex directly; this suite has no live
+// deployment, so stub it out and keep expenses search deterministic (empty).
+vi.mock("convex/nextjs", () => ({
+  fetchQuery: vi.fn(async () => []),
 }));
 
 import { isAuthenticatedNextjs } from "@convex-dev/auth/nextjs/server";

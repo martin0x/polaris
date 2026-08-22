@@ -6,12 +6,6 @@ export async function withCleanJournalTables(): Promise<void> {
   );
 }
 
-export async function withCleanExpenseTables(): Promise<void> {
-  await prisma.$executeRawUnsafe(
-    'TRUNCATE TABLE "expense_items", "expense_activities", "expense_activity_types" RESTART IDENTITY CASCADE'
-  );
-}
-
 export async function withCleanHabitTables(): Promise<void> {
   await prisma.$executeRawUnsafe(
     'TRUNCATE TABLE "habit_ticks", "habits", "journal_entries", "journal_topics" RESTART IDENTITY CASCADE'

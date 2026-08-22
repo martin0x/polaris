@@ -63,7 +63,7 @@ export default defineSchema({
     startedAt: v.number(),
     legacyId: v.optional(v.string()),
   })
-    .index("by_type", ["typeId"])
+    .index("by_type", ["typeId"]) // unqueried today; kept for future by-type views (mobile/phase 4+)
     .index("by_started_at", ["startedAt"])
     .index("by_legacy_id", ["legacyId"]),
   expenseItems: defineTable({
