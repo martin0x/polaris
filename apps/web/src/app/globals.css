@@ -158,6 +158,7 @@
   --dur-med:  200ms;
   --dur-slow: 320ms;
   --dur-hold: 450ms; /* habit tick press-and-hold threshold — keep in sync with HOLD_MS in TickCircle.tsx */
+  --dur-spin: 800ms; /* sync spinner loop — the indicator stops only on whole loops */
 
   /* --- Z-index ---------------------------------------------------------- */
   --z-base:    0;
@@ -632,6 +633,53 @@ body {
   width: 7px; height: 7px;
   border-radius: 50%;
   background: var(--success);
+}
+.titlebar .sync-status {
+  position: relative;
+  display: inline-flex;
+  gap: 8px;
+  align-items: center;
+}
+.titlebar .sync-spinner {
+  width: 9px;
+  height: 9px;
+  border-radius: var(--r-full);
+  border: 1.5px solid var(--border-strong);
+  border-top-color: var(--accent);
+  animation: sync-spin var(--dur-spin) linear infinite;
+}
+@keyframes sync-spin {
+  to { transform: rotate(360deg); }
+}
+.sync-popover {
+  position: absolute;
+  top: calc(100% + var(--sp-1));
+  right: 0;
+  z-index: var(--z-popover);
+  min-width: 200px;
+  max-width: 280px;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-1);
+  background: var(--bg-raised);
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  box-shadow: var(--shadow-md);
+  padding: var(--sp-2) var(--sp-3);
+}
+.sync-popover-row {
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  color: var(--ink-2);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+@media (prefers-reduced-motion: reduce) {
+  .titlebar .sync-spinner {
+    animation: none;
+    border-color: var(--accent);
+  }
 }
 .titlebar-btn {
   display: inline-flex;

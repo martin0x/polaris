@@ -1,16 +1,15 @@
 import { PolarisGlyph } from "./PolarisGlyph";
 import { SidebarToggle } from "./SidebarChrome";
 import { PaletteTrigger } from "./PaletteTrigger";
+import { SyncIndicator } from "./SyncIndicator";
 
 // 36px app chrome — traffic lights, glyph, breadcrumbs, sync dot.
 export function TitleBar({
   crumbs,
-  syncState = "ok",
   email,
 }: {
   /** Plain strings or client islands (e.g. SystemCrumb) — each renders as one crumb. */
   crumbs: React.ReactNode[];
-  syncState?: "ok" | "offline";
   email?: string | null;
 }) {
   return (
@@ -54,16 +53,7 @@ export function TitleBar({
       </div>
       <div className="titlebar-right">
         <PaletteTrigger />
-        <span
-          className="sync-dot"
-          style={{
-            background:
-              syncState === "ok" ? "var(--success)" : "var(--warning)",
-          }}
-        />
-        <span className="sync-label">
-          {syncState === "ok" ? "synced" : "offline"}
-        </span>
+        <SyncIndicator />
         {email && (
           <>
             <span

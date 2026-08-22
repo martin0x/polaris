@@ -47,11 +47,7 @@ export default async function PlatformLayout({
   return (
     <SidebarProvider>
       <div className="app-shell">
-        <TitleBar
-          crumbs={["Polaris"]}
-          syncState="ok"
-          email={viewer?.email}
-        />
+        <TitleBar crumbs={["Polaris"]} email={viewer?.email} />
         <ShellBody>
           <Sidebar systems={systems} footer={sidebarFooter} />
           <main className="main">

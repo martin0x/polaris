@@ -50,7 +50,6 @@ export default async function SystemsLayout({
       <div className="app-shell">
         <TitleBar
           crumbs={["Polaris", <SystemCrumb key="system" systems={systems} />]}
-          syncState="ok"
           email={viewer?.email}
         />
         <ShellBody>

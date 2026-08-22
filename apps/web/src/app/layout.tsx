@@ -6,6 +6,7 @@ import {
 } from "@convex-dev/auth/nextjs/server";
 import ConvexClientProvider from "@/app/_components/ConvexClientProvider";
 import { PaletteProvider } from "@/platform/palette/client/PaletteProvider";
+import { SyncStatusProvider } from "@/app/_components/SyncStatus";
 import "./globals.css";
 
 // The Fraunces type stack (chosen July 2026 over IBM Plex, Newsreader, and
@@ -59,11 +60,13 @@ export default async function RootLayout({
       >
         <body className="antialiased">
           <ConvexClientProvider>
-            {isAuthenticated ? (
-              <PaletteProvider>{children}</PaletteProvider>
-            ) : (
-              children
-            )}
+            <SyncStatusProvider>
+              {isAuthenticated ? (
+                <PaletteProvider>{children}</PaletteProvider>
+              ) : (
+                children
+              )}
+            </SyncStatusProvider>
           </ConvexClientProvider>
         </body>
       </html>
