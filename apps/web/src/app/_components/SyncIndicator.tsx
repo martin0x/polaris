@@ -35,6 +35,7 @@ export function SyncIndicator() {
       {syncing ? (
         <span
           className="sync-spinner"
+          data-unsynced={pending.length > 0}
           onAnimationIteration={() => {
             if (pending.length === 0) setSpinning(false);
           }}
@@ -43,7 +44,7 @@ export function SyncIndicator() {
         <span className="sync-dot" />
       )}
       <span className="sync-label">
-        {pending.length > 0 ? `${pending.length} unsynced` : syncing ? "syncing" : "synced"}
+        {pending.length > 0 ? "unsynced" : syncing ? "syncing" : "synced"}
       </span>
       {hover && pending.length > 0 && (
         <span className="sync-popover" role="status">

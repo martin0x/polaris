@@ -640,11 +640,14 @@ body {
   gap: 8px;
   align-items: center;
 }
-/* Mono because the label carries a count ("2 unsynced") — in the titlebar's
-   12px sans the digit 1 reads as an l. Sized to match the email beside it. */
+/* Mono to match the email beside it. The width reserves room for the longest
+   state ("unsynced", 8ch); right alignment keeps the shared "synced" letters
+   in place across state changes, so the chrome never shifts. */
 .titlebar .sync-label {
   font-family: var(--font-mono);
   font-size: 11px;
+  width: 8ch;
+  text-align: right;
 }
 .titlebar .sync-spinner {
   width: 9px;
@@ -653,6 +656,10 @@ body {
   border: 1.5px solid var(--border-strong);
   border-top-color: var(--accent);
   animation: sync-spin var(--dur-spin) linear infinite;
+}
+/* Red while changes are still unsynced; back to accent for the drain loop. */
+.titlebar .sync-spinner[data-unsynced="true"] {
+  border-top-color: var(--danger);
 }
 @keyframes sync-spin {
   to { transform: rotate(360deg); }
@@ -685,6 +692,9 @@ body {
   .titlebar .sync-spinner {
     animation: none;
     border-color: var(--accent);
+  }
+  .titlebar .sync-spinner[data-unsynced="true"] {
+    border-color: var(--danger);
   }
 }
 .titlebar-btn {
