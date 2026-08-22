@@ -114,7 +114,10 @@ dashboard all read Convex from this deploy onward.
 Rows can land in Postgres between the §3 export and this deploy going live
 (if the freeze slipped). Re-run the import + verify once more — it's
 idempotent (upsert by `legacyId`), so re-importing already-imported rows is
-a no-op:
+a no-op. Run this §5 import before anyone touches an imported row in the new
+app: the import matches by `legacyId` and calls `ctx.db.replace`, so it would
+silently overwrite any Convex-side edit made to an already-imported row in
+the meantime.
 
 ```bash
 cd "$(git rev-parse --show-toplevel)/apps/web"
