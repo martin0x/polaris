@@ -11,7 +11,7 @@ export interface SystemManifest {
   name: string;
   displayName: string;
   description: string;
-  routes: Record<string, RouteHandler>;
+  routes?: Record<string, RouteHandler>;
   nav: {
     label: string;
     icon: string;

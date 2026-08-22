@@ -18,7 +18,7 @@ async function handleRequest(
   if (!manifest) return notFound(`System "${systemName}" not found`);
 
   const method = req.method;
-  for (const [pattern, handler] of Object.entries(manifest.routes)) {
+  for (const [pattern, handler] of Object.entries(manifest.routes ?? {})) {
     const routeParams = matchRoute(pattern, method, path);
     if (routeParams !== null) {
       return handler(req, routeParams);
