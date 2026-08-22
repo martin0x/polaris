@@ -8,9 +8,11 @@ import type { Id } from "@polaris/backend/convex/_generated/dataModel";
 
 interface StartButtonsProps {
   types: Array<{ id: string; name: string }>;
+  onStarted?: (id: string) => void;
+  onStartFailed?: () => void;
 }
 
-export function StartButtons({ types }: StartButtonsProps) {
+export function StartButtons({ types, onStarted, onStartFailed }: StartButtonsProps) {
   const router = useRouter();
   const startActivity = useMutation(api.expenses.activities.start);
   const [startingId, setStartingId] = useState<string | null>(null);
@@ -21,10 +23,12 @@ export function StartButtons({ types }: StartButtonsProps) {
     setError(null);
     try {
       const id = await startActivity({ typeId: typeId as Id<"expenseActivityTypes"> });
+      onStarted?.(id);
       router.push(`/expenses/${id}`);
+      // Stay disabled while the route transition lands; unmount resets state.
     } catch {
       setError("Could not start the activity. Check your connection and try again.");
-    } finally {
+      onStartFailed?.();
       setStartingId(null);
     }
   }

@@ -35,10 +35,13 @@ function groupByMonth(activities: ActivityRow[]) {
 
 export function ActivityList({
   preloaded,
+  hideId,
 }: {
   preloaded: Preloaded<typeof api.expenses.activities.list>;
+  hideId?: string;
 }) {
   const { activities } = usePreloadedQuery(preloaded);
+  const visible = hideId ? activities.filter((a) => a.id !== hideId) : activities;
   const removeActivity = useMutation(api.expenses.activities.remove);
   const [deletingId, setDeletingId] = useState<string | null>(null);
 
@@ -52,7 +55,7 @@ export function ActivityList({
     }
   }
 
-  if (activities.length === 0) {
+  if (visible.length === 0) {
     return (
       <p className="lead">
         No activities yet. Tap a type above to start one.
@@ -62,7 +65,7 @@ export function ActivityList({
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 2, marginTop: "var(--sp-4)" }}>
-      {groupByMonth(activities).map((group) => (
+      {groupByMonth(visible).map((group) => (
         <section key={group.label} style={{ display: "flex", flexDirection: "column", gap: 2 }}>
           <h2 className="overline" style={{ margin: "var(--sp-3) 0 var(--sp-1)" }}>
             {group.label}
