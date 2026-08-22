@@ -1,60 +1,61 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { usePreloadedQuery, useMutation, type Preloaded } from "convex/react";
+import { ConvexError } from "convex/values";
+import { api } from "@polaris/backend/convex/_generated/api";
+import type { Id } from "@polaris/backend/convex/_generated/dataModel";
 import { Icon } from "@/app/_components/Icon";
 
-export interface TypeRow {
-  id: string;
-  name: string;
-  position: number;
-  archived: boolean;
-}
+export function TypesManager({
+  preloaded,
+}: {
+  preloaded: Preloaded<typeof api.expenses.types.list>;
+}) {
+  const types = usePreloadedQuery(preloaded);
+  const createType = useMutation(api.expenses.types.create);
+  const updateType = useMutation(api.expenses.types.update);
+  const swapTypes = useMutation(api.expenses.types.swap);
 
-export function TypesManager({ types }: { types: TypeRow[] }) {
-  const router = useRouter();
   const [newName, setNewName] = useState("");
-  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editingId, setEditingId] = useState<Id<"expenseActivityTypes"> | null>(null);
   const [editName, setEditName] = useState("");
   const [error, setError] = useState<string | null>(null);
 
   const active = types.filter((t) => !t.archived);
   const archived = types.filter((t) => t.archived);
 
-  async function call(path: string, method: string, body?: unknown) {
+  // Replaces the REST call() helper: same error-copy contract, no refresh —
+  // the query is reactive.
+  async function run(action: () => Promise<unknown>): Promise<boolean> {
     setError(null);
-    const res = await fetch(`/api/systems/expenses${path}`, {
-      method,
-      ...(body !== undefined
-        ? { headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) }
-        : {}),
-    });
-    if (!res.ok) {
-      const data = await res.json().catch(() => null);
-      setError(data?.error ?? "The change did not save. Try again.");
+    try {
+      await action();
+      return true;
+    } catch (err) {
+      setError(
+        err instanceof ConvexError && typeof err.data === "string"
+          ? err.data
+          : "The change did not save. Try again."
+      );
       return false;
     }
-    router.refresh();
-    return true;
   }
 
   async function addType() {
     if (!newName.trim()) return;
-    if (await call("/types", "POST", { name: newName.trim() })) setNewName("");
+    if (await run(() => createType({ name: newName.trim() }))) setNewName("");
   }
 
-  async function rename(id: string) {
+  async function rename(id: Id<"expenseActivityTypes">) {
     if (!editName.trim()) return;
-    if (await call(`/types/${id}`, "PATCH", { name: editName.trim() })) setEditingId(null);
+    if (await run(() => updateType({ id, name: editName.trim() }))) setEditingId(null);
   }
 
   async function move(index: number, dir: -1 | 1) {
     const other = index + dir;
     if (other < 0 || other >= active.length) return;
-    // Swap positions of the two adjacent rows; bail if the first write fails
-    // so a half-applied swap can't leave two rows sharing a position.
-    if (!(await call(`/types/${active[index].id}`, "PATCH", { position: active[other].position }))) return;
-    await call(`/types/${active[other].id}`, "PATCH", { position: active[index].position });
+    await run(() => swapTypes({ first: active[index].id, second: active[other].id }));
   }
 
   return (
@@ -109,7 +110,7 @@ export function TypesManager({ types }: { types: TypeRow[] }) {
                 >
                   Rename
                 </button>
-                <button type="button" className="btn btn-ghost" onClick={() => call(`/types/${t.id}`, "PATCH", { archived: true })}>
+                <button type="button" className="btn btn-ghost" onClick={() => run(() => updateType({ id: t.id, archived: true }))}>
                   Archive
                 </button>
               </>
@@ -147,7 +148,7 @@ export function TypesManager({ types }: { types: TypeRow[] }) {
             {archived.map((t) => (
               <div key={t.id} className="exp-row">
                 <span style={{ flex: 1, color: "var(--fg-muted)" }}>{t.name}</span>
-                <button type="button" className="btn btn-ghost" onClick={() => call(`/types/${t.id}`, "PATCH", { archived: false })}>
+                <button type="button" className="btn btn-ghost" onClick={() => run(() => updateType({ id: t.id, archived: false }))}>
                   Restore
                 </button>
               </div>
