@@ -2,6 +2,9 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useMutation } from "convex/react";
+import { api } from "@polaris/backend/convex/_generated/api";
+import type { Id } from "@polaris/backend/convex/_generated/dataModel";
 
 interface StartButtonsProps {
   types: Array<{ id: string; name: string }>;
@@ -9,6 +12,7 @@ interface StartButtonsProps {
 
 export function StartButtons({ types }: StartButtonsProps) {
   const router = useRouter();
+  const startActivity = useMutation(api.expenses.activities.start);
   const [startingId, setStartingId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -16,16 +20,11 @@ export function StartButtons({ types }: StartButtonsProps) {
     setStartingId(typeId);
     setError(null);
     try {
-      const res = await fetch("/api/systems/expenses/activities", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ typeId }),
-      });
-      if (!res.ok) throw new Error(String(res.status));
-      const { activity } = await res.json();
-      router.push(`/expenses/${activity.id}`);
+      const id = await startActivity({ typeId: typeId as Id<"expenseActivityTypes"> });
+      router.push(`/expenses/${id}`);
     } catch {
       setError("Could not start the activity. Check your connection and try again.");
+    } finally {
       setStartingId(null);
     }
   }

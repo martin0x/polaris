@@ -1,8 +1,10 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { usePreloadedQuery, useMutation, type Preloaded } from "convex/react";
+import { api } from "@polaris/backend/convex/_generated/api";
+import type { Id } from "@polaris/backend/convex/_generated/dataModel";
 import { Icon } from "@/app/_components/Icon";
 import { formatCentavos } from "@polaris/core/money";
 
@@ -10,7 +12,7 @@ export interface ActivityRow {
   id: string;
   typeName: string;
   title: string | null;
-  startedAt: string; // ISO
+  startedAt: number; // ms
   itemCount: number;
   totalCentavos: number;
 }
@@ -31,16 +33,23 @@ function groupByMonth(activities: ActivityRow[]) {
   return groups;
 }
 
-export function ActivityList({ activities }: { activities: ActivityRow[] }) {
-  const router = useRouter();
+export function ActivityList({
+  preloaded,
+}: {
+  preloaded: Preloaded<typeof api.expenses.activities.list>;
+}) {
+  const { activities } = usePreloadedQuery(preloaded);
+  const removeActivity = useMutation(api.expenses.activities.remove);
   const [deletingId, setDeletingId] = useState<string | null>(null);
 
   async function remove(id: string) {
     if (!window.confirm("Delete this activity and all its items?")) return;
     setDeletingId(id);
-    const res = await fetch(`/api/systems/expenses/activities/${id}`, { method: "DELETE" });
-    setDeletingId(null);
-    if (res.ok) router.refresh();
+    try {
+      await removeActivity({ id: id as Id<"expenseActivities"> });
+    } finally {
+      setDeletingId(null);
+    }
   }
 
   if (activities.length === 0) {

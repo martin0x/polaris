@@ -1,62 +1,18 @@
 import { cache } from "react";
 import Link from "next/link";
-import { prisma } from "@/platform/db/client";
+import { convexAuthNextjsToken } from "@convex-dev/auth/nextjs/server";
+import { fetchQuery } from "convex/nextjs";
+import { api } from "@polaris/backend/convex/_generated/api";
 import type { SystemDashboard } from "../types";
 import { StartButtons } from "./components/StartButtons";
 import { formatCentavos } from "@polaris/core/money";
-import { MANILA_TZ, manilaMonthKey, manilaMonthStart } from "@polaris/core/months";
-import { listTypes } from "./services/types";
+import { MANILA_TZ } from "@polaris/core/months";
 
-interface TodayActivity {
-  id: string;
-  title: string | null;
-  typeName: string;
-  items: number;
-  totalCentavos: number;
-}
-
-/** Month and day boundaries follow the trends service: Asia/Manila. */
+/** Month and day boundaries are computed server-side by the Convex query,
+ *  following the same Asia/Manila rule as the trends service. */
 const load = cache(async () => {
-  const monthStart = manilaMonthStart(manilaMonthKey(new Date()));
-
-  const [monthAgg, todayRows, types] = await Promise.all([
-    prisma.expenseItem.aggregate({
-      _sum: { amountCentavos: true },
-      where: { activity: { startedAt: { gte: monthStart } } },
-    }),
-    prisma.$queryRaw<
-      Array<{ id: string; title: string | null; typeName: string; items: bigint; total: bigint }>
-    >`
-      SELECT a.id, a.title, t.name AS "typeName",
-             COUNT(i.id)::bigint AS items,
-             COALESCE(SUM(i."amountCentavos"), 0)::bigint AS total
-      FROM expense_activities a
-      JOIN expense_activity_types t ON t.id = a."typeId"
-      LEFT JOIN expense_items i ON i."activityId" = a.id
-      WHERE (a."startedAt" AT TIME ZONE 'UTC' AT TIME ZONE 'Asia/Manila')::date
-            = (now() AT TIME ZONE 'Asia/Manila')::date
-      GROUP BY a.id, a.title, t.name, a."startedAt"
-      ORDER BY a."startedAt" DESC
-      LIMIT 1;
-    `,
-    listTypes({ includeArchived: false }),
-  ]);
-
-  const todayActivity: TodayActivity | null = todayRows[0]
-    ? {
-        id: todayRows[0].id,
-        title: todayRows[0].title,
-        typeName: todayRows[0].typeName,
-        items: Number(todayRows[0].items),
-        totalCentavos: Number(todayRows[0].total),
-      }
-    : null;
-
-  return {
-    monthCentavos: monthAgg._sum.amountCentavos ?? 0,
-    todayActivity,
-    types: types.map((t) => ({ id: t.id, name: t.name })),
-  };
+  const token = await convexAuthNextjsToken();
+  return fetchQuery(api.expenses.dashboard.summary, {}, { token });
 });
 
 async function summary(): Promise<string | null> {
