@@ -101,7 +101,7 @@ export function CapturePage({
   }
 
   return (
-    <article className="doc" style={{ display: "flex", flexDirection: "column", minHeight: "70vh" }}>
+    <article className="doc exp-capture">
       <header className="exp-header">
         <div style={{ minWidth: 0 }}>
           {editingTitle ? (
@@ -144,7 +144,7 @@ export function CapturePage({
         </div>
       </header>
 
-      <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 2, paddingTop: "var(--sp-3)" }}>
+      <div className="exp-list">
         {items.length === 0 ? (
           <p className="lead">No items yet. Type the first one below.</p>
         ) : (

@@ -1002,11 +1002,31 @@ kbd, .kbd {
   color: var(--ink-2);
 }
 
-/* Expenses — in-store capture surface */
+/* Expenses — in-store capture surface. The surface fills the viewport and
+   only the item list scrolls, so the header and composer are ordinary flex
+   children that can never float over the list (position: sticky against the
+   padded page scroller pinned the composer mid-list while scrolling). */
+.content:has(> .exp-capture) {
+  display: flex;
+  flex-direction: column;
+}
+.exp-capture {
+  flex: 1;
+  min-height: 0;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+}
+.exp-list {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding-top: var(--sp-3);
+}
 .exp-header {
-  position: sticky;
-  top: 0;
-  z-index: 2;
   display: flex;
   align-items: baseline;
   justify-content: space-between;
@@ -1022,9 +1042,6 @@ kbd, .kbd {
   white-space: nowrap;
 }
 .exp-composer {
-  position: sticky;
-  bottom: 0;
-  z-index: 2;
   display: flex;
   gap: var(--sp-2);
   padding: var(--sp-3) 0;
