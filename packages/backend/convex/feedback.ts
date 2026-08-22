@@ -29,6 +29,20 @@ export const recordMetric = mutation({
   },
 });
 
+// Internal twin of recordMetric for calls that originate inside Convex
+// (scheduled from other modules' mutations) — no service key needed.
+export const record = internalMutation({
+  args: { system: v.string(), name: v.string(), value: v.number() },
+  handler: async (ctx, args) => {
+    await ctx.db.insert("systemMetrics", {
+      system: args.system,
+      name: args.name,
+      value: args.value,
+      recordedAt: Date.now(),
+    });
+  },
+});
+
 // Hand-run via `bunx convex run feedback:addReflection '…'` — matching the
 // historical bun -e workflow; no production call sites exist.
 export const addReflection = internalMutation({
