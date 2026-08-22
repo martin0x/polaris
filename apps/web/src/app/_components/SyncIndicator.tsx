@@ -13,9 +13,8 @@ export function SyncIndicator() {
   const [spinning, setSpinning] = useState(false);
   const [hover, setHover] = useState(false);
 
-  useEffect(() => {
-    if (pending.length > 0) setSpinning(true);
-  }, [pending.length]);
+  // Render-phase adjustment (not an effect): start spinning the moment work appears.
+  if (pending.length > 0 && !spinning) setSpinning(true);
 
   // Reduced motion and hidden tabs never fire animationiteration; a timer
   // fallback keeps the spinner state from sticking.

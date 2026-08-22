@@ -19,11 +19,13 @@ export function ActivitiesHome({
   const [pendingStartId, setPendingStartId] = useState<string | null>(null);
   return (
     <>
+      <p className="overline" style={{ marginTop: "var(--sp-4)" }}>Start an activity</p>
       <StartButtons
         types={types}
         onStarted={setPendingStartId}
         onStartFailed={() => setPendingStartId(null)}
       />
+      <p className="overline" style={{ marginTop: "var(--sp-8)" }}>Recent</p>
       <ActivityList preloaded={preloaded} hideId={pendingStartId ?? undefined} />
     </>
   );
