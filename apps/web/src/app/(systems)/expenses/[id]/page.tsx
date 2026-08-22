@@ -1,5 +1,7 @@
 import { notFound } from "next/navigation";
-import { getActivityWithItems } from "@/systems/expenses/services/activities";
+import { convexAuthNextjsToken } from "@convex-dev/auth/nextjs/server";
+import { preloadQuery, preloadedQueryResult } from "convex/nextjs";
+import { api } from "@polaris/backend/convex/_generated/api";
 import { CapturePage } from "@/systems/expenses/components/CapturePage";
 
 export default async function ExpenseActivityPage({
@@ -8,23 +10,8 @@ export default async function ExpenseActivityPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const activity = await getActivityWithItems(id);
-  if (!activity) notFound();
-
-  return (
-    <CapturePage
-      activity={{
-        id: activity.id,
-        title: activity.title,
-        typeName: activity.type.name,
-        startedAt: activity.startedAt.toISOString(),
-      }}
-      initialItems={activity.items.map((i) => ({
-        id: i.id,
-        name: i.name,
-        amountCentavos: i.amountCentavos,
-        position: i.position,
-      }))}
-    />
-  );
+  const token = await convexAuthNextjsToken();
+  const preloaded = await preloadQuery(api.expenses.activities.get, { id }, { token });
+  if (preloadedQueryResult(preloaded) === null) notFound();
+  return <CapturePage preloaded={preloaded} urlId={id} />;
 }
