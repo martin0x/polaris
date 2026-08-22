@@ -239,13 +239,31 @@ Staged internally, shipped when the parity checklist is green:
 ## 06 · Data migration playbook
 
 Run once per system, at its flip. Single-user scale makes the freeze window
-minutes, not hours.
+minutes, not hours. Corrected below with what phase 2 (expenses) actually
+proved, having now run this playbook for real for the first time.
 
 1. **Export** — a Bun script reads Postgres through Prisma and emits JSONL per
-   table, cuids intact.
-2. **Import** — an internal Convex mutation inserts documents, builds the
-   cuid-to-id map, remaps relations, and converts dates. Idempotent by
-   `legacyId` upsert, so it can rerun safely.
+   table, cuids intact, dates converted to epoch ms at export time (so
+   nothing downstream deals in `Date` objects).
+2. **Import** — a Bun script batches each table's JSONL (200 rows at a time)
+   through `bunx convex run` into an internal Convex mutation, one table at a
+   time. **Import order is parents first** — types, then activities, then
+   items, matching the FK dependency. There is no upfront cuid-to-id map:
+   each row's parent reference is resolved live, per row, via a lookup on the
+   parent table's `by_legacy_id` index; a miss throws `ConvexError`, which
+   aborts that batch's transaction atomically rather than inserting a
+   half-linked row. Idempotent by `legacyId` upsert (`replace` if the index
+   finds a row, `insert` if not), so reruns are safe. When the legacy primary
+   key was itself client-generated — expense items' old Prisma PK was a
+   client `crypto.randomUUID()`, not a `cuid()` — that same string becomes
+   *both* `legacyId` (the import's upsert key) and `clientId` (the key
+   optimistic runtime writes already upsert by); no separate id-mapping step
+   is needed for those tables. `bunx convex run` pretty-prints its result and
+   can interleave log lines above it, so import/verify scripts never grab
+   `stdout` positionally (a bare `.split("\n").at(-1)` breaks the moment a
+   mutation logs anything) — they tail-parse with a small
+   `parseConvexRunResult` helper that scans backward for the trailing JSON
+   block instead.
 3. **Freeze, verify, flip** — stop writing to that system, run the final
    export/import, verify, point the UI at Convex. Postgres tables stay as a
    frozen archive until phase 5.
@@ -254,6 +272,20 @@ minutes, not hours.
 remap errors — sum of `amountCentavos` per month, tick counts per habit, entry
 counts per topic — and a side-by-side comparison of old API output versus new
 query output for a sample of records.
+
+**Rehearse with real-shaped data, not whatever dev already has.** Phase 2's
+first rehearsal run hit a dev Postgres with six seeded activity types but
+only one activity and one item — too thin to exercise per-month centavo sums
+or per-type counts at all. Seed a handful of rows spanning multiple months
+and types before trusting a rehearsal's all-`OK` output; an almost-empty
+table passes every checksum trivially and proves nothing about the
+aggregation logic it's supposed to be checking.
+
+(Unrelated to the migration itself but caught in the same phase: a
+`convex-test` assertion against scheduled work needs
+`await t.finishAllScheduledFunctions(vi.runAllTimers)` before asserting —
+`finishInProgressScheduledFunctions` alone never fires a bare `runAfter(0)`
+under fake timers.)
 
 ## 07 · Hindsight: could the systems have been built better?
 
