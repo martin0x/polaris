@@ -10,7 +10,9 @@
 
 import type * as auth from "../auth.js";
 import type * as expenses_activities from "../expenses/activities.js";
+import type * as expenses_dashboard from "../expenses/dashboard.js";
 import type * as expenses_items from "../expenses/items.js";
+import type * as expenses_trends from "../expenses/trends.js";
 import type * as expenses_types from "../expenses/types.js";
 import type * as feedback from "../feedback.js";
 import type * as http from "../http.js";
@@ -29,7 +31,9 @@ import type {
 declare const fullApi: ApiFromModules<{
   auth: typeof auth;
   "expenses/activities": typeof expenses_activities;
+  "expenses/dashboard": typeof expenses_dashboard;
   "expenses/items": typeof expenses_items;
+  "expenses/trends": typeof expenses_trends;
   "expenses/types": typeof expenses_types;
   feedback: typeof feedback;
   http: typeof http;
