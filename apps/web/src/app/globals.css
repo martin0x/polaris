@@ -1009,6 +1009,9 @@ kbd, .kbd {
 .content:has(> .exp-capture) {
   display: flex;
   flex-direction: column;
+  /* The composer is anchored, not trailing content, so the scroller's tail
+     padding would only leave dead space under it. */
+  padding-bottom: var(--sp-6);
 }
 .exp-capture {
   flex: 1;
