@@ -7,6 +7,7 @@ import {
 import ConvexClientProvider from "@/app/_components/ConvexClientProvider";
 import { PaletteProvider } from "@/platform/palette/client/PaletteProvider";
 import { SyncStatusProvider } from "@/app/_components/SyncStatus";
+import { siteUrl } from "@/lib/site";
 import "./globals.css";
 
 // The Fraunces type stack (chosen July 2026 over IBM Plex, Newsreader, and
@@ -34,7 +35,10 @@ const plexMono = IBM_Plex_Mono({
   display: "swap",
 });
 
+// The app is private by default; the landing page (app/page.tsx) opts back
+// into indexing and carries the Open Graph card.
 export const metadata: Metadata = {
+  metadataBase: siteUrl(),
   title: "Polaris",
   description: "A personal operating system.",
   icons: {

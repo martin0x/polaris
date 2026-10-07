@@ -8,7 +8,7 @@ export default function SignInButton() {
     <button
       type="button"
       className="btn btn-primary"
-      onClick={() => void signIn("google", { redirectTo: "/" })}
+      onClick={() => void signIn("google", { redirectTo: "/dashboard" })}
     >
       Sign in with Google
     </button>
