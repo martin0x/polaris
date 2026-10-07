@@ -488,6 +488,9 @@ body {
   letter-spacing: var(--tracking-caps);
   color: var(--fg-muted);
   font-weight: 600;
+  /* Tailwind v4 also generates an `overline` utility (a line over the text)
+     from this class name; cancel it so eyebrows stay plain. */
+  text-decoration: none;
 }
 
 .prose a, .doc a, .link {
