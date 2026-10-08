@@ -36,8 +36,9 @@ const T = {
   shadowSm: "0 1px 2px rgba(40, 32, 20, 0.06), 0 1px 0 rgba(40, 32, 20, 0.03)",
 };
 
-// Static TTF cuts of the app's three faces (Satori reads ttf/otf/woff, not
-// the woff2 next/font serves). Sources and license: fonts/README.md.
+// Static TTF cuts of the landing page's IBM Plex faces (Satori reads
+// ttf/otf/woff, not the woff2 next/font serves). Sources, subsetting, and
+// license: fonts/README.md.
 const FONT_DIR = join(process.cwd(), "src/app/_og/fonts");
 
 async function font(file: string) {
@@ -74,14 +75,13 @@ function CardIcon({ name, size, color }: { name: IconName; size: number; color: 
 }
 
 export async function renderSocialCard(): Promise<ImageResponse> {
-  const [frauncesDisplay, frauncesText, jakarta, jakartaSemi, plexMono] =
-    await Promise.all([
-      font("Fraunces-Display-Medium.ttf"),
-      font("Fraunces-Text-Regular.ttf"),
-      font("PlusJakartaSans-Regular.ttf"),
-      font("PlusJakartaSans-SemiBold.ttf"),
-      font("IBMPlexMono-Medium.ttf"),
-    ]);
+  const [serif, serifMedium, sans, sansSemi, mono] = await Promise.all([
+    font("IBMPlexSerif-Regular.ttf"),
+    font("IBMPlexSerif-Medium.ttf"),
+    font("IBMPlexSans-Regular.ttf"),
+    font("IBMPlexSans-SemiBold.ttf"),
+    font("IBMPlexMono-Medium.ttf"),
+  ]);
 
   return new ImageResponse(
     (
@@ -93,7 +93,7 @@ export async function renderSocialCard(): Promise<ImageResponse> {
           flexDirection: "column",
           padding: "60px 72px 52px",
           background: T.paper0,
-          fontFamily: "Jakarta",
+          fontFamily: "Plex Sans",
           color: T.ink1,
         }}
       >
@@ -106,7 +106,12 @@ export async function renderSocialCard(): Promise<ImageResponse> {
             <circle cx="32" cy="32" r="2.6" fill={T.paper0} />
           </svg>
           <span
-            style={{ fontFamily: "Fraunces Display", fontSize: 32, color: T.ink1 }}
+            style={{
+              fontFamily: "Plex Serif",
+              fontWeight: 500,
+              fontSize: 32,
+              color: T.ink1,
+            }}
           >
             Polaris
           </span>
@@ -148,7 +153,8 @@ export async function renderSocialCard(): Promise<ImageResponse> {
                 // "Software for / one life." instead of orphaning "life."
                 maxWidth: 480,
                 marginTop: 16,
-                fontFamily: "Fraunces Display",
+                fontFamily: "Plex Serif",
+                fontWeight: 500,
                 fontSize: 80,
                 lineHeight: 1.04,
                 letterSpacing: "-0.015em",
@@ -160,7 +166,7 @@ export async function renderSocialCard(): Promise<ImageResponse> {
             <span
               style={{
                 marginTop: 24,
-                fontFamily: "Fraunces Text",
+                fontFamily: "Plex Serif",
                 fontSize: 29,
                 lineHeight: 1.4,
                 color: T.ink2,
@@ -208,7 +214,7 @@ export async function renderSocialCard(): Promise<ImageResponse> {
                 </div>
                 <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
                   <span
-                    style={{ fontFamily: "Jakarta", fontWeight: 600, fontSize: 22 }}
+                    style={{ fontWeight: 600, fontSize: 22 }}
                   >
                     {s.name}
                   </span>
@@ -229,11 +235,11 @@ export async function renderSocialCard(): Promise<ImageResponse> {
     {
       ...SOCIAL_SIZE,
       fonts: [
-        { name: "Fraunces Display", data: frauncesDisplay, weight: 500, style: "normal" },
-        { name: "Fraunces Text", data: frauncesText, weight: 400, style: "normal" },
-        { name: "Jakarta", data: jakarta, weight: 400, style: "normal" },
-        { name: "Jakarta", data: jakartaSemi, weight: 600, style: "normal" },
-        { name: "Plex Mono", data: plexMono, weight: 500, style: "normal" },
+        { name: "Plex Serif", data: serif, weight: 400, style: "normal" },
+        { name: "Plex Serif", data: serifMedium, weight: 500, style: "normal" },
+        { name: "Plex Sans", data: sans, weight: 400, style: "normal" },
+        { name: "Plex Sans", data: sansSemi, weight: 600, style: "normal" },
+        { name: "Plex Mono", data: mono, weight: 500, style: "normal" },
       ],
     },
   );
