@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
+import { IBM_Plex_Sans, IBM_Plex_Serif } from "next/font/google";
 import Link from "next/link";
 import { getOptionalSession } from "@/platform/auth/session";
 import { Icon, type IconName } from "@/app/_components/Icon";
@@ -37,6 +38,24 @@ export const metadata: Metadata = {
     description: DESCRIPTION,
   },
 };
+
+// The landing page sets in IBM Plex — Serif and Sans here, Mono from the root
+// layout — while the app keeps the Fraunces stack. Loaded in this module so
+// only "/" downloads them; latin-ext carries the ₱ glyph. `.lp` in
+// globals.css points the font tokens at these variables.
+const plexSerif = IBM_Plex_Serif({
+  subsets: ["latin", "latin-ext"],
+  weight: ["400", "500"],
+  variable: "--font-plex-serif",
+  display: "swap",
+});
+
+const plexSans = IBM_Plex_Sans({
+  subsets: ["latin", "latin-ext"],
+  weight: ["400", "500", "600"],
+  variable: "--font-plex-sans",
+  display: "swap",
+});
 
 const PRINCIPLES: { icon: IconName; title: string; body: string }[] = [
   {
@@ -157,7 +176,7 @@ export default async function LandingPage() {
   });
 
   return (
-    <div className="lp">
+    <div className={`lp ${plexSerif.variable} ${plexSans.variable}`}>
       <header className="lp-bar">
         <div className="lp-bar-inner">
           <Link href="/" className="lp-brand" aria-label="Polaris home">
