@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Fraunces, Plus_Jakarta_Sans, IBM_Plex_Mono } from "next/font/google";
 import { getOptionalSession } from "@/platform/auth/session";
 import { PaletteProvider } from "@/platform/palette/client/PaletteProvider";
+import { siteUrl } from "@/lib/site";
 import "./globals.css";
 
 // The Fraunces type stack (chosen July 2026 over IBM Plex, Newsreader, and
@@ -29,7 +30,10 @@ const plexMono = IBM_Plex_Mono({
   display: "swap",
 });
 
+// The app is private by default; the landing page (app/page.tsx) opts back
+// into indexing and carries the Open Graph card.
 export const metadata: Metadata = {
+  metadataBase: siteUrl(),
   title: "Polaris",
   description: "A personal operating system.",
   icons: {
