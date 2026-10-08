@@ -1837,6 +1837,16 @@ button.habit-range:hover { background: var(--bg-hover); }
    chrome. The page isn't a .doc, so its heading scale is set here.
    ========================================================================== */
 .lp {
+  /* The landing page alone sets in IBM Plex (Serif, Sans, and the root's
+     Mono); the app keeps the Fraunces stack. Retargeting the tokens here
+     reaches every shared class used on the page (.lead, .btn, .overline). */
+  --font-serif:
+    var(--font-plex-serif, "IBM Plex Serif"),
+    "Iowan Old Style", "Charter", Georgia, serif;
+  --font-sans:
+    var(--font-plex-sans, "IBM Plex Sans"),
+    ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-family: var(--font-sans);
   min-height: 100dvh;
   display: flex;
   flex-direction: column;
