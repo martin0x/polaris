@@ -236,8 +236,9 @@ See the Design System tab for live cards — each is also a file in `preview/`.
 
 All fonts are **self-hosted** in `apps/web/src/app/_fonts/` and load through
 `next/font/local` — builds never fetch Google Fonts (Google sometimes returns
-font URLs that fail the Next.js build; see that folder's README). The files
-are Google Fonts' own cuts, so rendering matches what Google serves.
+font URLs that fail the Next.js build; see that folder's README). The app
+fonts are Google Fonts' own cuts; the landing page's IBM Plex Sans and Serif
+are cut from the google/fonts sources (see the folder's README).
 
 | Role | Using | Alternatives considered |
 |---|---|---|

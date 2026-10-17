@@ -54,9 +54,16 @@ const plexSerif = localFont({
   adjustFontFallback: "Times New Roman",
 });
 
+// Declared as the same file three times at 400/500/600 (rather than one
+// variable-weight face spanning 100–700) to reproduce Google's own three-face
+// declaration, so intermediate weights like .btn's 450 snap to 500 as before
+// instead of rendering a true 450.
 const plexSans = localFont({
-  src: "./_fonts/IBMPlexSans-latin-latinext.woff2",
-  weight: "100 700",
+  src: [
+    { path: "./_fonts/IBMPlexSans-latin-latinext.woff2", weight: "400", style: "normal" },
+    { path: "./_fonts/IBMPlexSans-latin-latinext.woff2", weight: "500", style: "normal" },
+    { path: "./_fonts/IBMPlexSans-latin-latinext.woff2", weight: "600", style: "normal" },
+  ],
   variable: "--font-plex-sans",
   display: "swap",
 });

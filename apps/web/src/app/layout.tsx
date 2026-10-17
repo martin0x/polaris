@@ -14,6 +14,10 @@ import "./globals.css";
 // Literata trios — see docs/design/decisions/). Self-hosted from _fonts/ so
 // builds never fetch Google Fonts — see its README. Italic loads too: entry
 // blockquotes are italic serif and must not be synthesized.
+// adjustFontFallback is off: Google's Fraunces file defaults to wght 900, so
+// Next's auto-measured fallback metrics would be ~10% too large. The correct
+// metrics (matching what the Google-fonts loader used to produce) are
+// hand-declared as the "Fraunces Fallback" @font-face in globals.css.
 const fraunces = localFont({
   src: [
     { path: "./_fonts/Fraunces-latin.woff2", weight: "100 900", style: "normal" },
@@ -21,7 +25,8 @@ const fraunces = localFont({
   ],
   variable: "--font-fraunces",
   display: "swap",
-  adjustFontFallback: "Times New Roman",
+  adjustFontFallback: false,
+  fallback: ["Fraunces Fallback"],
 });
 
 const jakarta = localFont({
