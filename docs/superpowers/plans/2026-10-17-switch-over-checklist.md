@@ -61,18 +61,21 @@ values. Delete the file when the switch-over is finished.
 
 ## Stage 2 — Vercel test build (nothing live changes)
 
-- [ ] Vercel → Settings → Environment Variables: add `NEXT_PUBLIC_CONVEX_URL`
+- [x] Vercel → Settings → Environment Variables: add `NEXT_PUBLIC_CONVEX_URL`
       = `https://rapid-lapwing-153.convex.cloud` (Production and Preview).
       Harmless to the live site — today's `main` doesn't read it — and it must
       be there before the merge, because the build bakes it in.
-- [ ] Vercel → Settings → Build and Deployment: Root Directory = `apps/web`,
+- [x] Vercel → Settings → Build and Deployment: Root Directory = `apps/web`,
       and "Include files outside the Root Directory in the Build Step" on.
       Only new builds see it; the live deployment keeps serving. A push to
       `main` before the merge would fail to build (harmless — the old
       deployment stays live).
-- [ ] Push `replatform`; open the PR `replatform` → `main`. The PR's preview
+- [x] Push `replatform`; open the PR `replatform` → `main`
+      ([#3](https://github.com/martin0x/polaris/pull/3)). The PR's preview
       build is the test run of the new layout on Vercel and must succeed. It
-      skips the database step.
+      skips the database step. First run failed on the Google Fonts flake
+      (below); the retry built clean — same 24 routes as locally, no
+      database step, checks green.
 
 ## Stage 3 — go live (don't use the app from here until the smoke test)
 
@@ -114,6 +117,25 @@ values. Delete the file when the switch-over is finished.
   its four tables back:
   restore `User`, `Account`, `Session`, `VerificationToken` from the backup
   with `pg_restore -t`. Expenses and feedback in Postgres were never touched.
+
+## Known flaky build: Google Fonts
+
+The first test build (PR #3, 2026-10-17) failed in `next build` with
+`next/font/google queries have exactly one entry` on the landing page's IBM
+Plex Sans. Cause: Google Fonts sometimes answers with extensionless
+`/l/font?kit=…&skey=…` font URLs instead of `/s/…/*.woff2`, and Next.js 16.2.4
+splits them at the `&` — Next.js issue
+[#99114](https://github.com/vercel/next.js/issues/99114); the 16.x backport
+[#100277](https://github.com/vercel/next.js/pull/100277) is still open. It is
+intermittent (about 1 in 60 responses in one report, sometimes for 20 minutes
+at a stretch) and can hit any of the five `next/font/google` families. A
+probe build that fetched the same stylesheet from Vercel's machine a few
+minutes later got normal URLs.
+
+What it means here: a failed build is harmless — the build runs before the
+database step, so nothing changes and the old deployment stays live; retry
+the build. The lasting fix is to self-host the fonts with `next/font/local`
+so builds stop fetching from Google.
 
 ## Follow-ups noticed on the way
 
