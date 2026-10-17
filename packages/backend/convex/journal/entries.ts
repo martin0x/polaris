@@ -9,6 +9,7 @@ import {
   entryDtos,
   insertEntry,
   recordWordsMetric,
+  searchEntryDocs,
   searchTextOf,
   writeEntryTags,
   type EntryDoc,
@@ -122,6 +123,23 @@ export const update = mutation({
       await recordWordsMetric(ctx, args.body);
     }
     return null;
+  },
+});
+
+export const search = query({
+  args: {
+    q: v.string(),
+    topicId: v.optional(v.id("journalTopics")),
+    limit: v.optional(v.number()),
+  },
+  handler: async (ctx, args) => {
+    await assertSignedIn(ctx);
+    const docs = await searchEntryDocs(ctx, {
+      q: args.q,
+      topicId: args.topicId,
+      limit: clampLimit(args.limit, 20),
+    });
+    return { entries: await entryDtos(ctx, docs) };
   },
 });
 

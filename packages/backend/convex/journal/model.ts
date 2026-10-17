@@ -1,5 +1,6 @@
 import { ConvexError } from "convex/values";
 import { extractTags, wordCount } from "@polaris/core/parser";
+import { matchesAllTerms, searchTerms } from "@polaris/core/search";
 import { internal } from "../_generated/api";
 import type { Doc, Id } from "../_generated/dataModel";
 import type { MutationCtx, QueryCtx } from "../_generated/server";
@@ -187,4 +188,44 @@ export async function entryDtos(ctx: Ctx, docs: EntryDoc[]): Promise<EntryDto[]>
     });
   }
   return out;
+}
+
+// Candidates pulled from the search index before the every-term filter
+// (decision log 4, 19). Convex caps one search at 1024 results.
+export const SEARCH_CANDIDATE_LIMIT = 256;
+const MAX_SEARCH_TERMS = 16; // Convex search limit
+
+/** Journal search: an empty query lists the newest live entries; otherwise
+ *  index candidates (any term matches, relevance order) filtered down to
+ *  entries containing every term, like the old Postgres tsquery AND. */
+export async function searchEntryDocs(
+  ctx: QueryCtx,
+  args: { q: string; topicId?: Id<"journalTopics">; limit: number }
+): Promise<EntryDoc[]> {
+  const { topicId, limit } = args;
+  if (args.q.trim().length === 0) {
+    return topicId === undefined
+      ? ctx.db
+          .query("journalEntries")
+          .withIndex("by_deleted_at_created_at", (q) => q.eq("deletedAt", undefined))
+          .order("desc")
+          .take(limit)
+      : ctx.db
+          .query("journalEntries")
+          .withIndex("by_topic_deleted_at_created_at", (q) =>
+            q.eq("topicId", topicId).eq("deletedAt", undefined)
+          )
+          .order("desc")
+          .take(limit);
+  }
+  const terms = searchTerms(args.q).slice(0, MAX_SEARCH_TERMS);
+  if (terms.length === 0) return [];
+  const candidates = await ctx.db
+    .query("journalEntries")
+    .withSearchIndex("search_text", (s) => {
+      const live = s.search("searchText", terms.join(" ")).eq("deletedAt", undefined);
+      return topicId === undefined ? live : live.eq("topicId", topicId);
+    })
+    .take(SEARCH_CANDIDATE_LIMIT);
+  return candidates.filter((e) => matchesAllTerms(e.searchText, terms)).slice(0, limit);
 }
