@@ -2,7 +2,7 @@ import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { convexRun } from "@polaris/backend/scripts/convex-run";
 import { prisma } from "../src/platform/db/client";
-import { buildQuerySet, compareResults, overallRecall, type Comparison } from "./lib/searchQueries";
+import { buildQuerySet, compareResults, summarize, type Comparison } from "./lib/searchQueries";
 
 // Search acceptance pass (docs/replatform.md §08): the same queries through
 // the old Postgres full-text search and the new Convex search, side by side.
@@ -56,11 +56,12 @@ const titles = (ids: string[]) =>
   ids.slice(0, 3).map((id) => `"${cell(label.get(id) ?? id)}"`).join(", ") +
   (ids.length > 3 ? ` +${ids.length - 3} more` : "");
 
-const missesNothing = rows.filter((r) => r.onlyPostgres.length === 0).length;
+const s = summarize(rows);
 const summary =
   `${corpus.length} live entries, ${rows.length} queries (${prod ? "production" : "dev"} Convex). ` +
-  `Convex found ${Math.round(overallRecall(rows) * 100)}% of what Postgres found; ` +
-  `${missesNothing} of ${rows.length} queries miss nothing.`;
+  `Convex found ${Math.round(s.recall * 100)}% of what Postgres found; ` +
+  `${s.missesNothing} of ${s.judged} queries with Postgres results miss nothing. ` +
+  `Postgres found nothing for ${s.postgresEmpty} queries — Convex found something for ${s.convexOnlyWhenPostgresEmpty} of them.`;
 const countsTable = [
   "| Query | Postgres | Convex | Both |",
   "|---|---|---|---|",

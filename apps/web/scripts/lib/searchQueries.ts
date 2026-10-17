@@ -87,3 +87,27 @@ export function overallRecall(rows: Comparison[]): number {
   const total = rows.reduce((n, r) => n + r.postgres.length, 0);
   return total === 0 ? 1 : rows.reduce((n, r) => n + r.shared, 0) / total;
 }
+
+export interface Summary {
+  recall: number;
+  judged: number;
+  missesNothing: number;
+  postgresEmpty: number;
+  convexOnlyWhenPostgresEmpty: number;
+}
+
+/** Headline numbers for the report. "miss nothing" is only meaningful for
+ *  queries Postgres itself answered — a query where Postgres found 0 trivially
+ *  has no `onlyPostgres`, so it's tracked separately, not folded into
+ *  `missesNothing` (that would overstate Convex's coverage). */
+export function summarize(rows: Comparison[]): Summary {
+  const judgedRows = rows.filter((r) => r.postgres.length > 0);
+  const postgresEmptyRows = rows.filter((r) => r.postgres.length === 0);
+  return {
+    recall: overallRecall(rows),
+    judged: judgedRows.length,
+    missesNothing: judgedRows.filter((r) => r.onlyPostgres.length === 0).length,
+    postgresEmpty: postgresEmptyRows.length,
+    convexOnlyWhenPostgresEmpty: postgresEmptyRows.filter((r) => r.convex.length > 0).length,
+  };
+}

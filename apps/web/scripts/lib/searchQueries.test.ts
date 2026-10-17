@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { buildQuerySet, compareResults, overallRecall } from "./searchQueries";
+import { buildQuerySet, compareResults, overallRecall, summarize } from "./searchQueries";
 
 const entries = [
   { id: "1", title: "Deploy day", body: "deploying convex search index", tags: ["ops"] },
@@ -28,5 +28,27 @@ describe("compareResults and overallRecall", () => {
     const b = compareResults("q2", [], ["5"]);
     expect(overallRecall([a, b])).toBeCloseTo(2 / 3);
     expect(overallRecall([b])).toBe(1);
+  });
+});
+
+describe("summarize", () => {
+  it("only judges queries Postgres answered, and tracks Postgres-empty queries separately", () => {
+    const judgedWithMiss = compareResults("q1", ["1", "2"], ["2"]); // onlyPostgres: ["1"]
+    const judgedNoMiss = compareResults("q2", ["3"], ["3", "4"]); // onlyPostgres: []
+    const postgresEmptyWithConvexHit = compareResults("q3", [], ["5"]);
+    const postgresEmptyNoConvexHit = compareResults("q4", [], []);
+    const s = summarize([
+      judgedWithMiss,
+      judgedNoMiss,
+      postgresEmptyWithConvexHit,
+      postgresEmptyNoConvexHit,
+    ]);
+    expect(s).toMatchObject({
+      judged: 2,
+      missesNothing: 1,
+      postgresEmpty: 2,
+      convexOnlyWhenPostgresEmpty: 1,
+    });
+    expect(s.recall).toBeCloseTo(2 / 3); // shared 1+1 over postgres hits 2+1
   });
 });
