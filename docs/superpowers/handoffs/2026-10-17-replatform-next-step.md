@@ -46,14 +46,17 @@ useful context; everything you need is here or linked.
   `bunx convex env list --prod` **only if** you're sure it won't dump secret
   values into the transcript; it does print values, so prefer the dashboard).
 
-## The decision waiting on the user
+## Decision: switch-over (user chose it 2026-10-17)
+
+**The user picked Option A, the switch-over. Start there — don't re-ask switch-over vs Phase 3.** First step: confirm they have an hour where they won't need the app, have them open the tabs listed under "What the user needs to bring", then begin with the backup (Phase 1 checklist §2), which changes nothing live. Re-run the verification matrix below first; it was green on 2026-09-20.
+
+### Background on the choice
 
 The last session recommended **doing the switch-over before starting
 Phase 3**: the unreleased pile only grows, the auth swap has never touched real
 traffic, and the Phase 2 import was only rehearsed against a nearly empty dev
 database. The user had agreed and started gathering credentials (they got as
-far as asking where `CRON_SECRET` lives), then paused. **Ask them which they
-want: switch-over or Phase 3.** Don't assume.
+far as asking where `CRON_SECRET` lives), then paused. They have since chosen the switch-over.
 
 ### Option A — switch-over (recommended)
 
