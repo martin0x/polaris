@@ -1,7 +1,9 @@
 import { ConvexError, v } from "convex/values";
 import { mutation, query } from "../_generated/server";
+import type { Id } from "../_generated/dataModel";
 import { assertSignedIn } from "../lib/auth";
 import {
+  AGGREGATE_SCAN_LIMIT,
   TOPIC_SCAN_LIMIT,
   byName,
   cleanDescription,
@@ -21,6 +23,36 @@ export const list = query({
       .filter((t) => args.includeArchived || !t.archived)
       .sort(byName)
       .map(topicDto);
+  },
+});
+
+// Topics index page: each topic with its live-entry count and latest entry.
+export const listWithStats = query({
+  args: { includeArchived: v.optional(v.boolean()) },
+  handler: async (ctx, args) => {
+    await assertSignedIn(ctx);
+    const topics = (await ctx.db.query("journalTopics").take(TOPIC_SCAN_LIMIT))
+      .filter((t) => args.includeArchived || !t.archived)
+      .sort(byName);
+    const live = await ctx.db
+      .query("journalEntries")
+      .withIndex("by_deleted_at_created_at", (q) => q.eq("deletedAt", undefined))
+      .take(AGGREGATE_SCAN_LIMIT);
+    const stats = new Map<Id<"journalTopics">, { count: number; lastAt: number }>();
+    for (const e of live) {
+      const s = stats.get(e.topicId);
+      if (s) {
+        s.count += 1;
+        s.lastAt = Math.max(s.lastAt, e.createdAt);
+      } else {
+        stats.set(e.topicId, { count: 1, lastAt: e.createdAt });
+      }
+    }
+    return topics.map((t) => ({
+      ...topicDto(t),
+      entryCount: stats.get(t._id)?.count ?? 0,
+      lastEntryAt: stats.get(t._id)?.lastAt ?? null,
+    }));
   },
 });
 

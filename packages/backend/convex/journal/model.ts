@@ -12,6 +12,10 @@ export const TOPIC_NAME_MAX = 80;
 export const TOPIC_DESCRIPTION_MAX = 280;
 // Topics are a small table; table-wide topic reads take at most this many.
 export const TOPIC_SCAN_LIMIT = 1000;
+// Read-time aggregate scans (topic stats, tag counts, the dashboard's recent
+// window, the nightly job) read at most this many rows — far above personal
+// scale, far below Convex's 32k-document read limit (decision log 5).
+export const AGGREGATE_SCAN_LIMIT = 5000;
 
 type Ctx = QueryCtx | MutationCtx;
 export type TopicDoc = Doc<"journalTopics">;
