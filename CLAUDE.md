@@ -13,7 +13,7 @@ overrides on any defaults from training data.
 ## The short version you must not violate
 
 - **Tokens, never hex.** Colors, type, radii, shadows, spacing, and motion are
-  CSS custom properties in `src/app/globals.css`. Use `var(--paper-1)`,
+  CSS custom properties in `apps/web/src/app/globals.css`. Use `var(--paper-1)`,
   `var(--ink-2)`, `var(--accent)`, `var(--sp-4)`, `var(--r-md)`,
   `var(--shadow-sm)`, `var(--font-serif|sans|mono)`. Don't inline `#faf7ef` or
   `16px`.
@@ -27,7 +27,7 @@ overrides on any defaults from training data.
   `var(--bg-hover)`, never opacity.
 - **Single accent** — `var(--accent)` is used sparingly (links, focus,
   selection, primary CTA, active nav).
-- **Icons** come from `src/app/_components/Icon.tsx` (Lucide, stroke 1.5,
+- **Icons** come from `apps/web/src/app/_components/Icon.tsx` (Lucide, stroke 1.5,
   currentColor, 16px default). Never mix in other icon sets, never use emoji,
   never fill Lucide icons.
 - **Empty state** = short declarative sentence + one-line nudge, no
@@ -36,12 +36,12 @@ overrides on any defaults from training data.
 
 ## Implementation primitives you should reuse
 
-Found in `src/app/_components/` and CSS classes in `src/app/globals.css`:
+Found in `apps/web/src/app/_components/` and CSS classes in `apps/web/src/app/globals.css`:
 
 - `TitleBar` (36px app chrome with traffic lights + glyph + breadcrumbs + sync dot)
 - `Sidebar` (248px `.sidebar` rail, `.sb-search`, `.sb-sec`, `.sb-item`)
 - `Icon` (Lucide; extend the `PATHS` map if you need a new icon; the source SVGs
-  are in `public/icons/`)
+  are in `apps/web/public/icons/`)
 - `PolarisGlyph` (the four-point north star — brand-restricted)
 - `.paper-card`, `.btn` (`btn-primary` / `btn-secondary` / `btn-ghost` /
   `btn-danger`), `.task-row`, `.tag-inline`, `.kbd`, `.overline`, `.lead`,

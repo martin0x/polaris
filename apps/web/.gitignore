@@ -1,0 +1,21 @@
+# next.js
+/.next/
+/out/
+/build/
+next-env.d.ts
+
+# testing
+/coverage
+
+# prisma
+/src/generated/prisma
+prisma/*.db
+
+# feedback data playbook (docs/replatform.md §06) export output
+scripts/out/
+
+# Uploads (local storage)
+uploads/
+
+# vercel
+.vercel

@@ -1,0 +1,24 @@
+{
+  "name": "@polaris/core",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    "./dates": "./src/dates.ts",
+    "./stats": "./src/stats.ts",
+    "./money": "./src/money.ts",
+    "./months": "./src/months.ts",
+    "./format": "./src/format.ts",
+    "./tasks": "./src/tasks.ts",
+    "./parser": "./src/parser.ts",
+    "./highlight": "./src/highlight.ts"
+  },
+  "scripts": {
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "typescript": "^5",
+    "vitest": "^4.1.5"
+  }
+}
