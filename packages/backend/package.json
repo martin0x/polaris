@@ -13,7 +13,8 @@
     },
     "./convex/_generated/dataModel": {
       "types": "./convex/_generated/dataModel.d.ts"
-    }
+    },
+    "./scripts/convex-run": "./scripts/lib/convexRun.ts"
   },
   "dependencies": {
     "@auth/core": "0.41.1",
