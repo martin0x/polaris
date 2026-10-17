@@ -1,5 +1,8 @@
 # Switch-over checklist — replatform goes live (2026-10-17)
 
+**Done 2026-10-17.** Phases 0–2 are live at https://polaris.martinv.dev
+(merge `a2126d6`); the user's smoke test passed.
+
 One merge of `replatform` → `main` and one Vercel deploy put phases 0–2 live
 together: the monorepo layout, Convex Auth sign-in, feedback on Convex, and
 expenses on Convex. This page is the order of work. The detail behind each
@@ -79,28 +82,35 @@ values. Delete the file when the switch-over is finished.
 
 ## Stage 3 — go live (don't use the app from here until the smoke test)
 
-- [ ] Top-up copy: feedback and expenses export → import → verify (Phase 1
-      checklist §4, Phase 2 checklist §3). Every line `OK`.
-- [ ] Vercel → Environment Variables: replace `CRON_SECRET` (Production)
+- [x] Top-up copy: feedback and expenses export → import → verify (Phase 1
+      checklist §4, Phase 2 checklist §3). Every line `OK` (0 new rows).
+- [x] Vercel → Environment Variables: replace `CRON_SECRET` (Production)
       with the value from the secrets file. Left until now so the current
       site's nightly job keeps working.
-- [ ] Merge the PR (merge commit). Vercel builds `main`, then runs the
+- [x] Merge the PR (merge commit `a2126d6`, 2026-10-17 14:57 UTC). Vercel builds `main`, then runs the
       database update that drops the four old sign-in tables — from here the
       old sign-in can't come back without restoring them from the backup.
-- [ ] Confirm `20260821031936_drop_nextauth_tables` is in production's
-      `_prisma_migrations` (proves `VERCEL_ENV` reached the build).
+- [x] Confirm `20260821031936_drop_nextauth_tables` is in production's
+      `_prisma_migrations` (proves `VERCEL_ENV` reached the build). Built
+      first, then applied; 0 of the 4 old tables left, 12 tables remain.
+      Live site serves the new build (landing shows the Convex stack,
+      `/dashboard` → `/auth/signin`, cron without secret → 401).
 
 ## Stage 4 — after it's live
 
-- [ ] Re-run both export → import → verify passes once more, before touching any
+- [x] Re-run both export → import → verify passes once more, before touching any
       imported expense in the app (the re-import would overwrite edits).
-- [ ] Smoke test: sign in; capture an expense; trends month total; dashboard
+      15/15 and 9/9 `OK`, 0 new rows. No more re-imports from here.
+- [x] Smoke test: sign in; capture an expense; trends month total; dashboard
       expenses tile; command palette finds an expense activity; create a
-      journal entry; run the cron job from Vercel → Settings → Cron Jobs and
-      confirm `journal/active_topic_count` shows on `/dashboard`.
-- [ ] Remove the old sign-in settings from Vercel: `NEXTAUTH_SECRET`,
-      `NEXTAUTH_URL`, `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `ALLOWED_EMAILS`.
-- [ ] Delete `~/.config/polaris/switch-over.env` and `apps/web/scripts/out/`.
+      journal entry. Cron already checked: `curl` with the new secret → 200
+      `{"ok":true}`, metric count 418 → 419 on production Convex.
+- [x] Remove the old sign-in settings from Vercel: `NEXTAUTH_SECRET`,
+      `NEXTAUTH_URL`, `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `ALLOWED_EMAILS`,
+      and the first deploy's singular `ALLOWED_EMAIL`. Left: `NEXT_PUBLIC_CONVEX_URL`,
+      `CRON_SECRET`, `DATABASE_URL`, `DIRECT_DATABASE_URL`.
+- [x] Delete `~/.config/polaris/switch-over.env` and `apps/web/scripts/out/`.
+      The backup stays in `~/Backups/polaris/`.
 
 ## If something goes wrong
 
@@ -138,6 +148,20 @@ the build. The lasting fix is to self-host the fonts with `next/font/local`
 so builds stop fetching from Google.
 
 ## Follow-ups noticed on the way
+
+- **Self-host the fonts** — done 2026-10-17
+  (`docs/superpowers/plans/2026-10-17-self-host-fonts.md`).
+- **Convex code is not deployed by Vercel.** The Vercel build only builds the
+  web app. Whenever `packages/backend/convex` changes, run
+  `bunx convex deploy --yes` from `packages/backend` *before* the merge to
+  `main` ships web code that calls it — or wire `convex deploy --cmd` into
+  `vercel-build` with a production deploy key.
+- **Previews share production's database settings.** `DATABASE_URL` and
+  `DIRECT_DATABASE_URL` are set for Preview too, so a preview build reads
+  production Postgres while pre-rendering. The build guard stops previews
+  from migrating; consider removing those two from Preview anyway.
+- Preview's `CRON_SECRET` still has the old value. Harmless (cron jobs only
+  run on production), but stale.
 
 - The dashboard's expenses summary catches Next's "this page is dynamic"
   signal during `next build` and logs it as a failure. Harmless (the route is

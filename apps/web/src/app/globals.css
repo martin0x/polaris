@@ -81,8 +81,9 @@
   --selection:     #dcd4ff;
 
   /* --- Typography — families -------------------------------------------- */
-  /* Next.js next/font injects --font-fraunces, --font-jakarta,
-     --font-plex-mono (Fraunces stack, July 2026 — see design decisions). */
+  /* next/font/local injects --font-fraunces, --font-jakarta,
+     --font-plex-mono from the self-hosted files in app/_fonts/ (Fraunces
+     stack, July 2026 — see design decisions). */
   --font-serif:
     var(--font-fraunces, "Fraunces"),
     "Iowan Old Style", "Charter", Georgia, serif;
@@ -181,6 +182,24 @@
   --chart-4: var(--success);
   --chart-5: var(--warning);
   --chart-6: var(--tag-ink);
+}
+
+/* Fraunces fallback metrics — not a design token, kept next to the font
+   tokens it serves. Google's Fraunces file defaults to wght 900, so
+   next/font/local's auto-measured fallback (adjustFontFallback) would be
+   ~10% too large; layout.tsx turns that off and lists "Fraunces Fallback"
+   as its `fallback`, which this @font-face then supplies. Values are
+   next/font/google's precomputed Fraunces metrics (Next.js 16.2.4),
+   obtained via @next/font/dist/google/get-fallback-font-override-metrics.js,
+   so the swap-window/failure fallback matches what next/font/google used
+   to render before this branch self-hosted the file. */
+@font-face {
+  font-family: "Fraunces Fallback";
+  src: local("Times New Roman");
+  ascent-override: 84.71%;
+  descent-override: 22.09%;
+  line-gap-override: 0.00%;
+  size-adjust: 115.45%;
 }
 
 /* ---------- Dark mode (secondary) ---------------------------------------- */

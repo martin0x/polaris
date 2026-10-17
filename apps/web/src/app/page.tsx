@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
-import { IBM_Plex_Sans, IBM_Plex_Serif } from "next/font/google";
+import localFont from "next/font/local";
 import Link from "next/link";
 import { isAuthenticatedNextjs } from "@convex-dev/auth/nextjs/server";
 import { MANILA_TZ } from "@polaris/core/months";
@@ -41,18 +41,29 @@ export const metadata: Metadata = {
 
 // The landing page sets in IBM Plex — Serif and Sans here, Mono from the root
 // layout — while the app keeps the Fraunces stack. Loaded in this module so
-// only "/" downloads them; latin-ext carries the ₱ glyph. `.lp` in
-// globals.css points the font tokens at these variables.
-const plexSerif = IBM_Plex_Serif({
-  subsets: ["latin", "latin-ext"],
-  weight: ["400", "500"],
+// only "/" downloads them; these cuts cover latin + latin-ext, which carries
+// the ₱ glyph (see _fonts/README.md). `.lp` in globals.css points the font
+// tokens at these variables.
+const plexSerif = localFont({
+  src: [
+    { path: "./_fonts/IBMPlexSerif-Regular-latin-latinext.woff2", weight: "400", style: "normal" },
+    { path: "./_fonts/IBMPlexSerif-Medium-latin-latinext.woff2", weight: "500", style: "normal" },
+  ],
   variable: "--font-plex-serif",
   display: "swap",
+  adjustFontFallback: "Times New Roman",
 });
 
-const plexSans = IBM_Plex_Sans({
-  subsets: ["latin", "latin-ext"],
-  weight: ["400", "500", "600"],
+// Declared as the same file three times at 400/500/600 (rather than one
+// variable-weight face spanning 100–700) to reproduce Google's own three-face
+// declaration, so intermediate weights like .btn's 450 snap to 500 as before
+// instead of rendering a true 450.
+const plexSans = localFont({
+  src: [
+    { path: "./_fonts/IBMPlexSans-latin-latinext.woff2", weight: "400", style: "normal" },
+    { path: "./_fonts/IBMPlexSans-latin-latinext.woff2", weight: "500", style: "normal" },
+    { path: "./_fonts/IBMPlexSans-latin-latinext.woff2", weight: "600", style: "normal" },
+  ],
   variable: "--font-plex-sans",
   display: "swap",
 });
