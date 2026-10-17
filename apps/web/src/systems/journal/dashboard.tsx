@@ -1,32 +1,16 @@
 import { cache } from "react";
 import Link from "next/link";
-import { prisma } from "@/platform/db/client";
+import { convexAuthNextjsToken } from "@convex-dev/auth/nextjs/server";
+import { fetchQuery } from "convex/nextjs";
+import { api } from "@polaris/backend/convex/_generated/api";
 import type { SystemDashboard } from "../types";
 import { firstLine, relativeTime } from "@polaris/core/format";
 
-/** Day boundaries mirror the journal's Today page: server-local midnight. */
+/** Day boundaries are the Asia/Manila calendar day, computed by the Convex
+ *  query — the same rule as the journal's Today page. */
 const load = cache(async () => {
-  const startOfToday = new Date();
-  startOfToday.setHours(0, 0, 0, 0);
-  const startOfYesterday = new Date(startOfToday.getTime() - 86_400_000);
-
-  const [todayCount, yesterdayCount, lastEntry] = await Promise.all([
-    prisma.journalEntry.count({
-      where: { deletedAt: null, createdAt: { gte: startOfToday } },
-    }),
-    prisma.journalEntry.count({
-      where: {
-        deletedAt: null,
-        createdAt: { gte: startOfYesterday, lt: startOfToday },
-      },
-    }),
-    prisma.journalEntry.findFirst({
-      where: { deletedAt: null },
-      orderBy: { createdAt: "desc" },
-      include: { topic: true },
-    }),
-  ]);
-  return { todayCount, yesterdayCount, lastEntry };
+  const token = await convexAuthNextjsToken();
+  return fetchQuery(api.journal.dashboard.summary, {}, { token });
 });
 
 function countPhrase(n: number, when: string): string {
@@ -57,11 +41,11 @@ async function Widget() {
         <p className="dash-card-detail">
           Last entry:{" "}
           <Link
-            href={`/journal/topics/${encodeURIComponent(lastEntry.topic.name)}#entry-${lastEntry.id}`}
+            href={`/journal/topics/${encodeURIComponent(lastEntry.topicName)}#entry-${lastEntry.id}`}
           >
             {lastEntry.title ?? snippet(lastEntry.body)}
           </Link>{" "}
-          · {relativeTime(lastEntry.createdAt)}
+          · {relativeTime(new Date(lastEntry.createdAt))}
         </p>
       ) : (
         <p className="dash-card-detail">Nothing logged yet.</p>
