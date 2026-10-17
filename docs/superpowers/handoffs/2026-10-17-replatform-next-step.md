@@ -1,5 +1,7 @@
 # Handoff — replatform: next step (2026-10-17)
 
+> **Superseded** by [`2026-10-18-replatform-next-step.md`](./2026-10-18-replatform-next-step.md) — the switch-over below is done.
+
 Read this first, then `docs/replatform.md` (the epic plan). You are picking up a
 long-running migration of Polaris onto Convex. The previous session ran out of
 useful context; everything you need is here or linked.
