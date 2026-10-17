@@ -1,4 +1,6 @@
 import { ConvexError } from "convex/values";
+import { extractTags, wordCount } from "@polaris/core/parser";
+import { internal } from "../_generated/api";
 import type { Doc, Id } from "../_generated/dataModel";
 import type { MutationCtx, QueryCtx } from "../_generated/server";
 
@@ -73,4 +75,116 @@ export async function insertTopic(
     createdAt: now,
     updatedAt: now,
   });
+}
+
+export const ENTRY_TITLE_MAX = 200;
+export const LIST_LIMIT_MAX = 100;
+
+export type EntryDoc = Doc<"journalEntries">;
+
+export interface EntryDto {
+  id: Id<"journalEntries">;
+  topicId: Id<"journalTopics">;
+  topicName: string;
+  title: string | null;
+  body: string;
+  tags: string[];
+  createdAt: number;
+  updatedAt: number;
+}
+
+export function clampLimit(limit: number | undefined, fallback: number): number {
+  return Math.min(Math.max(Math.trunc(limit ?? fallback), 1), LIST_LIMIT_MAX);
+}
+
+/** Trimmed title; null, undefined, or blank becomes undefined (no title). */
+export function cleanTitle(raw: string | null | undefined): string | undefined {
+  if (raw === null || raw === undefined) return undefined;
+  const title = raw.trim();
+  if (title.length > ENTRY_TITLE_MAX) {
+    throw new ConvexError(`Titles can be at most ${ENTRY_TITLE_MAX} characters.`);
+  }
+  return title.length > 0 ? title : undefined;
+}
+
+export function checkBody(body: string): void {
+  if (body.trim().length === 0) throw new ConvexError("Write something before saving.");
+}
+
+export function searchTextOf(title: string | undefined, body: string): string {
+  return title ? `${title}\n${body}` : body;
+}
+
+/** Replaces an entry's tag rows. Pass [] to clear them (soft delete). */
+export async function writeEntryTags(
+  ctx: MutationCtx,
+  entryId: Id<"journalEntries">,
+  tags: string[],
+  entryCreatedAt: number
+): Promise<void> {
+  const existing = await ctx.db
+    .query("entryTags")
+    .withIndex("by_entry", (q) => q.eq("entryId", entryId))
+    .collect(); // one entry's tags
+  for (const row of existing) await ctx.db.delete(row._id);
+  for (const tag of tags) await ctx.db.insert("entryTags", { entryId, tag, entryCreatedAt });
+}
+
+// Metrics are scheduled so a failure can never fail or slow a journal write
+// (docs/replatform.md §07).
+export async function recordWordsMetric(ctx: MutationCtx, body: string): Promise<void> {
+  await ctx.scheduler.runAfter(0, internal.feedback.record, {
+    system: "journal",
+    name: "words_per_entry",
+    value: wordCount(body),
+  });
+}
+
+/** The one way entries are created — journal's own create and habit logs
+ *  (convex/journal/habitBridge.ts) both come through here. `title` must
+ *  already be cleaned and `body` checked. */
+export async function insertEntry(
+  ctx: MutationCtx,
+  input: { topicId: Id<"journalTopics">; title?: string; body: string; createdAt?: number }
+): Promise<Id<"journalEntries">> {
+  const createdAt = input.createdAt ?? Date.now();
+  const tags = extractTags(input.body);
+  const id = await ctx.db.insert("journalEntries", {
+    topicId: input.topicId,
+    ...(input.title ? { title: input.title } : {}),
+    body: input.body,
+    tags,
+    searchText: searchTextOf(input.title, input.body),
+    createdAt,
+    updatedAt: createdAt, // a backdated habit log hasn't been edited either
+  });
+  await writeEntryTags(ctx, id, tags, createdAt);
+  await ctx.scheduler.runAfter(0, internal.feedback.record, {
+    system: "journal",
+    name: "entry_created",
+    value: 1,
+  });
+  await recordWordsMetric(ctx, input.body);
+  return id;
+}
+
+export async function entryDtos(ctx: Ctx, docs: EntryDoc[]): Promise<EntryDto[]> {
+  const names = new Map<Id<"journalTopics">, string>();
+  const out: EntryDto[] = [];
+  for (const e of docs) {
+    if (!names.has(e.topicId)) {
+      names.set(e.topicId, (await ctx.db.get(e.topicId))?.name ?? "(unknown topic)");
+    }
+    out.push({
+      id: e._id,
+      topicId: e.topicId,
+      topicName: names.get(e.topicId)!,
+      title: e.title ?? null,
+      body: e.body,
+      tags: e.tags,
+      createdAt: e.createdAt,
+      updatedAt: e.updatedAt,
+    });
+  }
+  return out;
 }

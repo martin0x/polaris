@@ -16,6 +16,7 @@ import type * as expenses_trends from "../expenses/trends.js";
 import type * as expenses_types from "../expenses/types.js";
 import type * as feedback from "../feedback.js";
 import type * as http from "../http.js";
+import type * as journal_entries from "../journal/entries.js";
 import type * as journal_model from "../journal/model.js";
 import type * as journal_topics from "../journal/topics.js";
 import type * as lib_allowlist from "../lib/allowlist.js";
@@ -40,6 +41,7 @@ declare const fullApi: ApiFromModules<{
   "expenses/types": typeof expenses_types;
   feedback: typeof feedback;
   http: typeof http;
+  "journal/entries": typeof journal_entries;
   "journal/model": typeof journal_model;
   "journal/topics": typeof journal_topics;
   "lib/allowlist": typeof lib_allowlist;
