@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "docker compose -f docker/docker-compose.yml up -d && next dev",
     "build": "next build",
-    "vercel-build": "prisma migrate deploy && next build",
+    "vercel-build": "next build && if [ \"$VERCEL_ENV\" != preview ]; then prisma migrate deploy; fi",
     "start": "next start",
     "lint": "eslint",
     "test": "vitest run",

@@ -61,6 +61,7 @@
       "devDependencies": {
         "@edge-runtime/vm": "^5.0.0",
         "convex-test": "^0.0.55",
+        "jose": "^6.2.2",
         "vitest": "^4.1.11",
       },
     },
