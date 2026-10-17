@@ -32,10 +32,12 @@ values. Delete the file when the switch-over is finished.
 - [x] Deploy the backend code to production Convex (`bunx convex deploy --yes`).
 - [x] Generate fresh signing keys on production Convex (`JWT_PRIVATE_KEY`,
       `JWKS`). The key script needed `jose` added to `packages/backend`.
-- [x] Make the Vercel build safe: `vercel-build` now builds first and only
-      then updates the database, and preview builds never update it. Before,
-      a failed build could still drop the old sign-in tables, and any preview
-      build could change the production database.
+- [x] Make the Vercel build safe: `vercel-build` now builds first, and only
+      then updates the database — and only when `VERCEL_ENV` is exactly
+      `production`. Before, a failed build could still drop the old sign-in
+      tables, and a preview build could change whatever database previews
+      point at (evidence suggests they have one). If `VERCEL_ENV` were ever
+      missing, the database step is skipped — the safe direction.
 - [x] Back up the production database: `~/Backups/polaris/polaris-prod-20261017-215246.dump`
       (`pg_dump -Fc` inside the `postgres:17` Docker image — there's no local
       `pg_dump`; server is Postgres 17.11). Restored into a scratch database:
@@ -43,44 +45,51 @@ values. Delete the file when the switch-over is finished.
       `NEON_DIRECT_URL` must be the host *without* `-pooler`.
 - [x] Early copy of the data, as a rehearsal on real rows (2026-10-17):
       feedback 418 metrics, expenses 6 types / 10 activities / 85 items, every
-      verify line `OK`. Stage 2 is now a top-up: the same commands pick up
-      anything added since. If a row gets *deleted* in the app before stage 2,
+      verify line `OK`. Stage 3's copy is now a top-up: the same commands pick up
+      anything added since. If a row gets *deleted* in the app before stage 3,
       verify will show a count mismatch — clear that Convex table and re-import.
-- [ ] Remaining production Convex settings: `AUTH_GOOGLE_ID` and
-      `AUTH_GOOGLE_SECRET` (copied from dev — same Google client), `CRON_SECRET`
-      (freshly generated, also goes into Vercel in stage 3), `ALLOWED_EMAILS`,
-      `SITE_URL`.
-- [ ] Google Cloud Console: add
-      `https://rapid-lapwing-153.convex.site/api/auth/callback/google` to the
-      OAuth client's authorized redirect URIs.
-- [ ] Sign-in rehearsal: point production Convex `SITE_URL` at
-      `http://localhost:3000`, run the web app locally against production
-      Convex, sign in. Then set `SITE_URL` to the real address.
+- [x] All seven production Convex settings: `JWT_PRIVATE_KEY`, `JWKS`,
+      `AUTH_GOOGLE_ID` / `AUTH_GOOGLE_SECRET` (copied from dev — client
+      `874558860450-j73to9f…`), `CRON_SECRET` (fresh; in the secrets file for
+      Vercel later), `ALLOWED_EMAILS` = `raymart.villos@gmail.com`,
+      `SITE_URL` = `https://polaris.martinv.dev`.
+- [x] Google Cloud Console: prod redirect URI added to that client.
+- [x] Sign-in rehearsal: with `SITE_URL` briefly `http://localhost:3000`, the
+      local app ran against production Convex; signed in, expenses looked
+      right, one `users` row + one Google `authAccounts` row created. `SITE_URL`
+      then set to the real address. Only that string is untested.
 
-## Stage 2 — copy the data (don't use the app from here until stage 4)
-
-- [ ] Feedback: export → import → verify (Phase 1 checklist §4). Every line `OK`.
-- [ ] Expenses: export → import → verify (Phase 2 checklist §3). Every line `OK`.
-
-## Stage 3 — go live
+## Stage 2 — Vercel test build (nothing live changes)
 
 - [ ] Vercel → Settings → Environment Variables: add `NEXT_PUBLIC_CONVEX_URL`
-      = `https://rapid-lapwing-153.convex.cloud` (Production and Preview), and
-      replace `CRON_SECRET` (Production) with the value from the secrets file.
-      Must happen before the merge: the merge starts the build, and the build
-      bakes `NEXT_PUBLIC_CONVEX_URL` in.
-- [ ] Push `replatform`; open the PR `replatform` → `main`.
+      = `https://rapid-lapwing-153.convex.cloud` (Production and Preview).
+      Harmless to the live site — today's `main` doesn't read it — and it must
+      be there before the merge, because the build bakes it in.
 - [ ] Vercel → Settings → Build and Deployment: Root Directory = `apps/web`,
-      and "Include files outside the Root Directory" on.
-- [ ] Redeploy the PR's preview. It must build. This is the dry run of the new
-      layout on Vercel; previews no longer touch the database.
+      and "Include files outside the Root Directory in the Build Step" on.
+      Only new builds see it; the live deployment keeps serving. A push to
+      `main` before the merge would fail to build (harmless — the old
+      deployment stays live).
+- [ ] Push `replatform`; open the PR `replatform` → `main`. The PR's preview
+      build is the test run of the new layout on Vercel and must succeed. It
+      skips the database step.
+
+## Stage 3 — go live (don't use the app from here until the smoke test)
+
+- [ ] Top-up copy: feedback and expenses export → import → verify (Phase 1
+      checklist §4, Phase 2 checklist §3). Every line `OK`.
+- [ ] Vercel → Environment Variables: replace `CRON_SECRET` (Production)
+      with the value from the secrets file. Left until now so the current
+      site's nightly job keeps working.
 - [ ] Merge the PR (merge commit). Vercel builds `main`, then runs the
       database update that drops the four old sign-in tables — from here the
       old sign-in can't come back without restoring them from the backup.
+- [ ] Confirm `20260821031936_drop_nextauth_tables` is in production's
+      `_prisma_migrations` (proves `VERCEL_ENV` reached the build).
 
 ## Stage 4 — after it's live
 
-- [ ] Re-run both export → import → verify passes, before touching any
+- [ ] Re-run both export → import → verify passes once more, before touching any
       imported expense in the app (the re-import would overwrite edits).
 - [ ] Smoke test: sign in; capture an expense; trends month total; dashboard
       expenses tile; command palette finds an expense activity; create a
