@@ -1,12 +1,8 @@
 import { ConvexError, v } from "convex/values";
 import { mutation, query } from "../_generated/server";
 import type { Doc } from "../_generated/dataModel";
-import type { MutationCtx, QueryCtx } from "../_generated/server";
-
-async function assertSignedIn(ctx: QueryCtx | MutationCtx): Promise<void> {
-  const identity = await ctx.auth.getUserIdentity();
-  if (identity === null) throw new ConvexError("Unauthorized");
-}
+import type { MutationCtx } from "../_generated/server";
+import { assertSignedIn } from "../lib/auth";
 
 function assertTypeName(raw: string): string {
   const name = raw.trim();

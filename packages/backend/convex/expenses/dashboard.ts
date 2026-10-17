@@ -1,17 +1,17 @@
-import { ConvexError, v } from "convex/values";
+import { v } from "convex/values";
 import {
   manilaDayKeyFromMs,
   manilaMonthKeyFromMs,
   manilaMonthStartMs,
 } from "@polaris/core/months";
 import { query } from "../_generated/server";
+import { assertSignedIn } from "../lib/auth";
 import { loadItems } from "./activities";
 
 export const summary = query({
   args: { now: v.optional(v.number()) }, // tests only; production omits
   handler: async (ctx, args) => {
-    const identity = await ctx.auth.getUserIdentity();
-    if (identity === null) throw new ConvexError("Unauthorized");
+    await assertSignedIn(ctx);
     const nowMs = args.now ?? Date.now();
     const monthStart = manilaMonthStartMs(manilaMonthKeyFromMs(nowMs));
     const today = manilaDayKeyFromMs(nowMs);

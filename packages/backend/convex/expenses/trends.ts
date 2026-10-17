@@ -1,4 +1,4 @@
-import { ConvexError, v } from "convex/values";
+import { v } from "convex/values";
 import {
   lastNMonthKeysFromMs,
   manilaMonthKeyFromMs,
@@ -6,6 +6,7 @@ import {
 } from "@polaris/core/months";
 import { query } from "../_generated/server";
 import type { Id } from "../_generated/dataModel";
+import { assertSignedIn } from "../lib/auth";
 import { loadItems } from "./activities";
 
 // Replaces the Postgres `AT TIME ZONE 'Asia/Manila'` GROUP BY: a TypeScript
@@ -16,8 +17,7 @@ export const get = query({
     now: v.optional(v.number()), // tests only; production omits
   },
   handler: async (ctx, args) => {
-    const identity = await ctx.auth.getUserIdentity();
-    if (identity === null) throw new ConvexError("Unauthorized");
+    await assertSignedIn(ctx);
     const nowMs = args.now ?? Date.now();
     const buckets = lastNMonthKeysFromMs(args.months, nowMs);
     const since = manilaMonthStartMs(buckets[0].key);
