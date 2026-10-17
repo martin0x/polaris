@@ -1,7 +1,10 @@
 "use client";
 
 import { useState, type ReactNode } from "react";
-import { useRouter } from "next/navigation";
+import { useMutation } from "convex/react";
+import { ConvexError } from "convex/values";
+import { api } from "@polaris/backend/convex/_generated/api";
+import type { Id } from "@polaris/backend/convex/_generated/dataModel";
 import { toggleTaskAtLine } from "@polaris/core/tasks";
 
 interface TaskCheckboxProps {
@@ -19,7 +22,7 @@ export function TaskCheckbox({
   body,
   children,
 }: TaskCheckboxProps) {
-  const router = useRouter();
+  const updateEntry = useMutation(api.journal.entries.update);
   const [checked, setChecked] = useState(initiallyChecked);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -30,24 +33,15 @@ export function TaskCheckbox({
     setChecked(next);
     setBusy(true);
     setError(null);
-
     try {
-      const nextBody = toggleTaskAtLine(body, lineNumber);
-      const res = await fetch(`/api/systems/journal/entries/${entryId}`, {
-        method: "PATCH",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({ body: nextBody }),
+      await updateEntry({
+        id: entryId as Id<"journalEntries">,
+        body: toggleTaskAtLine(body, lineNumber),
       });
-      if (!res.ok) {
-        const detail = await res.text().catch(() => "");
-        setChecked(!next);
-        setError(`Save failed (${res.status}): ${detail.slice(0, 120) || res.statusText}`);
-        return;
-      }
-      router.refresh();
     } catch (err) {
       setChecked(!next);
-      const msg = err instanceof Error ? err.message : String(err);
+      const msg =
+        err instanceof ConvexError ? String(err.data) : err instanceof Error ? err.message : String(err);
       setError(`Save failed: ${msg}`);
     } finally {
       setBusy(false);

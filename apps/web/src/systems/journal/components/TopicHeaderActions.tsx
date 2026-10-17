@@ -2,16 +2,20 @@
 
 import { useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import { useMutation } from "convex/react";
+import { api } from "@polaris/backend/convex/_generated/api";
+import type { Id } from "@polaris/backend/convex/_generated/dataModel";
 import { Icon } from "@/app/_components/Icon";
 import { SORT_ORDER_KEY, parseSortOrder } from "../lib/sort-preference";
 
 interface TopicHeaderActionsProps {
-  topic: { id: string; name: string; archived: boolean };
+  topic: { id: Id<"journalTopics">; name: string; archived: boolean };
 }
 
 export function TopicHeaderActions({ topic }: TopicHeaderActionsProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const updateTopic = useMutation(api.journal.topics.update);
   const [busy, setBusy] = useState(false);
 
   const currentSort = parseSortOrder(searchParams.get("sort"));
@@ -29,16 +33,10 @@ export function TopicHeaderActions({ topic }: TopicHeaderActionsProps) {
     if (!next || next === topic.name) return;
     setBusy(true);
     try {
-      const res = await fetch(`/api/systems/journal/topics/${topic.id}`, {
-        method: "PATCH",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({ name: next }),
-      });
-      if (!res.ok) {
-        window.alert("Could not rename. Pick a name that isn't already in use.");
-        return;
-      }
-      router.replace(`/journal/topics/${encodeURIComponent(next)}`);
+      const renamed = await updateTopic({ id: topic.id, name: next });
+      router.replace(`/journal/topics/${encodeURIComponent(renamed.name)}`);
+    } catch {
+      window.alert("Could not rename. Pick a name that isn't already in use.");
     } finally {
       setBusy(false);
     }
@@ -48,12 +46,10 @@ export function TopicHeaderActions({ topic }: TopicHeaderActionsProps) {
     if (!window.confirm(`Archive "${topic.name}"? It moves out of the active list.`)) return;
     setBusy(true);
     try {
-      await fetch(`/api/systems/journal/topics/${topic.id}`, {
-        method: "PATCH",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({ archived: true }),
-      });
+      await updateTopic({ id: topic.id, archived: true });
       router.push("/journal/topics");
+    } catch {
+      window.alert("Could not archive the topic. Try again.");
     } finally {
       setBusy(false);
     }

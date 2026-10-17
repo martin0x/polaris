@@ -1,6 +1,9 @@
 "use client";
 
 import { useEffect, useId, useRef, useState } from "react";
+import { useMutation, useQuery } from "convex/react";
+import { ConvexError } from "convex/values";
+import { api } from "@polaris/backend/convex/_generated/api";
 import { Icon } from "@/app/_components/Icon";
 
 export interface PickerTopic {
@@ -14,7 +17,9 @@ interface TopicPickerProps {
 }
 
 export function TopicPicker({ selected, onSelect }: TopicPickerProps) {
-  const [topics, setTopics] = useState<PickerTopic[]>([]);
+  const liveTopics = useQuery(api.journal.topics.list, {}); // undefined while loading
+  const topics: PickerTopic[] = liveTopics ?? [];
+  const createTopic = useMutation(api.journal.topics.create);
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
   const [activeIndex, setActiveIndex] = useState(0);
@@ -24,13 +29,6 @@ export function TopicPicker({ selected, onSelect }: TopicPickerProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const listId = useId();
-
-  useEffect(() => {
-    fetch("/api/systems/journal/topics")
-      .then((r) => r.json())
-      .then((data) => setTopics(data.topics ?? []))
-      .catch(() => setTopics([]));
-  }, []);
 
   // Focus the search field whenever the popover opens.
   useEffect(() => {
@@ -73,23 +71,10 @@ export function TopicPicker({ selected, onSelect }: TopicPickerProps) {
     setBusy(true);
     setError(null);
     try {
-      const res = await fetch("/api/systems/journal/topics", {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({ name: trimmed }),
-      });
-      if (!res.ok) {
-        const detail = await res.json().catch(() => ({}));
-        setError(detail.error ?? "Could not create topic.");
-        return;
-      }
-      const { topic } = await res.json();
-      setTopics((prev) =>
-        [...prev, topic].sort((a, b) => a.name.localeCompare(b.name)),
-      );
-      pick(topic);
-    } catch {
-      setError("Could not reach the server. Try again.");
+      const topic = await createTopic({ name: trimmed });
+      pick({ id: topic.id, name: topic.name });
+    } catch (err) {
+      setError(err instanceof ConvexError ? String(err.data) : "Could not create topic. Try again.");
     } finally {
       setBusy(false);
     }
@@ -171,7 +156,7 @@ export function TopicPicker({ selected, onSelect }: TopicPickerProps) {
             role="listbox"
             style={{ maxHeight: 240, overflowY: "auto", marginTop: 4 }}
           >
-            {filtered.length === 0 && !showCreate ? (
+            {liveTopics !== undefined && filtered.length === 0 && !showCreate ? (
               <div
                 className="caption"
                 style={{ padding: "6px 8px", color: "var(--ink-4)" }}

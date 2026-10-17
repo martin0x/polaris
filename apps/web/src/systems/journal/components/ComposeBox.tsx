@@ -1,17 +1,22 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useMutation } from "convex/react";
+import { ConvexError } from "convex/values";
+import { api } from "@polaris/backend/convex/_generated/api";
+import type { Id } from "@polaris/backend/convex/_generated/dataModel";
 import type { Editor } from "@tiptap/react";
 import { JournalEditor } from "./Editor";
 import { TopicPicker, type PickerTopic } from "./TopicPicker";
 
-const LAST_TOPIC_KEY = "journal:lastTopic";
+// v2: the old key held Postgres topic ids, which Convex rejects
+// (phase 3 decision log 14). The user picks a topic once after the switch.
+const LAST_TOPIC_KEY = "journal:lastTopic:v2";
 
 interface ComposeBoxProps {
   defaultTopic?: PickerTopic | null;
   editingEntry?: {
-    id: string;
+    id: Id<"journalEntries">;
     title: string | null;
     body: string;
     topic: PickerTopic;
@@ -38,7 +43,8 @@ export function ComposeBox({
   onSubmitted,
   onCancel,
 }: ComposeBoxProps) {
-  const router = useRouter();
+  const createEntry = useMutation(api.journal.entries.create);
+  const updateEntry = useMutation(api.journal.entries.update);
   const isEditing = Boolean(editingEntry);
   const [topic, setTopic] = useState<PickerTopic | null>(
     editingEntry?.topic ?? defaultTopic ?? null
@@ -78,39 +84,24 @@ export function ComposeBox({
     }
     setSubmitting(true);
     setError(null);
-
-    const url = isEditing
-      ? `/api/systems/journal/entries/${editingEntry!.id}`
-      : "/api/systems/journal/entries";
-    const method = isEditing ? "PATCH" : "POST";
-    const payload: Record<string, unknown> = { body, topicId: topic.id };
-    if (showTitle && title.trim()) payload.title = title.trim();
-    else if (isEditing) payload.title = null;
-
+    const topicId = topic.id as Id<"journalTopics">;
+    const entryTitle = showTitle && title.trim() ? title.trim() : null;
     try {
-      const res = await fetch(url, {
-        method,
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify(payload),
-      });
-      if (!res.ok) {
-        const detail = await res.json().catch(() => ({}));
-        setError(detail.error ?? "Could not save the entry. Try again.");
-        return;
+      if (editingEntry) {
+        await updateEntry({ id: editingEntry.id, topicId, title: entryTitle, body });
+      } else {
+        await createEntry({ topicId, body, ...(entryTitle ? { title: entryTitle } : {}) });
       }
-
-      if (typeof window !== "undefined") {
-        window.localStorage.setItem(LAST_TOPIC_KEY, JSON.stringify(topic));
-      }
-
-      if (!isEditing) {
+      window.localStorage.setItem(LAST_TOPIC_KEY, JSON.stringify(topic));
+      if (!editingEntry) {
         editorRef.current?.commands.clearContent();
         setBody("");
         setTitle("");
         setShowTitle(false);
       }
       onSubmitted?.();
-      router.refresh();
+    } catch (err) {
+      setError(err instanceof ConvexError ? String(err.data) : "Could not save the entry. Try again.");
     } finally {
       setSubmitting(false);
     }

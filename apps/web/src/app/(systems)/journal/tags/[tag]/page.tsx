@@ -1,5 +1,7 @@
-import { listEntries } from "@/systems/journal/services/entries";
-import { EntryCard } from "@/systems/journal/components/EntryCard";
+import { convexAuthNextjsToken } from "@convex-dev/auth/nextjs/server";
+import { preloadQuery } from "convex/nextjs";
+import { api } from "@polaris/backend/convex/_generated/api";
+import { EntryFeed } from "@/systems/journal/components/EntryFeed";
 
 export default async function TagPage({
   params,
@@ -7,21 +9,16 @@ export default async function TagPage({
   params: Promise<{ tag: string }>;
 }) {
   const { tag } = await params;
-  const entries = await listEntries({ tag, limit: 100 });
+  const preloaded = await preloadQuery(
+    api.journal.entries.list,
+    { tag, limit: 100 },
+    { token: await convexAuthNextjsToken() }
+  );
 
   return (
     <article className="doc">
       <h1>{`#${tag}`}</h1>
-      <p className="caption" style={{ marginTop: -8 }}>
-        {entries.length} {entries.length === 1 ? "entry" : "entries"}
-      </p>
-      <div style={{ display: "flex", flexDirection: "column", gap: "var(--sp-3)" }}>
-        {entries.length === 0 ? (
-          <p className="lead">No entries with #{tag} yet.</p>
-        ) : (
-          entries.map((entry) => <EntryCard key={entry.id} entry={entry} />)
-        )}
-      </div>
+      <EntryFeed preloaded={preloaded} emptyText={`No entries with #${tag} yet.`} showCount />
     </article>
   );
 }
