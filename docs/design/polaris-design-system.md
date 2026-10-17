@@ -232,20 +232,23 @@ See the Design System tab for live cards — each is also a file in `preview/`.
 
 ---
 
-## Font substitutions — flag for the user
+## Fonts — self-hosted
 
-These fonts are loaded from **Google Fonts** (no local `.ttf` files bundled). If you have licensed files you'd prefer to self-host, drop them in `fonts/` and swap the `@import` in `colors_and_type.css`.
+All fonts are **self-hosted** in `apps/web/src/app/_fonts/` and load through
+`next/font/local` — builds never fetch Google Fonts (Google sometimes returns
+font URLs that fail the Next.js build; see that folder's README). The files
+are Google Fonts' own cuts, so rendering matches what Google serves.
 
 | Role | Using | Alternatives considered |
 |---|---|---|
-| Display serif | **Fraunces** (Google Fonts, via next/font) | Source Serif 4 (v1), IBM Plex Serif, Newsreader, Literata |
-| UI sans | **Plus Jakarta Sans** (Google Fonts, via next/font) | Inter (v1), IBM Plex Sans, Albert Sans, Karla |
-| Mono | **IBM Plex Mono** (Google Fonts, via next/font) | JetBrains Mono (v1), Spline Sans Mono |
+| Display serif | **Fraunces** (self-hosted, `next/font/local`) | Source Serif 4 (v1), IBM Plex Serif, Newsreader, Literata |
+| UI sans | **Plus Jakarta Sans** (self-hosted, `next/font/local`) | Inter (v1), IBM Plex Sans, Albert Sans, Karla |
+| Mono | **IBM Plex Mono** (self-hosted, `next/font/local`) | JetBrains Mono (v1), Spline Sans Mono |
 
 The v1 stack (Source Serif 4 / Inter / JetBrains Mono) shipped with the note
 that Inter was "a neutral choice; swap for something more distinctive."
 July 2026 did exactly that: four full trios were rendered on live screens and
 compared side by side (see `decisions/`), and the Fraunces stack won for
 being the warmest and most distinctive while staying inside the paper+ink
-mood. Fonts load through `next/font` in `src/app/layout.tsx` — no CDN
-`@import`; still no local font files.
+mood. The fonts load in `src/app/layout.tsx`; the landing page's IBM Plex
+Serif and Sans load in `src/app/page.tsx`.

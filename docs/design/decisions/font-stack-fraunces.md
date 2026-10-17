@@ -36,10 +36,12 @@ reviewed too but only this one is checked in).
 
 ## Implementation notes
 
-- Loaded via `next/font` in `src/app/layout.tsx`: Fraunces with
-  `axes: ["opsz"]` and true italics (entry blockquotes are italic serif —
-  don't let the browser synthesize); IBM Plex Mono is a static family and
-  needs explicit weights (400/500/600).
+- Loaded via `next/font/local` in `src/app/layout.tsx` from the self-hosted
+  files in `src/app/_fonts/` (October 2026 — Google Fonts was failing
+  builds; see that folder's README). Fraunces is one variable file per style
+  with its optical-size axis, plus true italics (entry blockquotes are italic
+  serif — don't let the browser synthesize); IBM Plex Mono is a static
+  family, one file per weight (400/500/600).
 - Token fallbacks updated in `src/app/globals.css`
   (`--font-serif/sans/mono`); nothing else in the app changes — every
   component reads the tokens.

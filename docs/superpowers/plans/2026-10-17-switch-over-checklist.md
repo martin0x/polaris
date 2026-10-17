@@ -149,8 +149,8 @@ so builds stop fetching from Google.
 
 ## Follow-ups noticed on the way
 
-- **Self-host the fonts** (`next/font/local`) so builds stop depending on
-  Google Fonts — see the flaky-build section above.
+- **Self-host the fonts** — done 2026-10-17
+  (`docs/superpowers/plans/2026-10-17-self-host-fonts.md`).
 - **Convex code is not deployed by Vercel.** The Vercel build only builds the
   web app. Whenever `packages/backend/convex` changes, run
   `bunx convex deploy --yes` from `packages/backend` *before* the merge to

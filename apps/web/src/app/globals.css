@@ -81,8 +81,9 @@
   --selection:     #dcd4ff;
 
   /* --- Typography — families -------------------------------------------- */
-  /* Next.js next/font injects --font-fraunces, --font-jakarta,
-     --font-plex-mono (Fraunces stack, July 2026 — see design decisions). */
+  /* next/font/local injects --font-fraunces, --font-jakarta,
+     --font-plex-mono from the self-hosted files in app/_fonts/ (Fraunces
+     stack, July 2026 — see design decisions). */
   --font-serif:
     var(--font-fraunces, "Fraunces"),
     "Iowan Old Style", "Charter", Georgia, serif;

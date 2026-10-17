@@ -17,9 +17,10 @@ its crisp developer-tool coherence is the point.
 
 ## Implementation notes
 
-- Plex Serif (400/500) and Plex Sans (400/500/600) load via `next/font` in
-  `src/app/page.tsx`, so only `/` downloads them. They include `latin-ext`
-  for the ₱ glyph. Plex Mono comes from the root layout, as everywhere.
+- Plex Serif (400/500) and Plex Sans (variable, 100–700) load via
+  `next/font/local` in `src/app/page.tsx`, so only `/` downloads them. Their
+  files in `src/app/_fonts/` are cut to `latin` + `latin-ext` for the ₱
+  glyph. Plex Mono comes from the root layout, as everywhere.
 - `.lp` in `globals.css` points `--font-serif` / `--font-sans` at them and
   resets `font-family`, so the shared classes on the page (`.lead`, `.btn`,
   `.overline`) follow without per-component changes.
