@@ -20,6 +20,7 @@ import type * as http from "../http.js";
 import type * as journal_activeTopics from "../journal/activeTopics.js";
 import type * as journal_dashboard from "../journal/dashboard.js";
 import type * as journal_entries from "../journal/entries.js";
+import type * as journal_habitBridge from "../journal/habitBridge.js";
 import type * as journal_model from "../journal/model.js";
 import type * as journal_tags from "../journal/tags.js";
 import type * as journal_topics from "../journal/topics.js";
@@ -49,6 +50,7 @@ declare const fullApi: ApiFromModules<{
   "journal/activeTopics": typeof journal_activeTopics;
   "journal/dashboard": typeof journal_dashboard;
   "journal/entries": typeof journal_entries;
+  "journal/habitBridge": typeof journal_habitBridge;
   "journal/model": typeof journal_model;
   "journal/tags": typeof journal_tags;
   "journal/topics": typeof journal_topics;

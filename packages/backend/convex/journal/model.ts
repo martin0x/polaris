@@ -233,3 +233,14 @@ export async function searchEntryDocs(
     .take(SEARCH_CANDIDATE_LIMIT);
   return candidates.filter((e) => matchesAllTerms(e.searchText, terms)).slice(0, limit);
 }
+
+/** A habit's stored topic reference: a Convex id, or the Postgres cuid of a
+ *  topic imported in phase 3 (resolved through legacyId). */
+export async function resolveTopicRef(ctx: Ctx, ref: string): Promise<TopicDoc | null> {
+  const id = ctx.db.normalizeId("journalTopics", ref);
+  if (id !== null) return ctx.db.get(id);
+  return ctx.db
+    .query("journalTopics")
+    .withIndex("by_legacy_id", (q) => q.eq("legacyId", ref))
+    .unique();
+}
