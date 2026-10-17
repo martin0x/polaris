@@ -1,6 +1,7 @@
 import { prisma } from "@/platform/db/client";
 import { addDays, mondayOf, toDateString, toUtcDate, todayString } from "@polaris/core/dates";
 import type { TickDto } from "./ticks";
+import { journalBridge } from "./journalBridge";
 
 export interface DetailEntry {
   id: string;
@@ -30,9 +31,7 @@ export async function getHabitDetail(
 
   const today = todayString();
   const monday = mondayOf(weekRaw);
-  const topic = habit.journalTopicId
-    ? await prisma.journalTopic.findUnique({ where: { id: habit.journalTopicId } })
-    : null;
+  const topic = habit.journalTopicId ? await journalBridge.topicState(habit.journalTopicId) : null;
   const topicState = topic ? (topic.archived ? "archived" : "ok") : "missing";
 
   const [ticks, entries] = await Promise.all([
@@ -44,19 +43,12 @@ export async function getHabitDetail(
       orderBy: { date: "asc" },
     }),
     topic && !topic.archived
-      ? prisma.journalEntry.findMany({
-          where: {
-            topicId: topic.id,
-            deletedAt: null,
-            // Week padded ±1 day (UTC) so client-local grouping keeps edge entries.
-            createdAt: {
-              gte: toUtcDate(addDays(monday, -1)),
-              lt: toUtcDate(addDays(monday, 8)),
-            },
-          },
-          orderBy: { createdAt: "asc" },
-          select: { id: true, title: true, body: true, createdAt: true },
-        })
+      ? journalBridge.topicEntries(
+          topic.id,
+          // Week padded ±1 day (UTC) so client-local grouping keeps edge entries.
+          toUtcDate(addDays(monday, -1)).getTime(),
+          toUtcDate(addDays(monday, 8)).getTime()
+        )
       : Promise.resolve([]),
   ]);
 
@@ -64,7 +56,7 @@ export async function getHabitDetail(
     last30: ticks.map((t) => ({ date: toDateString(t.date), status: t.status })),
     entries: entries.map((e) => ({
       id: e.id, title: e.title, excerpt: excerptOf(e.body),
-      createdAt: e.createdAt.toISOString(),
+      createdAt: new Date(e.createdAt).toISOString(),
     })),
     topicState,
     topicName: topic?.name ?? habit.name,

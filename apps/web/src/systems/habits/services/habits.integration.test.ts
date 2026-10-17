@@ -1,28 +1,31 @@
-import { describe, it, expect, beforeAll, beforeEach } from "vitest";
+import { describe, it, expect, beforeAll, beforeEach, vi } from "vitest";
 import { prisma } from "@/platform/db/client";
 import { Prisma } from "@/generated/prisma/client";
 import { requireTestDatabase, withCleanHabitTables } from "@/test/db";
-import { createTopic } from "@/systems/journal/services/topics";
+import { fakeJournal } from "@/test/fakeJournal";
 import {
   archiveHabit, createHabit, recreateTopic, renameHabit, reorderHabits,
   setQuote, TopicNameCollisionError, unarchiveHabit,
 } from "./habits";
 
+// Habits reaches the journal (Convex) only through journalBridge; the
+// in-memory fake keeps these tests off the network.
+vi.mock("@/systems/habits/services/journalBridge", () => import("@/test/fakeJournal"));
+
 describe("habits service", () => {
   beforeAll(() => requireTestDatabase());
-  beforeEach(() => withCleanHabitTables());
+  beforeEach(async () => { fakeJournal.reset(); await withCleanHabitTables(); });
 
   it("creates a habit and its same-name topic", async () => {
     const habit = await createHabit("Morning run");
     expect(habit.position).toBe(1);
-    const topic = await prisma.journalTopic.findUnique({ where: { id: habit.journalTopicId! } });
-    expect(topic?.name).toBe("Morning run");
+    expect(fakeJournal.topic(habit.journalTopicId!)?.name).toBe("Morning run");
   });
 
   it("links an existing same-name topic instead of failing", async () => {
-    const topic = await createTopic({ name: "Reading" });
+    const topicId = fakeJournal.addTopic("Reading");
     const habit = await createHabit("Reading");
-    expect(habit.journalTopicId).toBe(topic.id);
+    expect(habit.journalTopicId).toBe(topicId);
   });
 
   it("positions habits sequentially", async () => {
@@ -31,19 +34,19 @@ describe("habits service", () => {
     expect(b.position).toBe(2);
   });
 
-  it("rename syncs the topic atomically", async () => {
+  it("rename syncs the topic", async () => {
     const habit = await createHabit("Old name");
     await renameHabit(habit.id, "New name");
-    const topic = await prisma.journalTopic.findUnique({ where: { id: habit.journalTopicId! } });
-    expect(topic?.name).toBe("New name");
+    expect(fakeJournal.topic(habit.journalTopicId!)?.name).toBe("New name");
   });
 
   it("rename collision with a foreign topic changes nothing", async () => {
-    await createTopic({ name: "Taken" });
+    fakeJournal.addTopic("Taken");
     const habit = await createHabit("Mine");
     await expect(renameHabit(habit.id, "Taken")).rejects.toBeInstanceOf(TopicNameCollisionError);
     const fresh = await prisma.habit.findUnique({ where: { id: habit.id } });
     expect(fresh?.name).toBe("Mine");
+    expect(fakeJournal.topic(habit.journalTopicId!)?.name).toBe("Mine");
   });
 
   it("orphaned-habit rename collision is a habit error, not a topic error", async () => {
@@ -58,19 +61,15 @@ describe("habits service", () => {
   it("archive and unarchive sync the topic", async () => {
     const habit = await createHabit("Stretch");
     await archiveHabit(habit.id);
-    let topic = await prisma.journalTopic.findUnique({ where: { id: habit.journalTopicId! } });
-    expect(topic?.archived).toBe(true);
+    expect(fakeJournal.topic(habit.journalTopicId!)?.archived).toBe(true);
     await unarchiveHabit(habit.id);
-    topic = await prisma.journalTopic.findUnique({ where: { id: habit.journalTopicId! } });
-    expect(topic?.archived).toBe(false);
+    expect(fakeJournal.topic(habit.journalTopicId!)?.archived).toBe(false);
   });
 
   it("archive survives a missing topic", async () => {
     const habit = await createHabit("Orphan");
-    await prisma.journalEntry.deleteMany({});
     await prisma.habit.update({ where: { id: habit.id }, data: { journalTopicId: "gone" } });
-    const archived = await archiveHabit(habit.id);
-    expect(archived.archived).toBe(true);
+    expect((await archiveHabit(habit.id)).archived).toBe(true);
   });
 
   it("reorder rewrites positions and rejects bad lists", async () => {
@@ -92,10 +91,9 @@ describe("habits service", () => {
 
   it("recreates a lost topic", async () => {
     const habit = await createHabit("Meditate");
+    fakeJournal.removeTopic(habit.journalTopicId!);
     await prisma.habit.update({ where: { id: habit.id }, data: { journalTopicId: null } });
-    await prisma.journalTopic.delete({ where: { name: "Meditate" } });
     const fixed = await recreateTopic(habit.id);
-    const topic = await prisma.journalTopic.findUnique({ where: { id: fixed.journalTopicId! } });
-    expect(topic?.name).toBe("Meditate");
+    expect(fakeJournal.topic(fixed.journalTopicId!)?.name).toBe("Meditate");
   });
 });

@@ -1,5 +1,5 @@
 import { prisma } from "@/platform/db/client";
-import { createEntry } from "@/systems/journal/services/entries";
+import { journalBridge } from "./journalBridge";
 import { noonInTz, todayString } from "@polaris/core/dates";
 import { FutureDateError } from "./ticks";
 import { excerptOf, type DetailEntry } from "./detail";
@@ -31,21 +31,19 @@ export async function createLog(
   const today = todayString();
   if (date > today) throw new FutureDateError(date);
   const habit = await prisma.habit.findUniqueOrThrow({ where: { id: habitId } });
-  const topic = habit.journalTopicId
-    ? await prisma.journalTopic.findUnique({ where: { id: habit.journalTopicId } })
-    : null;
-  if (!topic) throw new TopicMissingError();
-  if (topic.archived) throw new TopicArchivedError();
-  const entry = await createEntry({
-    topicId: topic.id,
+  if (!habit.journalTopicId) throw new TopicMissingError();
+  const result = await journalBridge.createLog(habit.journalTopicId, {
     title: input.title ?? null,
     body: input.body,
-    ...(date === today ? {} : { createdAt: noonInTz(date) }),
+    ...(date === today ? {} : { createdAt: noonInTz(date).getTime() }),
   });
+  if (!result.ok) {
+    throw result.reason === "archived" ? new TopicArchivedError() : new TopicMissingError();
+  }
   return {
-    id: entry.id,
-    title: entry.title,
-    excerpt: excerptOf(entry.body),
-    createdAt: entry.createdAt.toISOString(),
+    id: result.entry.id,
+    title: result.entry.title,
+    excerpt: excerptOf(result.entry.body),
+    createdAt: new Date(result.entry.createdAt).toISOString(),
   };
 }
