@@ -36,9 +36,16 @@ values. Delete the file when the switch-over is finished.
       then updates the database, and preview builds never update it. Before,
       a failed build could still drop the old sign-in tables, and any preview
       build could change the production database.
-- [ ] Back up the production database to `~/Backups/polaris/` (no local
-      `pg_dump`; it runs inside the `postgres:17` Docker image). Needs
-      `NEON_DIRECT_URL` in the secrets file.
+- [x] Back up the production database: `~/Backups/polaris/polaris-prod-20261017-215246.dump`
+      (`pg_dump -Fc` inside the `postgres:17` Docker image — there's no local
+      `pg_dump`; server is Postgres 17.11). Restored into a scratch database:
+      all 16 tables match production row for row (`counts-prod.txt` beside it).
+      `NEON_DIRECT_URL` must be the host *without* `-pooler`.
+- [x] Early copy of the data, as a rehearsal on real rows (2026-10-17):
+      feedback 418 metrics, expenses 6 types / 10 activities / 85 items, every
+      verify line `OK`. Stage 2 is now a top-up: the same commands pick up
+      anything added since. If a row gets *deleted* in the app before stage 2,
+      verify will show a count mismatch — clear that Convex table and re-import.
 - [ ] Remaining production Convex settings: `AUTH_GOOGLE_ID` and
       `AUTH_GOOGLE_SECRET` (copied from dev — same Google client), `CRON_SECRET`
       (freshly generated, also goes into Vercel in stage 3), `ALLOWED_EMAILS`,
