@@ -79,25 +79,29 @@ values. Delete the file when the switch-over is finished.
 
 ## Stage 3 — go live (don't use the app from here until the smoke test)
 
-- [ ] Top-up copy: feedback and expenses export → import → verify (Phase 1
-      checklist §4, Phase 2 checklist §3). Every line `OK`.
-- [ ] Vercel → Environment Variables: replace `CRON_SECRET` (Production)
+- [x] Top-up copy: feedback and expenses export → import → verify (Phase 1
+      checklist §4, Phase 2 checklist §3). Every line `OK` (0 new rows).
+- [x] Vercel → Environment Variables: replace `CRON_SECRET` (Production)
       with the value from the secrets file. Left until now so the current
       site's nightly job keeps working.
-- [ ] Merge the PR (merge commit). Vercel builds `main`, then runs the
+- [x] Merge the PR (merge commit `a2126d6`, 2026-10-17 14:57 UTC). Vercel builds `main`, then runs the
       database update that drops the four old sign-in tables — from here the
       old sign-in can't come back without restoring them from the backup.
-- [ ] Confirm `20260821031936_drop_nextauth_tables` is in production's
-      `_prisma_migrations` (proves `VERCEL_ENV` reached the build).
+- [x] Confirm `20260821031936_drop_nextauth_tables` is in production's
+      `_prisma_migrations` (proves `VERCEL_ENV` reached the build). Built
+      first, then applied; 0 of the 4 old tables left, 12 tables remain.
+      Live site serves the new build (landing shows the Convex stack,
+      `/dashboard` → `/auth/signin`, cron without secret → 401).
 
 ## Stage 4 — after it's live
 
-- [ ] Re-run both export → import → verify passes once more, before touching any
+- [x] Re-run both export → import → verify passes once more, before touching any
       imported expense in the app (the re-import would overwrite edits).
+      15/15 and 9/9 `OK`, 0 new rows. No more re-imports from here.
 - [ ] Smoke test: sign in; capture an expense; trends month total; dashboard
       expenses tile; command palette finds an expense activity; create a
-      journal entry; run the cron job from Vercel → Settings → Cron Jobs and
-      confirm `journal/active_topic_count` shows on `/dashboard`.
+      journal entry. Cron already checked: `curl` with the new secret → 200
+      `{"ok":true}`, metric count 418 → 419 on production Convex.
 - [ ] Remove the old sign-in settings from Vercel: `NEXTAUTH_SECRET`,
       `NEXTAUTH_URL`, `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `ALLOWED_EMAILS`.
 - [ ] Delete `~/.config/polaris/switch-over.env` and `apps/web/scripts/out/`.
