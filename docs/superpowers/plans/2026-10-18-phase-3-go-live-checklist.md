@@ -49,13 +49,15 @@ Every command here only *reads* production Postgres.
 - [ ] Push `replatform`; open the PR `replatform` → `main` (merge commit, not
       squash). Wait for the Vercel preview build to pass.
 
-## Stage 2 — go live (don't write journal entries or habit logs from here until the smoke test)
+## Stage 2 — go live (don't use the journal or habits at all — no new entries, edits, task ticks, deletes, renames, or archives — until the top-up copy is verified)
 
 - [ ] Pick a time away from 15:00 UTC (the new nightly job) and 23:00 UTC
       (the old Vercel cron, which fails once the next step removes the
       function it reports to — harmless, but noisy).
-- [ ] From `packages/backend`: `bunx convex deploy --yes` — adds the journal
-      tables, the bridge, and the nightly job to production; removes
+- [ ] From `packages/backend`, on a checkout of `replatform` at the commit
+      being merged: `bunx convex deploy --yes` — so production Convex gets
+      exactly the code that's about to go live. Adds the journal tables, the
+      bridge, and the nightly job to production; removes
       `feedback.recordMetric`. The live site keeps working on Postgres; its
       journal usage metrics stop being recorded until the merge.
 - [ ] Copy: `DATABASE_URL="$PROD_DATABASE_URL" bun scripts/export-journal.ts`,
@@ -66,7 +68,12 @@ Every command here only *reads* production Postgres.
 - [ ] Top-up copy straight after the deploy is live: export → import `--prod`
       → verify `--prod` again (picks up anything written to Postgres between
       the copy and the merge). Every line `OK`. **No more copies after
-      this** — a copy would overwrite edits made in Convex.
+      this** — a copy would overwrite any entries, edits, task ticks,
+      deletes, renames, or archives made on the live site in the meantime.
+      If `topic rows` or `entry rows` comes back `FAIL` while every
+      `live entries in topic ...` line is `OK`, that means rows were created
+      natively in Convex since the merge (the counts include those), not a
+      bad copy.
 
 ## Stage 3 — after it's live
 
@@ -81,7 +88,8 @@ Every command here only *reads* production Postgres.
 - [ ] From `packages/backend`: `bunx convex env remove CRON_SECRET --prod`.
 - [ ] The day after: the dashboard's System health shows a new
       `active topic count` metric after 15:00 UTC.
-- [ ] Delete `~/.config/polaris/journal-switch.env` and `apps/web/scripts/out/`.
+- [ ] Delete `~/.config/polaris/journal-switch.env` and `apps/web/scripts/out/`,
+      and remove the dead `CRON_SECRET=` line from your local `apps/web/.env`.
       The backup stays.
 
 ## If something goes wrong
@@ -89,12 +97,17 @@ Every command here only *reads* production Postgres.
 - **Before the merge:** the live site still runs on Postgres. Production
   Convex has extra journal tables, which is harmless; repeated copies are
   safe (keyed on the old ids). To bring back `feedback.recordMetric` for the
-  old site, run `bunx convex deploy --yes` from a checkout of `main`.
+  old site, run `bunx convex deploy --yes` from `packages/backend` on a
+  checkout of `main`.
 - **After the merge:** Vercel → Deployments → the previous production
-  deployment → Instant Rollback, then `bunx convex deploy --yes` from a
-  checkout of the pre-merge `main` so the old site's metric calls work again.
-  Postgres still has every journal row up to the top-up copy; entries written
-  in Convex after the merge have to be copied back by hand (there will be few).
+  deployment → Instant Rollback, then run `bunx convex deploy --yes` from
+  `packages/backend` on a checkout of the pre-merge `main` so the old site's
+  metric calls work again. Postgres still has every journal row up to the
+  top-up copy; entries written in Convex after the merge have to be copied
+  back by hand (there will be few). Habits created after the merge store a
+  Convex topic id in `journalTopicId`; on the rolled-back site that shows as
+  "Journal topic is missing.", and its "Recreate topic" button creates a new
+  Postgres topic rather than finding the Convex one.
 
 ## Rehearsal record
 
