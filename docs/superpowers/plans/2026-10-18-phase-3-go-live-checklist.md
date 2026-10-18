@@ -21,10 +21,13 @@ it. Delete the file when this checklist is done.
 
 Every command here only *reads* production Postgres.
 
-- [ ] Clear dev's journal tables: `bunx convex import --table <table>
-      --replace -y scripts/out/empty.jsonl`, run once each for `entryTags`,
-      `journalEntries`, `journalTopics` — the CLI accepts the empty file
-      directly; no dashboard step needed.
+- [ ] Clear dev's journal tables: from `apps/web`, `mkdir -p scripts/out &&
+      printf '' > scripts/out/empty.jsonl` (`scripts/out` may not exist yet).
+      Then from `packages/backend`: `bunx convex import --table <table>
+      --replace -y ../../apps/web/scripts/out/empty.jsonl`, run once each for
+      `entryTags`, `journalEntries`, `journalTopics` — no `--prod`, so this
+      targets dev. The CLI accepts the empty file directly; no dashboard step
+      needed.
 - [ ] Copy production's journal into dev: `DATABASE_URL="$PROD_DATABASE_URL" bun scripts/export-journal.ts`,
       then from `packages/backend`: `bun scripts/import-journal.ts ../../apps/web/scripts/out`.
 - [ ] Verify: `DATABASE_URL="$PROD_DATABASE_URL" bun scripts/verify-journal-import.ts` — every line `OK`.
