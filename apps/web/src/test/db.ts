@@ -1,14 +1,8 @@
 import { prisma } from "@/platform/db/client";
 
-export async function withCleanJournalTables(): Promise<void> {
-  await prisma.$executeRawUnsafe(
-    'TRUNCATE TABLE "journal_entries", "journal_topics" RESTART IDENTITY CASCADE'
-  );
-}
-
 export async function withCleanHabitTables(): Promise<void> {
   await prisma.$executeRawUnsafe(
-    'TRUNCATE TABLE "habit_ticks", "habits", "journal_entries", "journal_topics" RESTART IDENTITY CASCADE'
+    'TRUNCATE TABLE "habit_ticks", "habits" RESTART IDENTITY CASCADE'
   );
 }
 

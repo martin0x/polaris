@@ -18,4 +18,3 @@ Set with `bunx convex env set NAME value` (add `--prod` for production):
 | `SITE_URL` | Web app origin for post-auth redirects |
 | `JWT_PRIVATE_KEY` / `JWKS` | Convex Auth token signing — `bun scripts/generate-auth-keys.ts` |
 | `ALLOWED_EMAILS` | Comma-separated sign-in allowlist |
-| `CRON_SECRET` | Service key for server-trusted writes (same value as the web env var) |

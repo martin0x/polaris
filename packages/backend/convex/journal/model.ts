@@ -6,7 +6,7 @@ import type { Doc, Id } from "../_generated/dataModel";
 import type { MutationCtx, QueryCtx } from "../_generated/server";
 
 // Shared journal helpers — no Convex functions live in this file. Limits match
-// the old Zod route schemas (apps/web/src/systems/journal/schemas).
+// the old Postgres journal's Zod route schemas (deleted; Task 13).
 
 export const TOPIC_NAME_MAX = 80;
 export const TOPIC_DESCRIPTION_MAX = 280;

@@ -16,10 +16,10 @@ export default convexAuthNextjsMiddleware(async (request, { convexAuth }) => {
 
 export const config = {
   // Unlike the NextAuth matcher this must INCLUDE /api/auth (the middleware
-  // proxies Convex Auth actions through it). api/cron keeps its bearer secret.
+  // proxies Convex Auth actions through it).
   // The Open Graph and Twitter card images skip the proxy entirely — link
   // preview crawlers fetch them without a session.
   matcher: [
-    "/((?!api/cron|_next/static|_next/image|favicon.ico|brand/|icons/|opengraph-image|twitter-image).*)",
+    "/((?!_next/static|_next/image|favicon.ico|brand/|icons/|opengraph-image|twitter-image).*)",
   ],
 };
