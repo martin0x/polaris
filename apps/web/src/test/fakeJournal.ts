@@ -8,6 +8,12 @@ import type {
 // "@/systems/habits/services/journalBridge" with this module, then arrange
 // and assert journal state through `fakeJournal`. Module state is shared, so
 // call fakeJournal.reset() in beforeEach.
+//
+// This fake does not apply the real functions' validation — no
+// `cleanTopicName` trim/length, no `checkBody`, no `cleanTitle` (see
+// packages/backend/convex/journal/model.ts). Today that's harmless: habits'
+// own Zod schemas and the log flyout guard those inputs before they reach the
+// bridge. Phase 4 tests must not rely on this fake to enforce validation.
 
 interface FakeEntry extends BridgeEntry {
   topicId: string;

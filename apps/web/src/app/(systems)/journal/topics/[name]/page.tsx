@@ -18,10 +18,17 @@ export default async function TopicPage({
 }) {
   const { name } = await params;
   const { sort: sortParam } = await searchParams;
+  let decodedName: string;
+  try {
+    decodedName = decodeURIComponent(name);
+  } catch {
+    // Malformed percent-encoding (e.g. a lone "%") — there's no such topic.
+    notFound();
+  }
   const token = await convexAuthNextjsToken();
   const topic = await fetchQuery(
     api.journal.topics.getByName,
-    { name: decodeURIComponent(name) },
+    { name: decodedName },
     { token }
   );
   if (!topic) notFound();

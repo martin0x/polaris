@@ -34,9 +34,12 @@ export const listWithStats = query({
     const topics = (await ctx.db.query("journalTopics").take(TOPIC_SCAN_LIMIT))
       .filter((t) => args.includeArchived || !t.archived)
       .sort(byName);
+    // Newest-first: if the cap is ever hit, the rows dropped are the oldest,
+    // not the newest (which lastEntryAt below needs).
     const live = await ctx.db
       .query("journalEntries")
       .withIndex("by_deleted_at_created_at", (q) => q.eq("deletedAt", undefined))
+      .order("desc")
       .take(AGGREGATE_SCAN_LIMIT);
     const stats = new Map<Id<"journalTopics">, { count: number; lastAt: number }>();
     for (const e of live) {
