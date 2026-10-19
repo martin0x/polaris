@@ -22,17 +22,17 @@ it. Delete the file when this checklist is done.
 
 Every command here only *reads* production Postgres.
 
-- [ ] Clear dev's journal tables: from `apps/web`, `mkdir -p scripts/out &&
+- [x] Clear dev's journal tables: from `apps/web`, `mkdir -p scripts/out &&
       printf '' > scripts/out/empty.jsonl` (`scripts/out` may not exist yet).
       Then from `packages/backend`: `bunx convex import --table <table>
       --replace -y ../../apps/web/scripts/out/empty.jsonl`, run once each for
       `entryTags`, `journalEntries`, `journalTopics` — no `--prod`, so this
       targets dev. The CLI accepts the empty file directly; no dashboard step
       needed.
-- [ ] Copy production's journal into dev: `DATABASE_URL="$PROD_DATABASE_URL" bun scripts/export-journal.ts`,
+- [x] Copy production's journal into dev: `DATABASE_URL="$PROD_DATABASE_URL" bun scripts/export-journal.ts`,
       then from `packages/backend`: `bun scripts/import-journal.ts ../../apps/web/scripts/out`.
-- [ ] Verify: `DATABASE_URL="$PROD_DATABASE_URL" bun scripts/verify-journal-import.ts` — every line `OK`.
-- [ ] Search check: `DATABASE_URL="$PROD_DATABASE_URL" bun scripts/journal-search-acceptance.ts`
+- [x] Verify: `DATABASE_URL="$PROD_DATABASE_URL" bun scripts/verify-journal-import.ts` — every line `OK`.
+- [x] Search check: `DATABASE_URL="$PROD_DATABASE_URL" bun scripts/journal-search-acceptance.ts`
       (add `--queries <file>` with searches you actually make, one per line).
       Read `scripts/out/search-acceptance.md`. Expect misses where you
       searched a different form of a word ("tests" vs "test") — Convex matches
@@ -43,7 +43,7 @@ Every command here only *reads* production Postgres.
 
 ## Stage 1 — prepare (nothing live changes)
 
-- [ ] `phase-3-journal` merged into `replatform`; every check green there
+- [x] `phase-3-journal` merged into `replatform`; every check green there
       (`bun run test`, the integration suite, `bun run build`, `bun run lint`).
 - [ ] Back up production Postgres (Docker `postgres:17` image, `pg_dump`, as
       in the 2026-10-17 checklist) to `~/Backups/polaris/`.
@@ -120,3 +120,14 @@ an empty file worked directly (no dashboard needed) for all three tables;
 reimport showed everything `inserted=`, verify 39/39 `OK` again. Search
 acceptance (synthetic seed text — proves the tooling, not the search):
 100% recall, 21 of 21 Postgres-nonempty queries missed nothing.
+
+## Stage 0 record
+
+Done on 2026-10-19 against dev. Production's journal exported as 16 topics,
+0 parent links, 35 entries (33 live); import inserted 16 + 35; verify 49/49
+`OK`, topic and entry rows equal. Search check over 24 queries: Convex found
+97% of what Postgres found; 16 of 17 queries with Postgres results missed
+nothing. The one miss was "planning" (5 of 7 — the other two use another form of the word,
+such as "plan" or "planned"; searching "plan" finds all 7). Convex also found prefixes
+("tran", "camp") and words inside links that Postgres missed. Search
+accepted.
