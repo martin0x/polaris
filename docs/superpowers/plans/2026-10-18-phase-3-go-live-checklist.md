@@ -11,8 +11,9 @@ Commands run from `apps/web` unless they say `packages/backend`.
 ## Secrets
 
 The production database address goes in `~/.config/polaris/journal-switch.env`
-(outside the repo, `chmod 600`), as `PROD_DATABASE_URL=…` — the direct Neon
-address (the pooled host minus `-pooler`). Load it with
+(outside the repo, `chmod 600`), as `PROD_DATABASE_URL='…'` — the direct Neon
+address (the pooled host minus `-pooler`), in single quotes: Neon addresses
+contain `&`, which breaks loading the file if the value is unquoted. Load it with
 `set -a; . ~/.config/polaris/journal-switch.env; set +a`, pass it as
 `DATABASE_URL="$PROD_DATABASE_URL"` to one command at a time, and never print
 it. Delete the file when this checklist is done.
