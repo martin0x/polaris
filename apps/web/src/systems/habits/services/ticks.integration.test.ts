@@ -1,12 +1,17 @@
-import { describe, it, expect, beforeAll, beforeEach } from "vitest";
+import { describe, it, expect, beforeAll, beforeEach, vi } from "vitest";
 import { requireTestDatabase, withCleanHabitTables } from "@/test/db";
+import { fakeJournal } from "@/test/fakeJournal";
 import { addDays, todayString } from "@polaris/core/dates";
 import { createHabit, archiveHabit } from "./habits";
 import { FutureDateError, getWeek, removeTick, upsertTick } from "./ticks";
 
+// Habits reaches the journal (Convex) only through journalBridge; the
+// in-memory fake keeps these tests off the network.
+vi.mock("@/systems/habits/services/journalBridge", () => import("@/test/fakeJournal"));
+
 describe("ticks service", () => {
   beforeAll(() => requireTestDatabase());
-  beforeEach(() => withCleanHabitTables());
+  beforeEach(async () => { fakeJournal.reset(); await withCleanHabitTables(); });
 
   it("getWeek normalizes to Monday and returns habits + ticks + archived", async () => {
     const habit = await createHabit("Run");

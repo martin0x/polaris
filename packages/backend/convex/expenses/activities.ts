@@ -3,11 +3,7 @@ import { internal } from "../_generated/api";
 import { mutation, query } from "../_generated/server";
 import type { Id } from "../_generated/dataModel";
 import type { MutationCtx, QueryCtx } from "../_generated/server";
-
-async function assertSignedIn(ctx: QueryCtx | MutationCtx): Promise<void> {
-  const identity = await ctx.auth.getUserIdentity();
-  if (identity === null) throw new ConvexError("Unauthorized");
-}
+import { assertSignedIn } from "../lib/auth";
 
 export async function loadItems(ctx: QueryCtx | MutationCtx, activityId: Id<"expenseActivities">) {
   const items = await ctx.db

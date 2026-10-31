@@ -1,8 +1,10 @@
 import Link from "next/link";
-import { listTags } from "@/systems/journal/services/topics";
+import { convexAuthNextjsToken } from "@convex-dev/auth/nextjs/server";
+import { fetchQuery } from "convex/nextjs";
+import { api } from "@polaris/backend/convex/_generated/api";
 
 export default async function TagsIndexPage() {
-  const tags = await listTags();
+  const tags = await fetchQuery(api.journal.tags.list, {}, { token: await convexAuthNextjsToken() });
 
   return (
     <article className="doc">

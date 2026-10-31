@@ -1,5 +1,7 @@
 import Link from "next/link";
-import { searchEntries } from "@/systems/journal/services/search";
+import { convexAuthNextjsToken } from "@convex-dev/auth/nextjs/server";
+import { fetchQuery } from "convex/nextjs";
+import { api } from "@polaris/backend/convex/_generated/api";
 import { highlight } from "@polaris/core/highlight";
 import { TopicChip } from "@/systems/journal/components/TopicChip";
 import { TagChip } from "@/systems/journal/components/TagChip";
@@ -21,7 +23,15 @@ export default async function SearchResultsPage({
 }) {
   const { q = "" } = await searchParams;
   const trimmed = q.trim();
-  const results = trimmed ? await searchEntries({ q: trimmed, limit: 50 }) : [];
+  const results = trimmed
+    ? (
+        await fetchQuery(
+          api.journal.entries.search,
+          { q: trimmed, limit: 50 },
+          { token: await convexAuthNextjsToken() }
+        )
+      ).entries
+    : [];
 
   return (
     <article className="doc">
@@ -38,12 +48,12 @@ export default async function SearchResultsPage({
         {results.map((entry) => (
           <Link
             key={entry.id}
-            href={`/journal/topics/${encodeURIComponent(entry.topic.name)}#entry-${entry.id}`}
+            href={`/journal/topics/${encodeURIComponent(entry.topicName)}#entry-${entry.id}`}
             className="entry-card"
             style={{ textDecoration: "none", color: "inherit" }}
           >
             <div className="meta">
-              <TopicChip name={entry.topic.name} />
+              <TopicChip name={entry.topicName} />
               {entry.tags.map((t) => (
                 <TagChip key={t} tag={t} />
               ))}

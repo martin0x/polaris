@@ -1,26 +1,11 @@
 import { convexAuthNextjsToken } from "@convex-dev/auth/nextjs/server";
-import { fetchMutation, fetchQuery } from "convex/nextjs";
+import { fetchQuery } from "convex/nextjs";
 import { api } from "@polaris/backend/convex/_generated/api";
 
-// Strangler-window adapter: same surface the call sites always had, Convex
-// behind it. Writes are server-trusted (CRON_SECRET as service key) so the
-// cron route — which has no user token — records metrics identically.
-function serviceKey(): string {
-  const key = process.env.CRON_SECRET;
-  if (!key) throw new Error("CRON_SECRET environment variable is not set");
-  return key;
-}
+// Feedback reads for the dashboard. Metrics are written inside Convex
+// (internal.feedback.record), never from the web app.
 
 export const feedback = {
-  async recordMetric(system: string, name: string, value: number): Promise<void> {
-    await fetchMutation(api.feedback.recordMetric, {
-      system,
-      name,
-      value,
-      serviceKey: serviceKey(),
-    });
-  },
-
   async getAllFeedback() {
     const token = await convexAuthNextjsToken();
     const { metrics, reflections, iterations } = await fetchQuery(

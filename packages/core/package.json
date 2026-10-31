@@ -11,7 +11,8 @@
     "./format": "./src/format.ts",
     "./tasks": "./src/tasks.ts",
     "./parser": "./src/parser.ts",
-    "./highlight": "./src/highlight.ts"
+    "./highlight": "./src/highlight.ts",
+    "./search": "./src/search.ts"
   },
   "scripts": {
     "test": "vitest run",

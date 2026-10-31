@@ -1,8 +1,9 @@
 import { notFound } from "next/navigation";
-import { getTopicByName } from "@/systems/journal/services/topics";
-import { listEntries } from "@/systems/journal/services/entries";
+import { convexAuthNextjsToken } from "@convex-dev/auth/nextjs/server";
+import { fetchQuery, preloadQuery } from "convex/nextjs";
+import { api } from "@polaris/backend/convex/_generated/api";
 import { ComposeBox } from "@/systems/journal/components/ComposeBox";
-import { EntryCard } from "@/systems/journal/components/EntryCard";
+import { EntryFeed } from "@/systems/journal/components/EntryFeed";
 import { HashAnchorScroll } from "@/systems/journal/components/HashAnchorScroll";
 import { TopicHeaderActions } from "@/systems/journal/components/TopicHeaderActions";
 import { SortRedirect } from "@/systems/journal/components/SortRedirect";
@@ -17,11 +18,27 @@ export default async function TopicPage({
 }) {
   const { name } = await params;
   const { sort: sortParam } = await searchParams;
-  const topic = await getTopicByName(name);
+  let decodedName: string;
+  try {
+    decodedName = decodeURIComponent(name);
+  } catch {
+    // Malformed percent-encoding (e.g. a lone "%") — there's no such topic.
+    notFound();
+  }
+  const token = await convexAuthNextjsToken();
+  const topic = await fetchQuery(
+    api.journal.topics.getByName,
+    { name: decodedName },
+    { token }
+  );
   if (!topic) notFound();
 
   const sort = parseSortOrder(sortParam);
-  const entries = await listEntries({ topicId: topic.id, limit: 100, sort });
+  const preloaded = await preloadQuery(
+    api.journal.entries.list,
+    { topicId: topic.id, sort, limit: 100 },
+    { token }
+  );
 
   return (
     <article className="doc">
@@ -39,13 +56,11 @@ export default async function TopicPage({
 
       <ComposeBox defaultTopic={{ id: topic.id, name: topic.name }} />
 
-      <div style={{ display: "flex", flexDirection: "column", gap: "var(--sp-3)", marginTop: "var(--sp-6)" }}>
-        {entries.length === 0 ? (
-          <p className="lead">No entries under {topic.name} yet.</p>
-        ) : (
-          entries.map((entry) => <EntryCard key={entry.id} entry={entry} />)
-        )}
-      </div>
+      <EntryFeed
+        preloaded={preloaded}
+        emptyText={`No entries under ${topic.name} yet.`}
+        spaceAbove
+      />
     </article>
   );
 }

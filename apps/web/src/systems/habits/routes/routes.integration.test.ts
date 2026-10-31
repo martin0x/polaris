@@ -1,18 +1,12 @@
 import { describe, it, expect, beforeAll, beforeEach, vi } from "vitest";
 import { NextRequest } from "next/server";
-import { prisma } from "@/platform/db/client";
 import { requireTestDatabase, withCleanHabitTables } from "@/test/db";
+import { fakeJournal } from "@/test/fakeJournal";
 import { addDays, todayString } from "@polaris/core/dates";
 
-// createLogRoute pulls in @/platform/feedback, which now calls Convex
-// (fetchMutation/convexAuthNextjsToken) instead of Prisma. Mock the whole
-// module: it also sidesteps a Node-ESM resolution gap in
-// @convex-dev/auth/nextjs/server's compiled output ("next/server" imported
-// without an extension), and — unlike mocking only that package — it keeps
-// these tests from ever making a real network call to Convex.
-vi.mock("@/platform/feedback", () => ({
-  feedback: { recordMetric: vi.fn().mockResolvedValue(undefined) },
-}));
+// Habits reaches the journal (Convex) only through journalBridge; the
+// in-memory fake keeps these tests off the network.
+vi.mock("@/systems/habits/services/journalBridge", () => import("@/test/fakeJournal"));
 
 import { createHabit as createHabitRoute, updateHabit, reorderRoute, archiveRoute, unarchiveRoute, recreateTopicRoute } from "./habits";
 import { getWeekRoute, putTick, deleteTick } from "./ticks";
@@ -29,7 +23,7 @@ function req(method: string, body?: unknown, url = "http://localhost/api/systems
 
 describe("habits routes", () => {
   beforeAll(() => requireTestDatabase());
-  beforeEach(() => withCleanHabitTables());
+  beforeEach(async () => { fakeJournal.reset(); await withCleanHabitTables(); });
 
   async function makeHabit(name = "Run"): Promise<{ id: string; name: string; journalTopicId: string | null }> {
     const res = await createHabitRoute(req("POST", { name }), {});
@@ -155,10 +149,7 @@ describe("habits routes", () => {
 
   it("POST log on an archived topic 409s", async () => {
     const habit = await makeHabit();
-    await prisma.journalTopic.update({
-      where: { id: habit.journalTopicId! },
-      data: { archived: true },
-    });
+    fakeJournal.setArchived(habit.journalTopicId!, true);
     const res = await createLogRoute(
       req("POST", { date: todayString(), body: "Nope" }),
       { id: habit.id }

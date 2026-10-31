@@ -3,12 +3,8 @@ import { internal } from "../_generated/api";
 import { mutation } from "../_generated/server";
 import type { Id } from "../_generated/dataModel";
 import type { MutationCtx } from "../_generated/server";
+import { assertSignedIn } from "../lib/auth";
 import { loadItems } from "./activities";
-
-async function assertSignedIn(ctx: MutationCtx): Promise<void> {
-  const identity = await ctx.auth.getUserIdentity();
-  if (identity === null) throw new ConvexError("Unauthorized");
-}
 
 // Telemetry snapshot, scheduled so a metrics failure can never fail or slow
 // an item sync (docs/replatform.md §07).

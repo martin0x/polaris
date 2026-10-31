@@ -174,6 +174,12 @@ markdown and simply posts through mutations. Import order: topics (remapping
 **Exit:** journal fully on Convex; search accepted on real data; no Vercel
 cron remains.
 
+While habits is still on Postgres (until phase 4), it reaches the journal
+through `convex/journal/habitBridge.ts` — signed-in functions called from the
+Next server — and a habit's stored `journalTopicId` may be a Convex id or an
+imported topic's old cuid (resolved through `legacyId`). Phase 4 turns the
+bridge into internal mutations and the import remaps the ids.
+
 ### Phase 4 — Habits on Convex (M)
 
 The habits-to-journal coupling becomes explicit: topic creation, archival, and
@@ -281,6 +287,27 @@ or per-type counts at all. Seed a handful of rows spanning multiple months
 and types before trusting a rehearsal's all-`OK` output; an almost-empty
 table passes every checksum trivially and proves nothing about the
 aggregation logic it's supposed to be checking.
+
+**Learned in phase 3 (journal):**
+
+- **Batch by bytes, not just rows.** `bunx convex run` takes its JSON argument
+  on the command line, and macOS caps arguments plus environment at 1 MiB.
+  Journal bodies are large enough to cross that in 200 rows, so the shared
+  driver (`packages/backend/scripts/lib/convexRun.ts`) caps each batch at
+  512 KiB as well.
+- **A missing export file is an error.** The new driver refuses to treat a
+  missing JSONL file as zero rows; exports write every file, empty or not.
+- **Join tables are rebuilt on import.** `entryTags` rows are rewritten for
+  each imported entry (none for soft-deleted ones), so the verify step checks
+  tag counts from the join table against Postgres's `tags` arrays.
+- **Search needs a human verdict.** `apps/web/scripts/journal-search-acceptance.ts`
+  runs the same queries through both systems and writes a side-by-side report;
+  the person who uses the search decides whether the difference is acceptable.
+- **Cross-system writers need a bridge.** When one system moves before another
+  that writes into it (habits → journal), the writer gets a single bridge module
+  on its side (`apps/web/src/systems/habits/services/journalBridge.ts`) calling
+  signed-in functions on the new side (`convex/journal/habitBridge.ts`), so its
+  tests swap one module and the next phase deletes one module.
 
 (Unrelated to the migration itself but caught in the same phase: a
 `convex-test` assertion against scheduled work needs

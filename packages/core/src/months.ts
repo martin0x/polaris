@@ -70,3 +70,8 @@ export function lastNMonthKeysFromMs(n: number, nowMs: number): MonthBucket[] {
 export function manilaMonthStartMs(key: string): number {
   return Date.parse(`${key}-01T00:00:00+08:00`);
 }
+
+/** Epoch ms of 00:00 Asia/Manila on the Manila calendar day containing `ms`. */
+export function manilaDayStartMs(ms: number): number {
+  return Date.parse(`${manilaDayKeyFromMs(ms)}T00:00:00+08:00`);
+}

@@ -7,6 +7,7 @@ import {
   lastNMonthKeysFromMs,
   manilaMonthStartMs,
   manilaMonthStart,
+  manilaDayStartMs,
 } from "./months";
 
 describe("manilaMonthKey", () => {
@@ -67,5 +68,16 @@ describe("Intl-free Manila helpers", () => {
     for (const key of ["2026-01", "2026-06", "2025-12"]) {
       expect(manilaMonthStartMs(key)).toBe(manilaMonthStart(key).getTime());
     }
+  });
+});
+
+describe("manilaDayStartMs", () => {
+  it("returns 00:00 Manila for instants on either side of Manila midnight", () => {
+    // 2026-06-30 23:59:59 Manila → that day's midnight, 2026-06-29 16:00 UTC
+    expect(manilaDayStartMs(Date.UTC(2026, 5, 30, 15, 59, 59))).toBe(Date.UTC(2026, 5, 29, 16, 0, 0));
+    // 2026-07-01 00:00:00 Manila is itself a midnight
+    expect(manilaDayStartMs(Date.UTC(2026, 5, 30, 16, 0, 0))).toBe(Date.UTC(2026, 5, 30, 16, 0, 0));
+    // 2026-01-01 11:00 Manila → 2025-12-31 16:00 UTC
+    expect(manilaDayStartMs(Date.UTC(2026, 0, 1, 3, 0, 0))).toBe(Date.UTC(2025, 11, 31, 16, 0, 0));
   });
 });

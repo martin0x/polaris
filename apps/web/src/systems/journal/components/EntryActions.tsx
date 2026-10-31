@@ -1,24 +1,27 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useMutation } from "convex/react";
+import { api } from "@polaris/backend/convex/_generated/api";
+import type { Id } from "@polaris/backend/convex/_generated/dataModel";
 import { Icon } from "@/app/_components/Icon";
 
 interface EntryActionsProps {
-  entryId: string;
+  entryId: Id<"journalEntries">;
   onEdit: () => void;
 }
 
 export function EntryActions({ entryId, onEdit }: EntryActionsProps) {
-  const router = useRouter();
+  const removeEntry = useMutation(api.journal.entries.remove);
   const [busy, setBusy] = useState(false);
 
   async function handleDelete() {
     if (!window.confirm("Delete this entry? It moves to trash.")) return;
     setBusy(true);
     try {
-      await fetch(`/api/systems/journal/entries/${entryId}`, { method: "DELETE" });
-      router.refresh();
+      await removeEntry({ id: entryId });
+    } catch {
+      window.alert("Could not delete the entry. Try again.");
     } finally {
       setBusy(false);
     }

@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import type { JournalEntryWithTopic } from "../services/entries";
+import type { FunctionReturnType } from "convex/server";
+import type { api } from "@polaris/backend/convex/_generated/api";
 import { relativeTime } from "@polaris/core/format";
 import { ComposeBox } from "./ComposeBox";
 import { EntryActions } from "./EntryActions";
@@ -9,9 +10,11 @@ import { MarkdownContent } from "./MarkdownContent";
 import { TopicChip } from "./TopicChip";
 import { TagChip } from "./TagChip";
 
-export function EntryCard({ entry }: { entry: JournalEntryWithTopic }) {
+export type EntryView = FunctionReturnType<typeof api.journal.entries.list>["entries"][number];
+
+export function EntryCard({ entry }: { entry: EntryView }) {
   const [editing, setEditing] = useState(false);
-  const edited = entry.updatedAt.getTime() > entry.createdAt.getTime() + 1000;
+  const edited = entry.updatedAt > entry.createdAt + 1000;
 
   if (editing) {
     return (
@@ -20,7 +23,7 @@ export function EntryCard({ entry }: { entry: JournalEntryWithTopic }) {
           id: entry.id,
           title: entry.title,
           body: entry.body,
-          topic: { id: entry.topic.id, name: entry.topic.name },
+          topic: { id: entry.topicId, name: entry.topicName },
         }}
         onSubmitted={() => setEditing(false)}
         onCancel={() => setEditing(false)}
@@ -31,7 +34,7 @@ export function EntryCard({ entry }: { entry: JournalEntryWithTopic }) {
   return (
     <article id={`entry-${entry.id}`} className="entry-card">
       <div className="meta">
-        <TopicChip name={entry.topic.name} />
+        <TopicChip name={entry.topicName} />
         {entry.tags.map((t) => (
           <TagChip key={t} tag={t} />
         ))}

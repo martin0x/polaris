@@ -4,7 +4,7 @@ import { v } from "convex/values";
 
 // authTables: users, authSessions, authAccounts, authRefreshTokens,
 // authVerificationCodes, authVerifiers, authRateLimits.
-// Feedback tables added in Task 6; system tables in phase 2.
+// Platform feedback (phase 1), expenses (phase 2), journal (phase 3).
 export default defineSchema({
   ...authTables,
 
@@ -79,4 +79,45 @@ export default defineSchema({
     .index("by_activity", ["activityId"])
     .index("by_client_id", ["clientId"])
     .index("by_legacy_id", ["legacyId"]),
+
+  // Journal (phase 3). All timestamps are ms since epoch; legacyId carries the
+  // Postgres cuid for idempotent import.
+  journalTopics: defineTable({
+    name: v.string(), // unique — enforced by the mutations through by_name
+    description: v.optional(v.string()),
+    parentId: v.optional(v.id("journalTopics")), // imported; nothing reads it yet
+    archived: v.boolean(),
+    archivedAt: v.optional(v.number()),
+    createdAt: v.number(),
+    updatedAt: v.number(), // the palette lists recently changed topics first
+    legacyId: v.optional(v.string()),
+  })
+    .index("by_name", ["name"])
+    .index("by_legacy_id", ["legacyId"]),
+  journalEntries: defineTable({
+    topicId: v.id("journalTopics"),
+    title: v.optional(v.string()),
+    body: v.string(), // markdown
+    tags: v.array(v.string()), // extractTags(body); entryTags mirrors it for live entries
+    searchText: v.string(), // title + "\n" + body — the search index has one search field
+    deletedAt: v.optional(v.number()), // soft delete
+    createdAt: v.number(),
+    updatedAt: v.number(),
+    legacyId: v.optional(v.string()),
+  })
+    .index("by_deleted_at_created_at", ["deletedAt", "createdAt"])
+    .index("by_topic_deleted_at_created_at", ["topicId", "deletedAt", "createdAt"])
+    .index("by_legacy_id", ["legacyId"])
+    .searchIndex("search_text", {
+      searchField: "searchText",
+      filterFields: ["topicId", "deletedAt"],
+    }),
+  // One row per (live entry, tag). Soft-deleting an entry removes its rows.
+  entryTags: defineTable({
+    entryId: v.id("journalEntries"),
+    tag: v.string(),
+    entryCreatedAt: v.number(), // copy of the entry's createdAt — orders a tag's entries
+  })
+    .index("by_entry", ["entryId"])
+    .index("by_tag_entry_created_at", ["tag", "entryCreatedAt"]),
 });

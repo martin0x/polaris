@@ -1,23 +1,16 @@
 import type { PaletteLayer } from "@/platform/palette/types";
-import { prisma } from "@/platform/db/client";
-import { searchEntries } from "./services/search";
+import { convexAuthNextjsToken } from "@convex-dev/auth/nextjs/server";
+import { fetchQuery } from "convex/nextjs";
+import { api } from "@polaris/backend/convex/_generated/api";
+import type { Id } from "@polaris/backend/convex/_generated/dataModel";
 import { firstLine, relativeTime } from "@polaris/core/format";
 
 export const topicsLayer: PaletteLayer = {
   name: "topics",
   singular: "topic",
-  search: async (query, _parentId) => {
-    const trimmed = query.trim();
-    const topics = await prisma.journalTopic.findMany({
-      where: {
-        archived: false,
-        ...(trimmed
-          ? { name: { contains: trimmed, mode: "insensitive" as const } }
-          : {}),
-      },
-      take: 10,
-      orderBy: { updatedAt: "desc" },
-    });
+  async search(query, _parentId) {
+    const token = await convexAuthNextjsToken();
+    const topics = await fetchQuery(api.journal.topics.search, { query }, { token });
     return topics.map((t) => ({
       id: t.id,
       label: t.name,
@@ -32,18 +25,20 @@ export const topicsLayer: PaletteLayer = {
 export const notesLayer: PaletteLayer = {
   name: "notes",
   singular: "note",
-  search: async (query, parentId) => {
-    const entries = await searchEntries({
-      q: query,
-      topicId: parentId ?? undefined,
-      limit: 20,
-    });
+  async search(query, parentId) {
+    const token = await convexAuthNextjsToken();
+    // parentId is a topics-layer result id — a Convex topic id.
+    const { entries } = await fetchQuery(
+      api.journal.entries.search,
+      { q: query, ...(parentId ? { topicId: parentId as Id<"journalTopics"> } : {}), limit: 20 },
+      { token }
+    );
     return entries.map((e) => ({
       id: e.id,
       label: e.title ?? firstLine(e.body, 80),
       sublabel: relativeTime(new Date(e.createdAt)),
       icon: "file-text" as const,
-      href: `/journal/topics/${encodeURIComponent(e.topic.name)}#entry-${e.id}`,
+      href: `/journal/topics/${encodeURIComponent(e.topicName)}#entry-${e.id}`,
       drillable: false,
     }));
   },
